@@ -32,6 +32,7 @@
     previewSolidsUnder4m: false,
     gameCategoryFilter: "all",
     recipeMealFilter: "all",
+    recipesExpanded: false,
     showAllStagesRecipes: false,
     showAllStagesGames: false,
     searchQuery: "",
@@ -915,11 +916,14 @@
     const countBadge = document.getElementById("recipeCountBadge");
     const filterRow = document.getElementById("recipeMealFilterRow");
     const cardEl = document.getElementById("stageRecipesCard");
+    const toggleWrap = document.getElementById("recipesToggleWrap");
+    const expandBtn = document.getElementById("toggleRecipesExpandBtn");
 
     // In fase 0–3 maanden (Week 1–16) drinkt een baby 100% melkvoeding: verberg de lege receptenkaart om mobiele ruimte te besparen
     if (week <= 16) {
       if (cardEl) cardEl.classList.add("hidden");
       grid.innerHTML = "";
+      if (toggleWrap) toggleWrap.classList.add("hidden");
       return;
     }
     if (cardEl) cardEl.classList.remove("hidden");
@@ -958,10 +962,6 @@
       filtered = stageRecipes.filter((r) => (r.mealType || "tussendoor") === state.recipeMealFilter);
     }
 
-    if (countBadge) {
-      countBadge.textContent = String(filtered.length);
-    }
-
     // Update aantallen op de filter-chips (uitsluitend voor de huidige fase)
     if (filterRow) {
       const mealCounts = {
@@ -995,15 +995,45 @@
           ? `Nog geen favoriete recepten bewaard voor ${stage.shortLabel}. Tik rechtsboven bij een recept op '☆ Bewaren' om je favorieten voor deze fase hier terug te vinden.`
           : `Geen recepten voor dit eetmoment in fase ${stage.shortLabel}.`;
       grid.innerHTML = `<p class="subtle-hint">${emptyMsg}</p>`;
+      if (countBadge) countBadge.textContent = "0";
+      if (toggleWrap) toggleWrap.classList.add("hidden");
       return;
     }
 
-    grid.innerHTML = filtered
-      .map((r, idx) => {
+    // Progressive disclosure op mobiele schermen (<= 720px): toon standaard de eerste 2 gerechten
+    const isMobile = window.innerWidth <= 720;
+    const canExpand = isMobile && filtered.length > 2;
+
+    let visibleRecipes = filtered;
+    if (canExpand && !state.recipesExpanded) {
+      visibleRecipes = filtered.slice(0, 2);
+    }
+
+    if (countBadge) {
+      countBadge.textContent =
+        canExpand && !state.recipesExpanded
+          ? `2 van ${filtered.length}`
+          : String(filtered.length);
+    }
+
+    if (toggleWrap && expandBtn) {
+      if (canExpand) {
+        toggleWrap.classList.remove("hidden");
+        expandBtn.setAttribute("aria-expanded", state.recipesExpanded ? "true" : "false");
+        expandBtn.innerHTML = state.recipesExpanded
+          ? `▲ Minder gerechten tonen (toon top 2)`
+          : `▼ Bekijk alle ${filtered.length} gerechten (${stage.shortLabel})`;
+      } else {
+        toggleWrap.classList.add("hidden");
+      }
+    }
+
+    grid.innerHTML = visibleRecipes
+      .map((r) => {
         const mealBadge = MEAL_TYPE_LABELS[r.mealType] || "🍴 Eetmoment";
         const isFav = Boolean(store.favoriteRecipes[r.id]);
         return `
-      <article class="recipe-box">
+      <article class="recipe-box" data-recipe-card-id="${r.id}">
         <div class="item-card-top">
           <h3 class="item-title">${r.title}</h3>
           <button type="button" class="log-btn ${isFav ? "is-logged" : ""}" data-fav-recipe="${r.id}">
@@ -1020,10 +1050,10 @@
         </div>
         <p class="recipe-steps">${r.steps}</p>
         <div class="recipe-actions">
-          <button type="button" class="btn-primary btn-small" data-wa-recipe="${idx}">
+          <button type="button" class="btn-primary btn-small" data-wa-recipe="${r.id}">
             💬 WhatsApp lijstje
           </button>
-          <button type="button" class="btn-secondary btn-small" data-copy-recipe="${idx}">
+          <button type="button" class="btn-secondary btn-small" data-copy-recipe="${r.id}">
             📋 Kopieer lijstje
           </button>
         </div>
@@ -1044,7 +1074,8 @@
 
     grid.querySelectorAll("[data-wa-recipe]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        const r = filtered[Number(btn.dataset.waRecipe)];
+        const rId = btn.dataset.waRecipe;
+        const r = stageRecipes.find((x) => x.id === rId) || filtered[Number(rId)];
         if (!r) return;
         const text = formatGroceryText(r);
         openWhatsAppShare(text, "auto");
@@ -1053,7 +1084,8 @@
 
     grid.querySelectorAll("[data-copy-recipe]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        const r = filtered[Number(btn.dataset.copyRecipe)];
+        const rId = btn.dataset.copyRecipe;
+        const r = stageRecipes.find((x) => x.id === rId) || filtered[Number(rId)];
         if (!r) return;
         const text = formatGroceryText(r);
         if (navigator.clipboard) {
@@ -3302,6 +3334,7 @@
   // =========================================================================
   function setWeek(w, scroll = true) {
     state.currentWeek = clampWeek(w);
+    state.recipesExpanded = false;
     syncEpochToWeek(state.currentWeek);
     saveState();
     renderAll(scroll);
@@ -3393,6 +3426,7 @@
       "resize",
       () => {
         scrollActiveNodeToCenter(false);
+        renderStageRecipes(getStageForWeek(state.currentWeek));
       },
       { passive: true }
     );
@@ -3482,9 +3516,33 @@
     document.querySelectorAll("[data-meal-filter]").forEach((chip) => {
       chip.addEventListener("click", () => {
         state.recipeMealFilter = chip.dataset.mealFilter;
+        state.recipesExpanded = false;
         renderStageRecipes(getStageForWeek(state.currentWeek));
       });
     });
+
+    const toggleRecipesBtn = document.getElementById("toggleRecipesExpandBtn");
+    if (toggleRecipesBtn) {
+      toggleRecipesBtn.addEventListener("click", () => {
+        const curStage = getStageForWeek(state.currentWeek);
+        const wasExpanded = state.recipesExpanded;
+        state.recipesExpanded = !state.recipesExpanded;
+        renderStageRecipes(curStage);
+
+        if (wasExpanded) {
+          const cardEl = document.getElementById("stageRecipesCard");
+          if (cardEl) {
+            const stickyBar = document.querySelector(".sticky-phase-nav");
+            const stickyHeight = stickyBar ? stickyBar.getBoundingClientRect().height : 54;
+            const cardTop = cardEl.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0);
+            window.scrollTo({
+              top: Math.max(0, cardTop - stickyHeight - 12),
+              behavior: "smooth"
+            });
+          }
+        }
+      });
+    }
 
     const toggleAllGamesBtn = document.getElementById("toggleAllStagesGamesBtn");
     if (toggleAllGamesBtn) {

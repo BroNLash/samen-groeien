@@ -1914,6 +1914,48 @@ p, li {
   min-height: 32px;
 }
 
+/* Recepten Progressive Disclosure Uitklapknop (Mobiel) */
+.recipes-toggle-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  padding-top: 4px;
+}
+
+.recipes-expand-btn {
+  width: 100%;
+  max-width: 420px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-family: inherit;
+  font-size: var(--fs-body);
+  font-weight: 700;
+  border-radius: var(--radius-pill);
+  background: var(--surface-soft);
+  border: 1.5px solid var(--border);
+  color: var(--primary);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.recipes-expand-btn:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.recipes-expand-btn:active {
+  transform: translateY(0);
+}
+
 /* Uitklapbare details */
 .minimal-details {
   background: var(--surface);
