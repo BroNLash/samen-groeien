@@ -4278,21 +4278,30 @@
     return Math.max(compactHeight, 70) + extraPadding;
   }
 
-  function setView(view, autoScroll = false) {
-    const isSameView = state.activeView === view;
-    state.activeView = view;
+  const VALID_VIEWS = ["food", "lookup", "play", "milestones", "sos"];
+
+  function setView(view, autoScroll = false, fromPopState = false) {
+    const safeView = VALID_VIEWS.includes(view) ? view : "food";
+    const isSameView = state.activeView === safeView;
+    state.activeView = safeView;
     document.querySelectorAll(".nav-tab").forEach((t) => {
-      const isAct = t.dataset.view === view;
+      const isAct = t.dataset.view === safeView;
       t.classList.toggle("active", isAct);
       t.setAttribute("aria-selected", isAct ? "true" : "false");
     });
     let activePanel = null;
     document.querySelectorAll(".tab-panel").forEach((p) => {
-      const isAct = p.dataset.pillar === view;
+      const isAct = p.dataset.pillar === safeView;
       p.classList.toggle("hidden", !isAct);
       if (isAct) activePanel = p;
     });
     saveState();
+
+    if (!fromPopState && !isSameView && window.history && typeof window.history.pushState === "function") {
+      try {
+        window.history.pushState({ sgView: safeView }, "");
+      } catch (_) {}
+    }
 
     if (isSameView && autoScroll) {
       // Als de ouder al op dit tabblad staat en er nogmaals op tikt: vloeiend terug naar boven scrollen (native app best practice)
@@ -5243,7 +5252,34 @@
     window.setWeek = setWeek;
     window.setView = setView;
     window.state = state;
-    setView(state.activeView || "food");
+
+    // Ondersteun Android App-Shortcuts (?tab=lookup, ?tab=sos, ?tab=milestones, ?tab=play)
+    let initialView = state.activeView || "food";
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get("tab");
+      if (tabParam && VALID_VIEWS.includes(tabParam)) {
+        initialView = tabParam;
+      }
+      if (window.history && typeof window.history.replaceState === "function") {
+        window.history.replaceState({ sgView: "food" }, "");
+        if (initialView !== "food") {
+          window.history.pushState({ sgView: initialView }, "");
+        }
+      }
+    } catch (_) {}
+
+    window.addEventListener("popstate", (event) => {
+      const openDialog = document.querySelector("dialog[open]");
+      if (openDialog && typeof openDialog.close === "function") {
+        openDialog.close();
+        return;
+      }
+      const targetView = event.state && VALID_VIEWS.includes(event.state.sgView) ? event.state.sgView : "food";
+      setView(targetView, false, true);
+    });
+
+    setView(initialView, false, true);
     renderAll(true);
     initPwaInstall();
     registerServiceWorker();

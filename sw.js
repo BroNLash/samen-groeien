@@ -1,11 +1,11 @@
-const CACHE_NAME = "samen-groeien-pwa-v37";
+const CACHE_NAME = "samen-groeien-pwa-v38";
 const ASSETS = [
   "./",
   "./index.html",
   "./privacy.html",
-  "./styles.css?v=37",
-  "./data.js?v=37",
-  "./app.js?v=37",
+  "./styles.css?v=38",
+  "./data.js?v=38",
+  "./app.js?v=38",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",

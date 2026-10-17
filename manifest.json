@@ -41,11 +41,69 @@
   ],
   "screenshots": [
     {
+      "src": "./screenshot-1-voeding.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Voeding, dagschema's, hoeveelheden en 5-minuten recepten per week"
+    },
+    {
+      "src": "./screenshot-2-snijgids.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Visuele Snijgids en Top-9 Allergenen introductie & onderhoud"
+    },
+    {
+      "src": "./screenshot-3-groei-spel.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Leerspelletjes, slaapschema's, Van Wiechen mijlpalen en groeicurve"
+    },
+    {
+      "src": "./screenshot-4-sos-oppas.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "SOS Eerste Hulp bij twijfel en 1-tik Oppas-Kaart via WhatsApp"
+    },
+    {
       "src": "./feature-graphic-1024x500.png",
       "sizes": "1024x500",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Samen Groeien — Voeding, Spel & Groei van 0 tot 12 jaar"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Eet-Check & Snijgids",
+      "short_name": "Eet-Check",
+      "description": "Zoek direct op hoe je een product veilig snijdt en aanbiedt",
+      "url": "./index.html?tab=lookup",
+      "icons": [{ "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "SOS & Hulp bij Twijfel",
+      "short_name": "SOS & Hulp",
+      "description": "Directe hulp bij kokhalzen vs. verslikken, koorts, tandjes en krampjes",
+      "url": "./index.html?tab=sos",
+      "icons": [{ "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Spel & Slaapritme",
+      "short_name": "Spel & Slaap",
+      "description": "Leerspelletjes, wakkertijden en slaapschema's op maat",
+      "url": "./index.html?tab=play",
+      "icons": [{ "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Groei & Mijlpalen",
+      "short_name": "Mijlpalen",
+      "description": "Van Wiechen mijlpalen afvinken en groeicurve bijhouden",
+      "url": "./index.html?tab=milestones",
+      "icons": [{ "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }
