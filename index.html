@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=29" />
+  <link rel="stylesheet" href="styles.css?v=30" />
 </head>
 <body>
   <a href="#mainContent" class="skip-link">Direct naar inhoud</a>
@@ -250,7 +250,7 @@
     <section class="tab-panel" id="panelFood" data-pillar="food">
       <!-- Dynamische voedingskaarten afgestemd op leeftijd -->
       <div class="two-col-grid">
-        <article class="minimal-card card-tint-green">
+        <article class="minimal-card card-tint-green" id="pureePathCard">
           <div class="card-head-between">
             <h3 id="pureeCardTitle">🥄 Puree &amp; Praktisch Aanbod</h3>
             <span class="mini-pill" id="pureeStagePill">6–7 mnd</span>
@@ -259,7 +259,7 @@
           <div class="structured-card-body" id="pureePathText"></div>
         </article>
 
-        <article class="minimal-card card-tint-orange">
+        <article class="minimal-card card-tint-orange" id="blwPathCard">
           <div class="card-head-between">
             <h3 id="blwCardTitle">🥑 Zelf Eten (Rapley / Stukjes)</h3>
             <span class="mini-pill" id="blwStagePill">6–7 mnd</span>
@@ -285,7 +285,7 @@
 
       <!-- Voorbeeld Dagritme & Wat te vermijden (direct bij de richtlijnen van deze fase) -->
       <div class="two-col-grid">
-        <details class="minimal-details" open>
+        <details class="minimal-details" id="sampleMenuDetails" open>
           <summary>
             <span class="summary-title">🗓️ Voorbeeld dagritme</span>
             <span class="summary-badge" id="sampleMenuStagePill">6–7 mnd</span>
@@ -293,7 +293,7 @@
           <ul class="clean-bullets" id="sampleMenuList"></ul>
         </details>
 
-        <details class="minimal-details details-warn" open>
+        <details class="minimal-details details-warn" id="avoidFoodsDetails" open>
           <summary>
             <span class="summary-title">🚫 Wat nu nog vermijden?</span>
             <span class="summary-badge summary-badge-wait" id="avoidFoodsStagePill">6–7 mnd</span>
@@ -429,6 +429,7 @@
         </div>
 
         <div class="lookup-phase-banner hidden" id="lookupPhaseBanner"></div>
+        <div class="lookup-phase-cut-banner hidden" id="lookupPhaseCutBanner"></div>
 
         <div class="search-bar-wrap" id="foodSearchAndFiltersWrap">
           <div class="search-input-holder">
@@ -732,7 +733,7 @@
     </div>
   </dialog>
 
-  <script src="data.js?v=29"></script>
-  <script src="app.js?v=29"></script>
+  <script src="data.js?v=30"></script>
+  <script src="app.js?v=30"></script>
 </body>
 </html>

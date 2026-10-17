@@ -445,10 +445,27 @@
 
     const stageGames = stage.games || [];
     const pickedGame = stageGames.length > 0 ? stageGames[(week - stage.minWeek) % stageGames.length] : null;
-    const defaultFoodFocus =
-      week <= 16
-        ? `${stage.nutrition.milkStatus} (${stage.nutrition.feedsPerDay})`
-        : `${stage.nutrition.solidsPerDay} • ${stage.nutrition.portionGuideMetric}`;
+    const defaultFoodFocus = (() => {
+      if (week <= 16) {
+        return "Drinktempo & hongersignalen: rustig drinken in 15–20 min; herken vroege signalen zoals smakken en handjes naar de mond.";
+      }
+      if (week <= 23) {
+        return "Eerste gladde oefenhapjes: 1–2 lepeltjes enkelvoudige zachte groente tussen melkvoedingen door om smaken te leren kennen.";
+      }
+      if (week <= 36) {
+        return "Ontdekken van zachte structuren: geef zachte groentestengels (zoals gestoomde wortel) in de knuist naast zachte puree.";
+      }
+      if (week <= 52) {
+        return "Pincetgreep & hapklare stukjes: stimuleer duim en wijsvinger met zachte blokjes avocado, broodkorst en fijne bloemkoolroosjes.";
+      }
+      if (week <= 156) {
+        return "Gezellig samen aan tafel: kook zoutloos mee met het gezin; laat je peuter zelf met een vorkje prikken en uit een open beker drinken.";
+      }
+      if (week <= 364) {
+        return "Kleurrijk bord & broodtrommel: varieer met knapperige snackgroente (zoals komkommerlinten en snoeptomaatjes) voor school.";
+      }
+      return "Zelfstandigheid & voedzame energie: betrek je kind bij het klaarmaken van een voedzaam ontbijt en een gezonde schoolfles water.";
+    })();
 
     return {
       badge: `📅 Week ${week}`,
@@ -897,57 +914,16 @@
     const subtitleEl = document.getElementById("stageRecipesSubtitle");
     const countBadge = document.getElementById("recipeCountBadge");
     const filterRow = document.getElementById("recipeMealFilterRow");
-    const milkNoticeEl = document.getElementById("recipesMilkPhaseNotice");
+    const cardEl = document.getElementById("stageRecipesCard");
 
-    // In fase 0–3 maanden (Week 1–16) drinkt een baby 100% borst- of flesvoeding en zijn er nog géén vaste hapjes/recepten
+    // In fase 0–3 maanden (Week 1–16) drinkt een baby 100% melkvoeding: verberg de lege receptenkaart om mobiele ruimte te besparen
     if (week <= 16) {
-      if (titleEl) {
-        titleEl.textContent = `🍼 5-Minuten Fase-Recepten (${stage.shortLabel})`;
-      }
-      if (subtitleEl) {
-        subtitleEl.textContent =
-          "Tot 4 maanden (Week 17) drinkt je baby uitsluitend borst- of flesvoeding en geef je nog geen bijvoedingsrecepten.";
-      }
-      if (countBadge) {
-        countBadge.textContent = "Vanaf 4 mnd";
-      }
-      if (filterRow) {
-        filterRow.classList.add("hidden");
-      }
-      if (milkNoticeEl) {
-        milkNoticeEl.classList.remove("hidden");
-        milkNoticeEl.innerHTML = `
-          <div class="lookup-phase-summary-grid">
-            <div class="lookup-phase-summary-item">
-              <span class="lookup-phase-summary-label">🍼 Nu bij ${escapeHtml(stage.shortLabel)} (Week ${week})</span>
-              <strong>100% Melkvoeding — nog géén vaste gerechten</strong>
-              <span>De darmpjes en mondmotoriek zijn tot 4 maanden alleen rijp voor borst- of kunstvoeding (+ dagelijks vitamine D/K).</span>
-            </div>
-            <div class="lookup-phase-summary-item">
-              <span class="lookup-phase-summary-label">🥄 Straks vanaf 4 maanden (Week 17)</span>
-              <strong>Start Eerste 5-Minuten Oefenhapjes</strong>
-              <span>Vanaf fase 4–5 maanden verschijnen hier direct de eerste glad gepureerde groente-, fruit- en pinda/ei-oefenhapjes.</span>
-            </div>
-          </div>
-          <div class="lookup-phase-banner-actions">
-            <button type="button" class="chip" id="jumpTo4MonthsRecipesBtn">
-              🥄 Bekijk alvast de oefenhapjes van 4–5 maanden →
-            </button>
-          </div>
-        `;
-        const jumpBtn = document.getElementById("jumpTo4MonthsRecipesBtn");
-        if (jumpBtn) {
-          jumpBtn.addEventListener("click", () => setWeek(17, true));
-        }
-      }
+      if (cardEl) cardEl.classList.add("hidden");
       grid.innerHTML = "";
       return;
     }
+    if (cardEl) cardEl.classList.remove("hidden");
 
-    if (milkNoticeEl) {
-      milkNoticeEl.classList.add("hidden");
-      milkNoticeEl.innerHTML = "";
-    }
     if (filterRow) {
       filterRow.classList.remove("hidden");
     }
@@ -1245,9 +1221,7 @@
     const jumpGamesBtn = document.getElementById("spotlightJumpToGamesBtn");
     if (jumpGamesBtn) {
       jumpGamesBtn.addEventListener("click", () => {
-        setView("games");
-        const gamesPanel = document.getElementById("panelGames");
-        if (gamesPanel) gamesPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+        setView("games", true);
       });
     }
 
@@ -1465,6 +1439,30 @@
     document.getElementById("blwPathText").innerHTML = renderStructuredBulletsOrText(stage.nutrition.blwPath);
     document.getElementById("portionVisualHelper").textContent = `Portierichtlijn (${stage.shortLabel}): ${stage.nutrition.portionGuideMetric}`;
 
+    // Verberg onnodige secties in specifieke fases (UI/UX Best Practice)
+    const isMilkOnly = week <= 16;
+    const blwCardEl = document.getElementById("blwPathCard");
+    const cutGuideCardEl = document.getElementById("visualCutGuideCard");
+    const sampleMenuDetailsEl = document.getElementById("sampleMenuDetails");
+    const avoidFoodsDetailsEl = document.getElementById("avoidFoodsDetails");
+
+    if (blwCardEl) {
+      blwCardEl.classList.toggle("hidden", isMilkOnly);
+    }
+    if (cutGuideCardEl) {
+      cutGuideCardEl.classList.toggle("hidden", isMilkOnly);
+    }
+
+    // Detailslijsten: op mobiel standaard compact inklappen om scrollruimte te besparen
+    const isMobile = window.innerWidth <= 720;
+    if (sampleMenuDetailsEl) {
+      sampleMenuDetailsEl.open = !isMobile;
+    }
+    if (avoidFoodsDetailsEl) {
+      // Boven 3 jaar (156 weken) zijn er geen baby-beperkingen meer; houd standaard ingeklapt
+      avoidFoodsDetailsEl.open = !isMobile && week <= 156;
+    }
+
     renderVisualCutGuide(stage);
     renderStageRecipes(stage);
 
@@ -1540,10 +1538,8 @@
         state.searchQuery = foodObj ? foodObj.name.split("(")[0].split("/")[0].trim() : "";
         const searchInput = document.getElementById("globalSearchInput");
         if (searchInput) searchInput.value = state.searchQuery;
-        setView("lookup");
+        setView("lookup", true);
         renderFoodLookup(state.currentWeek);
-        const gridEl = document.getElementById("foodEncyclopediaGrid");
-        if (gridEl) gridEl.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
 
@@ -2004,8 +2000,183 @@
     return true;
   }
 
+  const CUT_SVGS = {
+    spear: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="Vingerlange reep (5-7 cm)">
+      <rect width="54" height="54" rx="12" fill="var(--primary-soft)"/>
+      <rect x="19" y="8" width="16" height="38" rx="8" fill="var(--primary)" stroke="#fff" stroke-width="1.5"/>
+      <line x1="10" y1="8" x2="10" y2="46" stroke="var(--primary)" stroke-width="1.5" stroke-dasharray="2 2"/>
+      <text x="5" y="29" fill="var(--primary)" font-size="7.5" font-weight="800" text-anchor="middle" transform="rotate(-90 5 29)">6 cm</text>
+      <circle cx="27" cy="15" r="2.5" fill="#fff" opacity="0.6"/>
+      <path d="M22 40C22 43 32 43 32 40" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>`,
+    quarters: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="In vieren in de lengte">
+      <rect width="54" height="54" rx="12" fill="var(--accent-soft)"/>
+      <ellipse cx="27" cy="27" rx="15" ry="19" fill="#fff" stroke="var(--accent)" stroke-width="2"/>
+      <line x1="27" y1="8" x2="27" y2="46" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="12" y1="27" x2="42" y2="27" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="21" cy="20" r="1.5" fill="var(--accent)"/>
+      <circle cx="33" cy="20" r="1.5" fill="var(--accent)"/>
+      <circle cx="21" cy="34" r="1.5" fill="var(--accent)"/>
+      <circle cx="33" cy="34" r="1.5" fill="var(--accent)"/>
+    </svg>`,
+    squash: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="Platgedrukt tussen vingers">
+      <rect width="54" height="54" rx="12" fill="var(--accent-soft)"/>
+      <ellipse cx="27" cy="27" rx="19" ry="11" fill="var(--accent)" stroke="#fff" stroke-width="1.5"/>
+      <path d="M27 7V13M24 10L27 13L30 10" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M27 47V41M24 44L27 41L30 44" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M16 27C21 24 33 24 38 27" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>`,
+    dices: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="Kleine blokjes 1x1 cm">
+      <rect width="54" height="54" rx="12" fill="var(--primary-soft)"/>
+      <rect x="11" y="11" width="13" height="13" rx="3" fill="var(--primary)" stroke="#fff" stroke-width="1.5"/>
+      <rect x="30" y="11" width="13" height="13" rx="3" fill="var(--accent)" stroke="#fff" stroke-width="1.5"/>
+      <rect x="11" y="30" width="13" height="13" rx="3" fill="var(--accent)" stroke="#fff" stroke-width="1.5"/>
+      <rect x="30" y="30" width="13" height="13" rx="3" fill="var(--primary)" stroke="#fff" stroke-width="1.5"/>
+      <text x="27" y="47" fill="var(--primary)" font-size="7" font-weight="bold" text-anchor="middle">1 cm</text>
+    </svg>`,
+    handle: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="Natuurlijk handvat">
+      <rect width="54" height="54" rx="12" fill="var(--primary-soft)"/>
+      <circle cx="21" cy="18" r="8" fill="var(--primary)"/>
+      <circle cx="33" cy="18" r="8" fill="var(--primary)"/>
+      <circle cx="27" cy="13" r="8" fill="var(--primary)"/>
+      <rect x="23" y="22" width="8" height="24" rx="4" fill="var(--accent)"/>
+      <path d="M19 40H35" stroke="var(--primary)" stroke-width="1.5" stroke-dasharray="2 2"/>
+      <text x="27" y="49" fill="var(--primary)" font-size="6.5" font-weight="bold" text-anchor="middle">handvat</text>
+    </svg>`,
+    puree: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="Zijdezachte puree">
+      <rect width="54" height="54" rx="12" fill="var(--primary-soft)"/>
+      <path d="M12 28C12 39 19 44 27 44C35 44 42 39 42 28H12Z" fill="var(--primary)" stroke="#fff" stroke-width="1.5"/>
+      <path d="M16 28C20 24 24 25 27 27C30 25 34 24 38 28" stroke="var(--accent-soft)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M30 18L44 10" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+      <ellipse cx="27" cy="20" rx="6" ry="3.5" transform="rotate(-20 27 20)" fill="var(--accent)"/>
+    </svg>`,
+    spread: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="Dun uitgesmeerd">
+      <rect width="54" height="54" rx="12" fill="var(--accent-soft)"/>
+      <rect x="10" y="24" width="34" height="18" rx="4" fill="#fff" stroke="var(--accent)" stroke-width="1.5"/>
+      <path d="M12 28C18 26 28 26 42 28" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M14 12L38 18" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M36 17L44 19L41 22L34 20Z" fill="var(--primary)"/>
+    </svg>`,
+    prohibited: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="Verboden onder 1 jaar">
+      <rect width="54" height="54" rx="12" fill="var(--warn-soft)"/>
+      <circle cx="27" cy="27" r="17" fill="#fff" stroke="var(--warn)" stroke-width="3"/>
+      <line x1="15" y1="15" x2="39" y2="39" stroke="var(--warn)" stroke-width="3" stroke-linecap="round"/>
+      <text x="27" y="31" fill="var(--warn)" font-size="11" font-weight="900" text-anchor="middle">&lt;1j</text>
+    </svg>`
+  };
+
+  function getFoodCutInfo(food, week, prep) {
+    if (!prep.ok) {
+      return {
+        shape: "prohibited",
+        shapeLabel: "🚫 Nog niet geven",
+        ageLabel: `Pas vanaf ${food.minAgeMonths} mnd`,
+        rule: `Veilig introduceren vanaf ${food.minAgeMonths >= 12 ? "1 jaar" : food.minAgeMonths + " maanden"}`,
+        svg: CUT_SVGS.prohibited
+      };
+    }
+
+    const fid = food.id || "";
+    const nameLow = (food.name || "").toLowerCase();
+    const textLow = (prep.text || "").toLowerCase();
+
+    // 1. Gladde puree fase (4-5 maanden)
+    if (week <= 23) {
+      if (fid === "fd-peanutbutter" || nameLow.includes("pinda") || nameLow.includes("noten")) {
+        return {
+          shape: "spread",
+          shapeLabel: "🥄 Mespuntje door puree",
+          ageLabel: "Allergeen-introductie",
+          rule: "Roer 1/4 theelepel 100% pindakaas door warme groentepuree",
+          svg: CUT_SVGS.spread
+        };
+      }
+      return {
+        shape: "puree",
+        shapeLabel: "🥄 Gladde Oefenpuree",
+        ageLabel: "Zijdezacht zonder stukjes",
+        rule: "Stoom gaar en pureer met kookvocht tot yoghurtdikte",
+        svg: CUT_SVGS.puree
+      };
+    }
+
+    // 2. Choking hazards: Druiven & snoeptomaatjes
+    if (fid === "fd-grapes" || nameLow.includes("druif") || nameLow.includes("tomaat")) {
+      return {
+        shape: "quarters",
+        shapeLabel: "🔪 In lengte in 4en",
+        ageLabel: "Anti-verstikking",
+        rule: "ALTIJD over de lengte in 4 partjes snijden (nooit dwars!)",
+        svg: CUT_SVGS.quarters
+      };
+    }
+
+    // 3. Blauwe bessen & erwtjes: pletten
+    if (fid === "fd-blueberry" || nameLow.includes("bes") || nameLow.includes("erwt")) {
+      if (week > 208) {
+        return {
+          shape: "dices",
+          shapeLabel: "🫐 Heel (Schoolkind)",
+          ageLabel: "Vanaf 4 jaar",
+          rule: "Mag heel gegeten worden zodra kind rustig kauwt",
+          svg: CUT_SVGS.dices
+        };
+      }
+      return {
+        shape: "squash",
+        shapeLabel: "🫐 Platgedrukt",
+        ageLabel: "Anti-verstikking",
+        rule: "Plet tussen duim en wijsvinger (nooit rond heel geven)",
+        svg: CUT_SVGS.squash
+      };
+    }
+
+    // 4. Pindakaas / notenpasta / spreads
+    if (fid === "fd-peanutbutter" || nameLow.includes("pinda") || nameLow.includes("pasta") || fid === "fd-honey" || nameLow.includes("honing")) {
+      return {
+        shape: "spread",
+        shapeLabel: "🍞 Dun uitgesmeerd",
+        ageLabel: "Veilige laag",
+        rule: "Smeer dun uit op broodkorst; geef nooit een dikke lepel",
+        svg: CUT_SVGS.spread
+      };
+    }
+
+    // 5. Broccoli / bloemkool / banaan met handvat (6-8 maanden)
+    if ((fid === "fd-broccoli" || fid === "fd-banana" || textLow.includes("handvat") || textLow.includes("steel")) && week <= 36) {
+      return {
+        shape: "handle",
+        shapeLabel: "🥦 Natuurlijk handvat",
+        ageLabel: "Palm-greep (BLW)",
+        rule: "Laat de steel lang zodat baby het met de vuist kan pakken",
+        svg: CUT_SVGS.handle
+      };
+    }
+
+    // 6. Rapley vingerlange repen (6-7 maanden)
+    if (week <= 36 || textLow.includes("reep") || textLow.includes("stengel") || textLow.includes("vinger")) {
+      return {
+        shape: "spear",
+        shapeLabel: "🥢 Vingerlange reep (5–7 cm)",
+        ageLabel: "Zacht gestoomd",
+        rule: "Snijd 2 vingers breed; moet knijpbaar zijn tussen je vingers",
+        svg: CUT_SVGS.spear
+      };
+    }
+
+    // 7. Pincetgreep & peuter / schoolkind blokjes (8 maanden t/m 12 jaar)
+    return {
+      shape: "dices",
+      shapeLabel: "🎲 Blokjes 1×1 cm",
+      ageLabel: "Pincetgreep & Mee-eten",
+      rule: "Snijd in hapklare blokjes of schijfjes die zelf geprikt kunnen worden",
+      svg: CUT_SVGS.dices
+    };
+  }
+
   function buildFoodCardHtml(f, week, stage, store) {
     const prep = getPrepForWeek(f, week);
+    const cutInfo = getFoodCutInfo(f, week, prep);
     const status = store.triedFoods[f.id] || "";
     const rawPrac = Number(store.foodPracticeCounts[f.id] || 0);
     const pracCount = Math.max(0, Math.min(10, status === "retry" && rawPrac === 0 ? 1 : rawPrac));
@@ -2021,9 +2192,24 @@
           </span>
         </div>
         <small class="subtle-hint">${escapeHtml(f.nutrients)}</small>
-        <div class="highlight-note ${prep.ok ? "" : "highlight-note-wait"}">
-          <strong>🔪 ${escapeHtml(prep.title)}:</strong><br/>${escapeHtml(prep.text)}
+
+        <!-- Visuele SVG Snijgids badge -->
+        <div class="food-cut-visual-badge ${cutInfo.shape === "prohibited" ? "is-prohibited" : ""}">
+          <div class="food-cut-svg-wrap" aria-hidden="true">
+            ${cutInfo.svg}
+          </div>
+          <div class="food-cut-details">
+            <div class="food-cut-header-row">
+              <span class="food-cut-shape-tag">${escapeHtml(cutInfo.shapeLabel)}</span>
+              <span class="food-cut-age-tag">${escapeHtml(cutInfo.ageLabel)}</span>
+            </div>
+            <div class="food-cut-instruction">
+              <strong>${escapeHtml(cutInfo.rule)}</strong>
+            </div>
+            <div class="food-cut-subtext">${escapeHtml(prep.text)}</div>
+          </div>
         </div>
+
         ${
           prep.ok
             ? `
@@ -2135,6 +2321,11 @@
       if (catBlockEl) catBlockEl.classList.add("hidden");
       if (statusContainer) statusContainer.classList.add("hidden");
       if (waitDetailsEl) waitDetailsEl.classList.add("hidden");
+      const cutBannerEl = document.getElementById("lookupPhaseCutBanner");
+      if (cutBannerEl) {
+        cutBannerEl.classList.add("hidden");
+        cutBannerEl.innerHTML = "";
+      }
       grid.innerHTML = "";
       return;
     }
@@ -2143,6 +2334,23 @@
     if (phaseBannerEl) {
       phaseBannerEl.classList.add("hidden");
       phaseBannerEl.innerHTML = "";
+    }
+    const cutBannerEl = document.getElementById("lookupPhaseCutBanner");
+    if (cutBannerEl) {
+      const cutData = getCutVisualData(stage.cutType, stage);
+      cutBannerEl.classList.remove("hidden");
+      cutBannerEl.innerHTML = `
+        <div class="lookup-cut-highlight">
+          <div class="lookup-cut-svg-box" aria-hidden="true">${cutData.svg}</div>
+          <div class="lookup-cut-text">
+            <div class="lookup-cut-top">
+              <span class="food-cut-shape-tag">🔪 Snijadvies ${escapeHtml(stage.shortLabel)}</span>
+              <strong class="lookup-cut-title">${escapeHtml(cutData.title)}</strong>
+            </div>
+            <p class="lookup-cut-desc">${escapeHtml(cutData.desc)}</p>
+          </div>
+        </div>
+      `;
     }
     if (searchAndFiltersWrapEl) searchAndFiltersWrapEl.classList.remove("hidden");
     if (catBlockEl) catBlockEl.classList.remove("hidden");
@@ -2230,7 +2438,7 @@
     const list = DATA.foodDatabase.filter((f) => {
       if (!matchFoodCategory(f, cat)) return false;
 
-      const searchable = [
+      let searchable = [
         f.name,
         f.category,
         f.nutrients,
@@ -2243,6 +2451,14 @@
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
+
+      // Veelvoorkomende enkelvoud/meervoud synoniemen voor soepele zoekervaring
+      if (searchable.includes("druiven")) searchable += " druif";
+      if (searchable.includes("aardbeien")) searchable += " aardbei";
+      if (searchable.includes("bessen")) searchable += " bes";
+      if (searchable.includes("tomaten") || searchable.includes("tomaatjes")) searchable += " tomaat";
+      if (searchable.includes("noten")) searchable += " noot";
+      if (searchable.includes("eieren")) searchable += " ei";
 
       if (q) {
         if (!searchable.includes(q)) return false;
@@ -3105,23 +3321,44 @@
     renderAll(true);
   }
 
-  function setView(view) {
+  function setView(view, autoScroll = false) {
     state.activeView = view;
     document.querySelectorAll(".nav-tab").forEach((t) => {
       const isAct = t.dataset.view === view;
       t.classList.toggle("active", isAct);
       t.setAttribute("aria-selected", isAct ? "true" : "false");
     });
+    let activePanel = null;
     document.querySelectorAll(".tab-panel").forEach((p) => {
-      p.classList.toggle("hidden", p.dataset.pillar !== view);
+      const isAct = p.dataset.pillar === view;
+      p.classList.toggle("hidden", !isAct);
+      if (isAct) activePanel = p;
     });
     saveState();
+
+    if (autoScroll && activePanel) {
+      requestAnimationFrame(() => {
+        const stickyBar = document.querySelector(".sticky-phase-nav");
+        const stickyHeight = stickyBar ? stickyBar.getBoundingClientRect().height : 54;
+        const panelRect = activePanel.getBoundingClientRect();
+        const currentY = window.scrollY || window.pageYOffset || 0;
+        const targetY = Math.max(0, panelRect.top + currentY - stickyHeight - 12);
+
+        // Vloeiend naar het actieve paneel scrollen als het nog niet direct in beeld is
+        if (Math.abs(currentY - targetY) > 35) {
+          window.scrollTo({
+            top: targetY,
+            behavior: "smooth"
+          });
+        }
+      });
+    }
   }
 
   function wireEvents() {
     // Tab navigatie (5 tabs)
     document.querySelectorAll(".nav-tab").forEach((tab) => {
-      tab.addEventListener("click", () => setView(tab.dataset.view));
+      tab.addEventListener("click", () => setView(tab.dataset.view, true));
     });
 
     // Nachtmodus wissel
@@ -3647,6 +3884,9 @@
     loadState();
     applyTheme(state.theme);
     wireEvents();
+    window.setWeek = setWeek;
+    window.setView = setView;
+    window.state = state;
     setView(state.activeView || "food");
     renderAll(true);
     initPwaInstall();

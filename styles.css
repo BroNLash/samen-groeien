@@ -3453,3 +3453,200 @@ p, li {
 .install-guide-steps strong {
   color: var(--text);
 }
+
+/* ==========================================================================
+   VISUELE SNIJGIDS IN EET-CHECK PRODUCTKAARTEN & HOOFD-BANNER
+   ========================================================================== */
+.food-cut-visual-badge {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin: 10px 0 12px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.food-cut-visual-badge.is-prohibited {
+  background: var(--warn-soft);
+  border-color: color-mix(in srgb, var(--warn) 30%, transparent);
+}
+
+.food-cut-svg-wrap {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cut-mini-svg {
+  width: 52px;
+  height: 52px;
+  display: block;
+}
+
+.food-cut-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.food-cut-header-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.food-cut-shape-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-soft);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.food-cut-visual-badge.is-prohibited .food-cut-shape-tag {
+  color: var(--warn);
+  background: #fff;
+}
+
+.food-cut-age-tag {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.food-cut-instruction {
+  font-size: var(--fs-sm);
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.food-cut-instruction strong {
+  color: var(--text);
+}
+
+.food-cut-subtext {
+  font-size: var(--fs-sm);
+  line-height: 1.4;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Snijadvies banner in Eet-Check header */
+.lookup-phase-cut-banner {
+  margin-top: 10px;
+}
+
+.lookup-cut-highlight {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+}
+
+.lookup-cut-svg-box {
+  flex-shrink: 0;
+  width: 64px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lookup-cut-svg-box svg {
+  max-width: 64px;
+  max-height: 48px;
+  height: auto;
+}
+
+.lookup-cut-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lookup-cut-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lookup-cut-title {
+  font-size: var(--fs-sm);
+  color: var(--text);
+}
+
+.lookup-cut-desc {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* 0–3 maanden: Melkvoeding kaart over de volle breedte wanneer Rapley verborgen is */
+#pureePathCard:only-child,
+.two-col-grid:has(#blwPathCard.hidden) #pureePathCard {
+  grid-column: 1 / -1;
+}
+
+/* Tab Panel Vloeiende Overgang */
+.tab-panel:not(.hidden) {
+  animation: panelSmoothFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes panelSmoothFadeIn {
+  from {
+    opacity: 0.65;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 720px) {
+  .food-cut-visual-badge {
+    padding: 8px 10px;
+    gap: 10px;
+  }
+  
+  .food-cut-svg-wrap {
+    width: 46px;
+    height: 46px;
+  }
+
+  .cut-mini-svg {
+    width: 46px;
+    height: 46px;
+  }
+
+  .lookup-cut-highlight {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .lookup-cut-svg-box {
+    width: 50px;
+    height: 38px;
+  }
+}

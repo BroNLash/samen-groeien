@@ -162,7 +162,7 @@ window.GROWING_DATA = {
       type: "milestone",
       headline: "1 Jaar: Dreumes-start, gewone melk & mee-eten met het gezin",
       summary: "Gefeliciteerd met de 1e verjaardag! Vaste voeding is vanaf nu de hoofdbron van energie. Gewone halfvolle melk uit een beker en honing zijn nu veilig!",
-      foodFocus: "3 maaltijden + 2 tussendoortjes + ~300 ml halfvolle zuivel per dag (max 450 ml i.v.m. ijzeropname) + 450–700 ml water + 10 mcg Vitamine D.",
+      foodFocus: "Mee-eten met het gezin: kook zonder zout en snijd mee van de gezinsmaaltijd. Oefen aan tafel met een open bekertje water.",
       momTip: "In het tweede jaar groeit je kind minder snel: sommige dagen eet een dreumes veel, andere dagen bijna niets. Kijk naar het weekgemiddelde!",
       highlightGame: "Wasmand-vrachtwagen duwen & samen uitladen"
     },
@@ -171,7 +171,7 @@ window.GROWING_DATA = {
       type: "leap",
       headline: "Rond 13 maanden: Meehelpen in huis & routines herkennen",
       summary: "Je dreumes herkent vaste dagelijkse handelingen (tafel afvegen, aankleden, opruimen) en vindt het geweldig om jou na te doen.",
-      foodFocus: "3 maaltijden + 2 gezonde tussendoortjes + 300 ml halfvolle zuivel + 450–700 ml water + 10 mcg Vitamine D.",
+      foodFocus: "Geef een eigen peuterlepel en laat je kind zelf stukjes prikken; zelf scheppen en voelen stimuleert de hand-mondmotoriek.",
       momTip: "Geef je dreumes na het eten een eigen vochtig doekje om het blad van de kinderstoel 'schoon te poetsen'.",
       highlightGame: "Pannetjes & deksels puzzel"
     },
@@ -198,7 +198,7 @@ window.GROWING_DATA = {
       type: "milestone",
       headline: "Laatste week als dreumes: Woordexplosie & zelfstandigheid",
       summary: "Je kind begrijpt bijna alles wat je zegt, rent vol energie rond en wil aan tafel helemaal zelf met vork en lepel eten.",
-      foodFocus: "3 maaltijden op een overzichtelijk vakjesbordje + 2 vaste tussendoortjes + 300 ml halfvolle zuivel + 500–700 ml water.",
+      foodFocus: "Dien het eten op in een vakjesbordje (gescheiden smaken); geef 2 gezonde opties ('wil je wortel of komkommer?') om zelfstandigheid te stimuleren.",
       momTip: "Zet een leeg 'Nee-dankjewel-bakje' naast het bord zodat eten dat niet in de smaak valt niet op de grond belandt.",
       highlightGame: "De geheimzinnige voel-tas ('Wat zit erin?')"
     },
@@ -207,7 +207,7 @@ window.GROWING_DATA = {
       type: "milestone",
       headline: "2 Jaar: Zinnen maken, springen & rijke fantasie",
       summary: "Welkom in de peuterfase! Je peuter praat in korte zinnetjes, springt met twee voeten tegelijk van de grond en speelt volop rollenspellen.",
-      foodFocus: "3 maaltijden + 2 tussendoortjes (~300 ml halfvolle zuivel + 600–700 ml water + dagelijks 10 mcg Vitamine D).",
+      foodFocus: "Bied nieuwe groenten vrolijk aan zonder dwang: 1 piepklein proefhapje is al een succes. Houd gezinsmaaltijden ontspannen en gezellig.",
       momTip: "Jij bepaalt WAT en WANNEER er gegeten wordt; je peuter bepaalt OF en HOEVEEL hij eet.",
       highlightGame: "Winkeltje & Peuter-Restaurant"
     },
@@ -252,7 +252,7 @@ window.GROWING_DATA = {
       type: "milestone",
       headline: "5 Jaar: Rijmen, tellen, fietsen, DKT-prik & eerste wiebeltand",
       summary: "In groep 2 ontdekt je kleuter letters en getallen, leert fietsen zonder zijwieltjes en ontvangt rond 5 jaar de DKT-boosterprik (RVP).",
-      foodFocus: "350 ml halfvolle zuivel + 900 ml water + dagelijks een klein handje ongezouten noten (15 g) en 100–150 g groente.",
+      foodFocus: "Gezonde 10-uurtjes voor school: geef knapperige snackgroente mee (komkommerlinten of snoeptomaatjes) naast een stuk fruit en water.",
       momTip: "Stap vanaf 5 jaar over op junior-/volwassenentandpasta (1.000–1.500 ppm fluoride) voor de nieuwe blijvende 'zesjaarskiezen' en poets elke avond zorgvuldig na!",
       highlightGame: "Rijm-raketten & 'Ik zie, ik zie met de letter...'"
     },
@@ -279,7 +279,7 @@ window.GROWING_DATA = {
       type: "milestone",
       headline: "8 Jaar: Van 'leren lezen' naar 'lezen om te leren'",
       summary: "Je kind duikt diep in eigen passies (ruimtevaart, dieren, sport, techniek), denkt logisch na en kan al echt meehelpen met koken.",
-      foodFocus: "150–200 g groente + 4 volkoren boterhammen + 450 ml halfvolle zuivel + 1,2–1,5 liter water per dag.",
+      foodFocus: "Vaste waterfles mee naar school: water en ongezoete thee zijn de beste dorstlessers voor scherpe concentratie tussen de lessen.",
       momTip: "Laat je 8-jarige één keer per week zelf een eenvoudig gerecht (zoals wraps, soep of roerei) klaarmaken voor het gezin!",
       highlightGame: "Mystery-Box Junior Chef-Kok"
     },
@@ -297,7 +297,7 @@ window.GROWING_DATA = {
       type: "milestone",
       headline: "10 Jaar: Tiener-start, botopbouw & HPV-vaccinatie",
       summary: "Welkom in de pre-tienerfase! De lengtegroeispurt en hersen-remodeling starten en je kind groeit toe naar meer zelfstandigheid.",
-      foodFocus: "Piekmoment voor botopbouw: 3–4 porties zuivel/kaas (500 ml), 200 g groente, volkoren granen en ijzerrijke voeding.",
+      foodFocus: "Piekmoment botopbouw: zorg voor volwaardige voeding met calcium, zaden, peulvruchten en dagelijks 30–60 minuten beweging in het daglicht.",
       momTip: "De beste gesprekken ontstaan nu 'zij-aan-zij' tijdens het samen fietsen, wandelen of koken.",
       highlightGame: "€15 Familie-Diner Challenge"
     },
@@ -315,7 +315,7 @@ window.GROWING_DATA = {
       type: "milestone",
       headline: "12 Jaar (Week 624): Zelfstandig, veerkrachtig & klaar voor de brugklas!",
       summary: "Van pasgeboren baby naar een zelfstandige 12-jarige! Je kind plant eigen huiswerk en sport, kookt mee en fietst zelfstandig een nieuwe wereld tegemoet.",
-      foodFocus: "Volwaardige gezinshoofdmaaltijden (200 g groente, volkoren granen, eiwitten, 500 ml zuivel & 1,5L water) en elke ochtend een stevig ontbijt vóór het fietsen.",
+      foodFocus: "Stevig ontbijt vóór het fietsen naar school: havermout, volkorenbrood of eieren voorkomen middagdipjes en leveren langdurige energie.",
       momTip: "Blijf het rustige anker thuis: ook als 12-jarigen stoer en zelfstandig lijken, hebben ze jouw aanmoediging en gezamenlijke eetmomenten nog elke dag nodig.",
       highlightGame: "Zonder-Google-Maps Expeditie (Brugklas-Route)"
     }
