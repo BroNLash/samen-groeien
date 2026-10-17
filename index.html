@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="nl" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#2b7a69" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Samen Groeien — Voeding, Spel &amp; Ontwikkeling (0–12 jaar)</title>
+  <meta name="description" content="Ontdek per week, maand of jaar welke voeding, hoeveelheden, leerspelletjes, slaaptijden, SOS-tips en consultatiebureau-info passen bij jouw kind van geboorte tot 12 jaar." />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=26" />
+</head>
+<body>
+  <a href="#mainContent" class="skip-link">Direct naar inhoud</a>
+
+  <!-- ===================================================================== -->
+  <!-- MINIMALISTISCHE HEADER                                                -->
+  <!-- ===================================================================== -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-group">
+        <span class="brand-logo" aria-hidden="true">🌱</span>
+        <div>
+          <h1 class="brand-title">Samen Groeien</h1>
+          <p class="brand-subtitle">Voeding, Spel &amp; Groei • 0 t/m 12 jaar</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="profile-chip" id="openProfileBtn" title="Kindprofielen beheren of geboortedatum instellen">
+          <span aria-hidden="true">⚙️</span>
+          <span id="profileChipText">Kindprofiel</span>
+        </button>
+
+        <button type="button" class="today-chip hidden" id="jumpToChildBtn" title="Spring direct naar de huidige leeftijd van dit kind">
+          📍 Nu
+        </button>
+
+        <button type="button" class="oppas-chip" id="openOppasBtn" title="Maak een overzichtskaartje voor oppas, papa of oma">
+          <span aria-hidden="true">👵</span>
+          <span>Oppas-kaart</span>
+        </button>
+
+        <button type="button" class="icon-btn" id="themeToggleBtn" aria-label="Wissel tussen dag- en nachtmodus" title="Nachtmodus">
+          <span id="themeIcon">🌙</span>
+        </button>
+
+        <button type="button" class="icon-btn" id="openBackupBtn" aria-label="Gegevens opslaan of herstellen" title="Back-up">
+          <span>💾</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Gezinstip wanneer er ≥2 kinderen zijn ingesteld -->
+    <div class="child-switcher-bar hidden" id="childSwitcherBar" aria-label="Gezinstip">
+      <div class="child-switcher-inner hidden">
+        <div class="child-pills-list" id="childPillsList"></div>
+        <button type="button" class="child-add-pill" id="quickAddChildBtn" title="Nog een kind toevoegen">+ Kind</button>
+      </div>
+      <div class="multi-child-combo-tip hidden" id="multiChildComboTip"></div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- MEEBEWEGENDE TIJDLIJN & KIND-BALK (RUSTIG BOVENAAN, 1 RIJ BIJ SCROLLEN)-->
+  <!-- ===================================================================== -->
+  <section class="timeline-dock" id="timelineDock" aria-label="Leeftijd, kindwisselaar en weergave-instelling">
+    <div class="timeline-dock-inner">
+      <!-- Rij 1: Actief kind + '📍 Nu' (links) & Weergave-keuze (rechts) -->
+      <div class="timeline-top-row" id="dockQuickBar">
+        <div class="dock-quick-left">
+          <div class="dock-child-pills" id="dockChildPills" aria-label="Actief kind wisselen"></div>
+          <button type="button" class="dock-now-btn hidden" id="dockJumpToChildBtn" title="Spring direct naar de huidige leeftijd van dit kind">
+            📍 Nu
+          </button>
+        </div>
+
+        <div class="timeline-top-right">
+          <!-- Periode snelkiezer bij Week- (Jaar 1–2) en Maandweergave (Jaar 1–3) -->
+          <div class="epoch-bar hidden" id="epochBar">
+            <button type="button" class="epoch-pill active" data-epoch="y1">Jaar 1</button>
+            <button type="button" class="epoch-pill" data-epoch="y2">Jaar 2</button>
+            <button type="button" class="epoch-pill" data-epoch="preschool" id="epochPreschoolBtn">Jaar 3</button>
+          </div>
+
+          <div class="zoom-control-group">
+            <span class="zoom-bar-label">Weergave:</span>
+            <div class="zoom-bar" role="tablist" aria-label="Weergaveniveau">
+              <button type="button" role="tab" aria-selected="false" class="zoom-tab" data-zoom="week" title="Per week bekijken (eerste 2 jaar: week 1 t/m 104)">Weken</button>
+              <button type="button" role="tab" aria-selected="false" class="zoom-tab" data-zoom="month" title="Per maand bekijken (eerste 3 jaar: maand 1 t/m 36)">Maanden</button>
+              <button type="button" role="tab" aria-selected="true" class="zoom-tab active" data-zoom="stage" title="Alle 15 ontwikkelingsfasen van geboorte t/m 12 jaar">Fasen</button>
+              <button type="button" role="tab" aria-selected="false" class="zoom-tab" data-zoom="year" title="Per levensjaar bekijken van 1 t/m 12 jaar">Jaren</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rij 2: Horizontale tijdlijn-strip + Weergave/Inklappen knop -->
+      <div class="timeline-strip-row">
+        <button type="button" class="strip-arrow" id="prevTimeBtn" aria-label="Vorige periode">‹</button>
+        <div class="timeline-ribbon" id="timelineRibbon" role="listbox" aria-label="Kies leeftijd"></div>
+        <button type="button" class="strip-arrow" id="nextTimeBtn" aria-label="Volgende periode">›</button>
+        <button type="button" class="compact-expand-btn" id="expandTimelineBtn" aria-expanded="true" title="Wissel tussen Weken, Maanden, Fasen of Jaren" aria-label="Toon of verberg weergave-opties">↕ Weergave</button>
+      </div>
+
+      <!-- Verborgen schuifbalk voor achterwaartse compatibiliteit -->
+      <div class="slider-row hidden">
+        <input
+          type="range"
+          id="masterWeekSlider"
+          class="week-slider"
+          min="0"
+          max="700"
+          value="200"
+          aria-label="Schuif door de leeftijd van week 1 tot 12 jaar"
+        />
+        <div class="slider-marks" aria-label="Snel naar leeftijd springen">
+          <span data-jump-week="1">Geboorte</span>
+          <span data-jump-week="17">4 mnd</span>
+          <span data-jump-week="24">6 mnd</span>
+          <span data-jump-week="53">1 jr</span>
+          <span data-jump-week="105">2 jr</span>
+          <span data-jump-week="209">4 jr</span>
+          <span data-jump-week="417">8 jr</span>
+          <span data-jump-week="624">12 jr</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- HOOFDINHOUD                                                           -->
+  <!-- ===================================================================== -->
+  <main id="mainContent" class="main-container">
+
+    <!-- 1. OVERZICHTSKAART VAN DE HUIDIGE WEEK / FASE -->
+    <section class="hero-card" id="stageHero">
+      <div class="hero-top">
+        <span class="hero-emoji" id="heroEmoji" aria-hidden="true">🥑</span>
+        <div class="hero-titles">
+          <div class="hero-badges">
+            <span class="badge badge-age" id="heroExactAgePill">Week 24 • ~6 maanden</span>
+            <span class="badge badge-phase" id="heroPhasePill">Fase 5/15</span>
+          </div>
+          <h2 class="hero-title" id="heroTitle">Start Vaste Maaltijden &amp; Rapley</h2>
+          <p class="hero-summary" id="heroSummary"></p>
+        </div>
+      </div>
+
+      <!-- 3 Kerncijfers van deze fase direct onder de samenvatting -->
+      <div class="quick-stats">
+        <div class="stat-item">
+          <div class="stat-head">
+            <span class="stat-label" id="vitalMilkLabel">🍼 Melkvoeding</span>
+            <span class="stat-phase-tag" id="vitalMilkPhaseTag">6–7 mnd</span>
+          </div>
+          <div class="stat-val" id="vitalMilkVolume"></div>
+          <div class="stat-sub" id="vitalMilkStatus"></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-head">
+            <span class="stat-label" id="vitalSolidLabel">🥣 Hapjes &amp; Portie</span>
+            <span class="stat-phase-tag" id="vitalSolidPhaseTag">6–7 mnd</span>
+          </div>
+          <div class="stat-val" id="vitalSolidPortion"></div>
+          <div class="stat-sub" id="vitalSolidFreq"></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-head">
+            <span class="stat-label" id="vitalSleepLabel">🌙 Wakkertijd &amp; Slaap</span>
+            <span class="stat-phase-tag" id="vitalSleepPhaseTag">6–7 mnd</span>
+          </div>
+          <div class="stat-val" id="vitalWakeWindow"></div>
+          <div class="stat-sub" id="vitalSleepTotal"></div>
+        </div>
+      </div>
+
+      <!-- Week-spotlight (Sprongetje / Groeispurt / Week-focus) -->
+      <div class="spotlight-box" id="weeklySpotlightBanner">
+        <div class="spotlight-header">
+          <span class="spotlight-tag" id="spotlightBadge">🥑 Week 24</span>
+          <strong class="spotlight-title" id="spotlightHeadline"></strong>
+        </div>
+        <p class="spotlight-desc" id="spotlightSummary"></p>
+      </div>
+    </section>
+
+    <!-- 2. NAVIGATIE-TABS (BOVENAAN OP DESKTOP, ONDERAAN VAST OP TELEFOON) -->
+    <nav class="pillar-nav" role="tablist" aria-label="Onderdelen">
+      <button type="button" role="tab" aria-selected="true" class="nav-tab active" data-view="food">
+        <span class="nav-icon" aria-hidden="true">🥑</span>
+        <span class="nav-text">Voeding</span>
+      </button>
+      <button type="button" role="tab" aria-selected="false" class="nav-tab" data-view="games">
+        <span class="nav-icon" aria-hidden="true">🎲</span>
+        <span class="nav-text">Spel</span>
+      </button>
+      <button type="button" role="tab" aria-selected="false" class="nav-tab" data-view="tips">
+        <span class="nav-icon" aria-hidden="true">🌙</span>
+        <span class="nav-text">Slaap &amp; Tips</span>
+      </button>
+      <button type="button" role="tab" aria-selected="false" class="nav-tab" data-view="lookup">
+        <span class="nav-icon" aria-hidden="true">🔍</span>
+        <span class="nav-text">Eet-Check <small class="tab-counter" id="loggedCountBadge">0</small></span>
+      </button>
+      <button type="button" role="tab" aria-selected="false" class="nav-tab" data-view="sos">
+        <span class="nav-icon" aria-hidden="true">🆘</span>
+        <span class="nav-text">SOS &amp; CB</span>
+      </button>
+    </nav>
+
+    <!-- =================================================================== -->
+    <!-- TAB 1: VOEDING, SNIJ-GIDS & 5-MIN RECEPTEN (STANDAARD ZICHTBAAR)    -->
+    <!-- =================================================================== -->
+    <section class="tab-panel" id="panelFood" data-pillar="food">
+      <!-- Dynamische voedingskaarten afgestemd op leeftijd -->
+      <div class="two-col-grid">
+        <article class="minimal-card card-tint-green">
+          <div class="card-head-between">
+            <h3 id="pureeCardTitle">🥄 Puree &amp; Praktisch Aanbod</h3>
+            <span class="mini-pill" id="pureeStagePill">6–7 mnd</span>
+          </div>
+          <div class="nutrition-key-bar" id="pureeKeyMetricBar"></div>
+          <div class="structured-card-body" id="pureePathText"></div>
+        </article>
+
+        <article class="minimal-card card-tint-orange">
+          <div class="card-head-between">
+            <h3 id="blwCardTitle">🥑 Zelf Eten (Rapley / Stukjes)</h3>
+            <span class="mini-pill" id="blwStagePill">6–7 mnd</span>
+          </div>
+          <div class="nutrition-key-bar" id="blwKeyMetricBar"></div>
+          <div class="structured-card-body" id="blwPathText"></div>
+        </article>
+      </div>
+
+      <!-- Visuele SVG Snij- & Serveergids voor deze fase -->
+      <article class="minimal-card cut-guide-card" id="visualCutGuideCard">
+        <div class="cut-guide-layout">
+          <div class="cut-svg-box" id="cutGuideSvgContainer" aria-hidden="true"></div>
+          <div class="cut-guide-info">
+            <div class="card-head-between">
+              <h3 id="cutGuideTitle">Veilige vorm in deze fase</h3>
+              <span class="mini-pill" id="cutGuideBadge">🔪 Snijvorm &amp; Textuur</span>
+            </div>
+            <p id="cutGuideDesc" class="subtle-hint"></p>
+          </div>
+        </div>
+      </article>
+
+      <!-- Voorbeeld Dagritme & Wat te vermijden (direct bij de richtlijnen van deze fase) -->
+      <div class="two-col-grid">
+        <details class="minimal-details" open>
+          <summary>
+            <span class="summary-title">🗓️ Voorbeeld dagritme</span>
+            <span class="summary-badge" id="sampleMenuStagePill">6–7 mnd</span>
+          </summary>
+          <ul class="clean-bullets" id="sampleMenuList"></ul>
+        </details>
+
+        <details class="minimal-details details-warn" open>
+          <summary>
+            <span class="summary-title">🚫 Wat nu nog vermijden?</span>
+            <span class="summary-badge summary-badge-wait" id="avoidFoodsStagePill">6–7 mnd</span>
+          </summary>
+          <ul class="clean-bullets" id="avoidFoodsList"></ul>
+        </details>
+      </div>
+
+      <!-- Beste voeding voor deze fase (gekoppeld aan Eet-Check) -->
+      <div class="minimal-card">
+        <div class="card-head-between">
+          <div>
+            <h3 id="bestFoodsCardTitle">🌟 Aanraders in deze fase</h3>
+            <p class="subtle-hint" id="portionVisualHelper"></p>
+          </div>
+          <span class="mini-pill" id="bestFoodsStagePill">6–7 mnd</span>
+        </div>
+        <div class="simple-list" id="bestFoodsList"></div>
+      </div>
+
+      <!-- 5-Minuten Fase-Recepten + 1-Tik WhatsApp Boodschappenlijst -->
+      <div class="minimal-card" id="stageRecipesCard">
+        <div class="card-head-between">
+          <div>
+            <h3><span id="stageRecipesTitle">🍳 5-Minuten Fase-Recepten</span> <small class="tab-counter" id="recipeCountBadge">6</small></h3>
+            <p class="subtle-hint" id="stageRecipesSubtitle">Alleen gerechten die veilig en geschikt zijn voor deze fase, met 1 tik op WhatsApp te zetten.</p>
+          </div>
+          <span class="mini-pill" id="recipesStagePill">6–7 mnd</span>
+        </div>
+
+        <div class="lookup-phase-banner hidden" id="recipesMilkPhaseNotice"></div>
+
+        <div class="filter-row recipe-filter-row" id="recipeMealFilterRow" role="group" aria-label="Filter 5-minuten recepten op eetmoment">
+          <button type="button" class="chip active" data-meal-filter="all">🍽️ Alle momenten</button>
+          <button type="button" class="chip" data-meal-filter="fav">⭐ Bewaard</button>
+          <button type="button" class="chip" data-meal-filter="ontbijt">🌅 Ontbijt</button>
+          <button type="button" class="chip" data-meal-filter="lunch">🥪 Lunch</button>
+          <button type="button" class="chip" data-meal-filter="warme-hap">🍲 Warme hap</button>
+          <button type="button" class="chip" data-meal-filter="tussendoor">🍎 Tussendoor</button>
+        </div>
+
+        <div class="cards-grid recipes-grid" id="stageRecipesGrid"></div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 2: LEERSPELLETJES & ACTIVITEITEN                                -->
+    <!-- =================================================================== -->
+    <section class="tab-panel hidden" id="panelGames" data-pillar="games">
+      <div class="minimal-card games-header-card">
+        <div class="card-head-between">
+          <div>
+            <h3><span id="gamesHeaderTitle">🎲 Leerspelletjes &amp; Activiteiten</span> <small class="tab-counter" id="gameCountBadge">6</small></h3>
+            <p class="subtle-hint" id="gamesHeaderSubtitle">Spelenderwijs ontwikkelen, afgestemd op deze leeftijd en jouw energieniveau.</p>
+          </div>
+          <button type="button" class="chip" id="toggleAllStagesGamesBtn" title="Wissel tussen spelletjes voor deze fase en alle 90 spelletjes">
+            📚 Alle 90 spelletjes
+          </button>
+        </div>
+
+        <div class="filter-row games-filter-row" id="gameCategoryFilterRow" role="group" aria-label="Filter spelletjes">
+          <button type="button" class="chip active" data-game-cat="all">🎲 Alle spelletjes</button>
+          <button type="button" class="chip" data-game-cat="fav">⭐ Bewaard</button>
+          <button type="button" class="chip" data-game-cat="low">☕ Rustig</button>
+          <button type="button" class="chip" data-game-cat="cognitive">🧠 Brein</button>
+          <button type="button" class="chip" data-game-cat="motor">🤸 Motoriek</button>
+          <button type="button" class="chip" data-game-cat="language">🗣️ Taal</button>
+          <button type="button" class="chip" data-game-cat="social">🤝 Samen</button>
+        </div>
+      </div>
+
+      <div class="cards-grid" id="gamesGrid"></div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 3: SLAAP, WAKKERTIJD, TIPS VOOR MAMA & MIJLPALEN                -->
+    <!-- =================================================================== -->
+    <section class="tab-panel hidden" id="panelTips" data-pillar="tips">
+      <div class="two-col-grid">
+        <!-- Slaap & Wakkertijd / Bedtijd Rekenhulp (als eerste, passend bij tab '🌙 Slaap & Tips') -->
+        <article class="minimal-card">
+          <div class="card-head-between">
+            <h3 id="sleepCardTitle">🌙 Slaap &amp; Wakkertijd</h3>
+            <span class="mini-pill" id="sleepStagePill">6–7 mnd</span>
+          </div>
+          <div class="sleep-summary" id="sleepMetricsBox"></div>
+
+          <div class="nap-calc-box">
+            <label for="lastWakeTimeInput" id="napCalcLabel">⏰ Hoe laat werd je kind wakker?</label>
+            <div class="nap-calc-inline">
+              <input type="time" id="lastWakeTimeInput" value="07:00" class="time-input" />
+              <span id="napCalcResult" class="nap-result-text"></span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Tips voor Mama -->
+        <article class="minimal-card">
+          <div class="card-head-between">
+            <h3 id="momTipsCardTitle">💛 Tips voor mama</h3>
+            <span class="mini-pill" id="momTipsStagePill">6–7 mnd</span>
+          </div>
+          <ul class="clean-bullets" id="momTipsList"></ul>
+          <div class="reassurance-note" id="momReassuranceBox"></div>
+        </article>
+      </div>
+
+      <!-- Mijlpalen afvinken -->
+      <article class="minimal-card">
+        <div class="card-head-between">
+          <div>
+            <h3 id="milestonesCardTitle">🏆 Mijlpalen in deze fase</h3>
+            <p class="subtle-hint">Vink aan wat je kind al laat zien (elk kind groeit in zijn eigen tempo!):</p>
+          </div>
+          <span class="mini-pill" id="milestonesProgressPill">0 / 4 afgevinkt</span>
+        </div>
+        <div class="checklist-grid" id="milestonesChecklist"></div>
+      </article>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 4: EET-CHECK ("HOE SNIJD IK DIT?") & TOP 9 ALLERGENEN           -->
+    <!-- =================================================================== -->
+    <section class="tab-panel hidden" id="panelLookup" data-pillar="lookup">
+      <!-- Zoekbalk + Categorieën & Status-filters in een consistente header-kaart -->
+      <div class="minimal-card search-header-card">
+        <div class="card-head-between">
+          <div>
+            <h3 id="lookupHeaderTitle">🔍 Eet- &amp; Snijgids ("Mag mijn kind dit eten?")</h3>
+            <p class="subtle-hint" id="lookupSubtitleHint">Bekijk per leeftijd de veilige snijvorm en vink bij wat je kind al heeft geproefd.</p>
+          </div>
+          <span class="mini-pill" id="lookupStageCountPill">6–7 mnd</span>
+        </div>
+
+        <div class="lookup-phase-banner hidden" id="lookupPhaseBanner"></div>
+
+        <div class="search-bar-wrap" id="foodSearchAndFiltersWrap">
+          <div class="search-input-holder">
+            <span class="search-leading-icon" aria-hidden="true">🔍</span>
+            <input
+              type="search"
+              id="globalSearchInput"
+              class="search-input"
+              placeholder="Zoek product, bijv. druiven, ei, pindakaas, honing..."
+              aria-label="Zoek een voedingsmiddel in de Eet-Check"
+              autocomplete="off"
+            />
+            <button type="button" class="clear-btn" id="clearSearchBtn" aria-label="Wis zoekopdracht">✕</button>
+          </div>
+
+          <!-- Filterlaag 1: Productgroep (Primaire categorie-knoppen) -->
+          <div class="filter-group-block" id="foodCategoryFilterBlock">
+            <div class="filter-row" id="foodCategoryFilters" role="group" aria-label="Filter op productgroep">
+              <button type="button" class="chip active" data-food-cat="all">🍽️ Alle geschikte</button>
+              <button type="button" class="chip" data-food-cat="Groente">🥦 Groente</button>
+              <button type="button" class="chip" data-food-cat="Fruit">🍓 Fruit &amp; Vet</button>
+              <button type="button" class="chip" data-food-cat="Eiwit">🥚 Eiwit &amp; IJzer</button>
+              <button type="button" class="chip" data-food-cat="Zuivel">🧀 Granen &amp; Zuivel</button>
+            </div>
+          </div>
+
+          <!-- Filterlaag 2: Proefstatus (Compacte Segmented Control balk met label) -->
+          <div class="status-filter-bar" id="foodStatusFilters" role="group" aria-label="Filter op proefstatus">
+            <span class="status-filter-label">📋 Proeflijst:</span>
+            <div class="segmented-status-group">
+              <button type="button" class="seg-btn active" data-food-status="all">Alles</button>
+              <button type="button" class="seg-btn" data-food-status="todo">✨ Te proeven</button>
+              <button type="button" class="seg-btn" data-food-status="retry">🤨 Oefenen</button>
+              <button type="button" class="seg-btn" data-food-status="done">🙂 Geproefd</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cards-grid" id="foodEncyclopediaGrid"></div>
+
+      <!-- Uitklapbare sectie voor producten die pas in een latere fase geschikt zijn -->
+      <details class="minimal-details details-wait hidden" id="waitFoodsDetails">
+        <summary>
+          <span class="summary-title" id="waitFoodsSummaryTitle">⏳ Nog niet geschikt in deze fase</span>
+          <span class="summary-badge summary-badge-wait" id="waitFoodsCountPill">0 producten</span>
+        </summary>
+        <p class="subtle-hint allergens-intro-hint" id="waitFoodsIntroHint">
+          Onderstaande producten introduceer je pas in een latere fase zodra de darmen en mondmotoriek daar klaar voor zijn.
+        </p>
+        <div class="cards-grid" id="waitFoodsGrid"></div>
+      </details>
+
+      <!-- Uitklapbare Top 9 Allergenen Tracker -->
+      <details class="minimal-details" id="allergensDetails" open>
+        <summary>
+          <span class="summary-title" id="allergensSummaryTitle">🥜 Top 9 Allergenen Afvinklijst</span>
+          <span class="summary-badge" id="allergenProgressPill">0 / 9 gestart</span>
+        </summary>
+        <p class="subtle-hint allergens-intro-hint" id="allergensIntroHint">
+          Advies: start tussen 4 en 8 maanden met pinda en ei, en houd ze na gewenning wekelijks op het menu.
+        </p>
+
+        <!-- Uitleg waarom elk allergeen in 3 opeenvolgende stappen wordt opgebouwd -->
+        <div class="allergen-protocol-box" id="allergenProtocolBox">
+          <div class="allergen-protocol-header">
+            <strong class="allergen-protocol-title">💡 Waarom bouw je elk allergeen in 3 stappen op (DAVO/NVK-opbouwschema)?</strong>
+            <span class="allergen-protocol-desc">Een baby kan via de huid (vooral bij eczeem) al vóór het eerste hapje gevoelig zijn geworden en dus óók bij de <strong>1e keer</strong> reageren, of pas bij een <strong>2e of 3e blootstelling</strong>. Daarom start je overdag veilig met een heel klein proefhapje en bouw je de dosis op 3 verschillende dagen geleidelijk op:</span>
+          </div>
+          <div class="allergen-steps-grid">
+            <div class="allergen-step-item">
+              <span class="allergen-step-badge">Stap 1 • 1e keer</span>
+              <strong>Klein proefhapje (¼–½ tl)</strong>
+              <span>Start overdag voorzichtig met een kleine testdosis door een bekend groente- of fruithapje.</span>
+            </div>
+            <div class="allergen-step-item">
+              <span class="allergen-step-badge">Stap 2 • 2e keer</span>
+              <strong>Dosis opbouwen (½–1 tl)</strong>
+              <span>Ging stap 1 goed? Geef een paar dagen later overdag een iets grotere portie.</span>
+            </div>
+            <div class="allergen-step-item is-final-step">
+              <span class="allergen-step-badge">Stap 3 • 3e keer ✅</span>
+              <strong>Gewend! Houd 1× p/w op het menu</strong>
+              <span>3× op rij zonder klachten gegeten? Blijf het wekelijks geven om tolerantie te behouden.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="cards-grid" id="allergensGrid"></div>
+      </details>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 5: SOS "EERSTE HULP" & CONSULTATIEBUREAU / RVP / TANDJES        -->
+    <!-- =================================================================== -->
+    <section class="tab-panel hidden" id="panelSos" data-pillar="sos">
+      <!-- Consultatiebureau, Vaccinaties (RVP) & Tandjes in deze fase -->
+      <article class="minimal-card">
+        <div class="card-head-between">
+          <div>
+            <h3>🏥 Consultatiebureau, Vaccinaties &amp; Tandjes</h3>
+            <p class="subtle-hint" id="cbAgeSubtitle">Controles, RVP-vaccinaties en gebitsontwikkeling in deze fase.</p>
+          </div>
+          <span class="mini-pill" id="cbStageLabel">6–7 mnd</span>
+        </div>
+        <div class="cb-three-grid" id="healthCbGrid"></div>
+      </article>
+
+      <!-- SOS Eerste Hulp bij Lastige Momenten (afgestemd op huidige leeftijd) -->
+      <article class="minimal-card">
+        <div class="card-head-between">
+          <div>
+            <h3>🆘 Eerste Hulp bij Lastige Momenten</h3>
+            <p class="subtle-hint" id="sosAgeSubtitle">Direct rustgevend en praktisch advies afgestemd op deze leeftijd.</p>
+          </div>
+          <span class="mini-pill" id="sosStageLabel">4–12 mnd</span>
+        </div>
+        <div class="sos-cards-list" id="sosCardsContainer"></div>
+      </article>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- LOGISCHE PAGINA-AFSLUITING: VOORUITBLIK & FASE-DOORSTROOM           -->
+    <!-- =================================================================== -->
+    <section class="minimal-card upcoming-stage-card" id="upcomingPreviewBanner" aria-label="Vooruitblik op de volgende fase">
+      <div class="upcoming-preview-header">
+        <span class="mini-pill" id="upcomingStageBadge">🔭 Vooruitblik</span>
+        <div class="upcoming-nav-btns">
+          <button type="button" class="btn-secondary btn-small" id="upcomingPrevStageBtn">← Vorige fase</button>
+          <button type="button" class="btn-primary btn-small" id="upcomingNextStageBtn">Volgende fase →</button>
+        </div>
+      </div>
+      <div class="upcoming-preview-text" id="upcomingPreviewText"></div>
+    </section>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- DIALOOG 1: KINDPROFIELEN (MEERDERE KINDEREN BEHEREN)                  -->
+  <!-- ===================================================================== -->
+  <dialog class="app-dialog" id="profileDialog" closedby="any" aria-labelledby="profileDialogTitle">
+    <form method="dialog" class="dialog-card" id="profileForm">
+      <div class="dialog-header">
+        <h2 id="profileDialogTitle">👶 Kindprofielen</h2>
+        <button type="button" class="close-btn" id="closeProfileDialogBtn" aria-label="Sluiten">✕</button>
+      </div>
+
+      <p class="subtle-hint">
+        Voeg één of meerdere kinderen toe. Elk kind heeft zijn eigen leeftijd, afgevinkte hapjes, allergenen en mijlpalen.
+      </p>
+
+      <!-- Lijst met bestaande kinderen + knop voor nieuw kind -->
+      <div class="saved-children-section" id="savedChildrenSection">
+        <div class="saved-children-list" id="savedChildrenList"></div>
+        <button type="button" class="btn-secondary btn-small" id="newChildModeBtn">+ Nieuw kind toevoegen</button>
+      </div>
+
+      <input type="hidden" id="editingChildIdInput" value="" />
+
+      <div class="form-field">
+        <label for="childNameInput">Naam van je kind</label>
+        <input type="text" id="childNameInput" placeholder="Bijv. Mila, Noah, Sam" maxlength="40" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label for="childDobInput">Geboortedatum</label>
+          <input type="date" id="childDobInput" />
+        </div>
+        <div class="form-field">
+          <label for="childDueDateInput">Uitgerekende datum <small>(optioneel)</small></label>
+          <input type="date" id="childDueDateInput" />
+        </div>
+      </div>
+
+      <label class="check-row hidden" id="adjustedAgeToggleRow">
+        <input type="checkbox" id="useAdjustedAgeCheckbox" checked />
+        <span>Vroeggeboorte (&lt;37 weken): toon ontwikkeling op basis van gecorrigeerde leeftijd</span>
+      </label>
+
+      <div class="preview-banner" id="profilePreviewBox">
+        Kies een geboortedatum om de huidige week te berekenen.
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn-text" id="clearProfileBtn">🗑️ Verwijderen</button>
+        <div class="dialog-actions-right">
+          <button type="button" class="btn-secondary" id="cancelProfileBtn">Annuleren</button>
+          <button type="submit" class="btn-primary">✓ Opslaan</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ===================================================================== -->
+  <!-- DIALOOG 2: OPPAS- & OMA-KAARTJE (1-KLIK WHATSAPP / KOPIEER OVERZICHT) -->
+  <!-- ===================================================================== -->
+  <dialog class="app-dialog" id="oppasDialog" closedby="any" aria-labelledby="oppasDialogTitle">
+    <div class="dialog-card">
+      <div class="dialog-header">
+        <h2 id="oppasDialogTitle">👵 Oppas- &amp; Oma-Kaartje</h2>
+        <button type="button" class="close-btn" id="closeOppasDialogBtn" aria-label="Sluiten">✕</button>
+      </div>
+
+      <p class="subtle-hint">
+        Deel in één tik het huidige eet-, slaap- en speelritme van deze fase met papa, oma of de oppas.
+      </p>
+
+      <div class="form-field">
+        <label for="oppasCustomNote">Extra persoonlijke notitie <small>(optioneel, bijv. slaapzak of knuffel)</small></label>
+        <input
+          type="text"
+          id="oppasCustomNote"
+          placeholder="Bijv. Slaapt met witte ruis en konijnenknuffel"
+          maxlength="140"
+        />
+      </div>
+
+      <div class="oppas-preview-card" id="oppasPreviewText"></div>
+
+      <div class="backup-buttons">
+        <button type="button" class="btn-primary" id="shareOppasWhatsappBtn" title="Opent direct WhatsApp Web (op laptop) of de WhatsApp-app (op telefoon) met alle emoji's intact">💬 Direct naar WhatsApp Web</button>
+        <button type="button" class="btn-secondary" id="shareOppasWhatsappAppBtn" title="Open rechtstreeks in de geïnstalleerde WhatsApp Desktop of Telefoon app">📱 WhatsApp App</button>
+        <button type="button" class="btn-secondary" id="copyOppasTextBtn">📋 Kopieer tekst</button>
+      </div>
+
+      <p class="status-text" id="oppasStatusMsg" role="status" aria-live="polite"></p>
+    </div>
+  </dialog>
+
+  <!-- ===================================================================== -->
+  <!-- DIALOOG 3: BACK-UP OPSLAAN / HERSTELLEN                               -->
+  <!-- ===================================================================== -->
+  <dialog class="app-dialog" id="backupDialog" closedby="any" aria-labelledby="backupDialogTitle">
+    <div class="dialog-card">
+      <div class="dialog-header">
+        <h2 id="backupDialogTitle">💾 Gegevens bewaren of herstellen</h2>
+        <button type="button" class="close-btn" id="closeBackupDialogBtn" aria-label="Sluiten">✕</button>
+      </div>
+
+      <p class="subtle-hint">
+        Sla een kopie op van al je kindprofielen, afgevinkte hapjes, allergenen en mijlpalen, of herstel een eerder bestand.
+      </p>
+
+      <div class="backup-buttons">
+        <button type="button" class="btn-primary" id="exportJsonBtn">⬇ Download back-up</button>
+        <label class="btn-secondary upload-label">
+          ⬆ Herstel bestand
+          <input type="file" id="importJsonInput" accept=".json,application/json" hidden />
+        </label>
+      </div>
+
+      <p class="status-text" id="backupStatusMsg" role="status" aria-live="polite"></p>
+    </div>
+  </dialog>
+
+  <script src="data.js?v=26"></script>
+  <script src="app.js?v=26"></script>
+</body>
+</html>

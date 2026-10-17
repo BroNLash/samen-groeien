@@ -1,0 +1,15 @@
+# Besturingssysteem & editor bestanden
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor mappen
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test & scratch bestanden
+scratch/
+__pycache__/
+*.pyc
