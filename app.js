@@ -527,6 +527,40 @@
     };
   }
 
+  function resolveSpotlightGameForWeek(stage, week, spotlightObj) {
+    const stageGames = (stage && stage.games) || [];
+    if (stageGames.length === 0) return null;
+    const spot = spotlightObj || getDynamicWeekSpotlight(week, stage);
+    const rawTitle = String((spot && spot.highlightGame) || "").trim().toLowerCase();
+
+    if (rawTitle) {
+      const exactMatch = stageGames.find((g) => String(g.title || "").trim().toLowerCase() === rawTitle);
+      if (exactMatch) return exactMatch;
+
+      const stopWords = new Set(["samen", "met", "een", "voor", "naar", "van", "onder", "over", "door", "eigen", "zelf"]);
+      const keywords = rawTitle
+        .replace(/[^a-z0-9à-ÿ\s]/gi, " ")
+        .split(/\s+/)
+        .filter((w) => w.length >= 4 && !stopWords.has(w));
+
+      if (keywords.length > 0) {
+        let bestGame = null;
+        let bestScore = 0;
+        stageGames.forEach((g) => {
+          const hay = `${g.title || ""} ${g.howToPlay || ""} ${g.materials || ""}`.toLowerCase();
+          const score = keywords.reduce((acc, kw) => (hay.includes(kw) ? acc + ( String(g.title || "").toLowerCase().includes(kw) ? 3 : 1 ) : acc), 0);
+          if (score > bestScore) {
+            bestScore = score;
+            bestGame = g;
+          }
+        });
+        if (bestGame && bestScore > 0) return bestGame;
+      }
+    }
+
+    return stageGames[Math.max(0, week - stage.minWeek) % stageGames.length] || stageGames[0];
+  }
+
   function calculateAgeForProfile(prof) {
     if (!prof || !prof.dob) return null;
     const dobDate = new Date(prof.dob + "T00:00:00");
@@ -1388,14 +1422,19 @@
         </div>
       `);
     }
-    if (spotlight.highlightGame) {
+    const matchedSpotlightGame = resolveSpotlightGameForWeek(stage, week, spotlight);
+    if (spotlight.highlightGame || matchedSpotlightGame) {
+      const displayGameTitle = matchedSpotlightGame ? matchedSpotlightGame.title : spotlight.highlightGame;
+      const microPreview = matchedSpotlightGame
+        ? `<span class="spotlight-game-sub">⏱️ ${escapeHtml(matchedSpotlightGame.duration)} • ${escapeHtml(matchedSpotlightGame.brainBenefit)}</span>`
+        : "";
       metaCards.push(`
         <div class="spotlight-meta-card">
           <div class="spotlight-meta-head">
             <span class="spotlight-meta-label">🎲 Speltip deze week</span>
-            <button type="button" class="spotlight-jump-btn" id="spotlightJumpToGamesBtn">Bekijk bij Spel →</button>
+            <button type="button" class="spotlight-jump-btn" id="spotlightJumpToGamesBtn" data-target-game-id="${matchedSpotlightGame ? matchedSpotlightGame.id : ""}">Bekijk spel →</button>
           </div>
-          <p class="spotlight-meta-body"><strong>${escapeHtml(spotlight.highlightGame)}</strong></p>
+          <p class="spotlight-meta-body"><strong>${escapeHtml(displayGameTitle)}</strong>${microPreview}</p>
         </div>
       `);
     }
@@ -1405,7 +1444,39 @@
     const jumpGamesBtn = document.getElementById("spotlightJumpToGamesBtn");
     if (jumpGamesBtn) {
       jumpGamesBtn.addEventListener("click", () => {
-        setView("games", true);
+        const targetGid = jumpGamesBtn.dataset.targetGameId || (matchedSpotlightGame ? matchedSpotlightGame.id : "");
+        // Zorg dat eventuele filters het gezochte spel niet verbergen
+        state.showAllStagesGames = false;
+        state.gameCategoryFilter = "all";
+        renderGames(stage);
+
+        // Open het tabblad Spel zonder standaard naar de algemene kop te scrollen; we scrollen direct naar de specifieke spelkaart!
+        setView("games", false);
+
+        const dock = document.getElementById("timelineDock");
+        if (dock && !dock.classList.contains("is-compact")) {
+          dock.classList.add("is-compact");
+        }
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const gameCardEl =
+              (targetGid && document.querySelector(`[data-game-card-id="${targetGid}"]`)) ||
+              document.getElementById("panelGames");
+            if (gameCardEl) {
+              const offset = getStickyNavOffset(18);
+              const rect = gameCardEl.getBoundingClientRect();
+              const currentY = window.scrollY || window.pageYOffset || 0;
+              const targetY = Math.max(0, Math.round(rect.top + currentY - offset));
+              window.scrollTo({ top: targetY, behavior: "smooth" });
+
+              gameCardEl.classList.remove("tab-arrival-highlight");
+              void gameCardEl.offsetWidth;
+              gameCardEl.classList.add("tab-arrival-highlight");
+              setTimeout(() => gameCardEl.classList.remove("tab-arrival-highlight"), 1500);
+            }
+          });
+        });
       });
     }
 
@@ -2513,11 +2584,18 @@
 
     const totalAllStagesGamesCount = allStagesGames.length;
 
-    const stageGames = (stage.games || []).map((g) => ({
+    const matchedSpotlightGame = resolveSpotlightGameForWeek(stage, state.currentWeek);
+    const spotlightGameId = matchedSpotlightGame ? matchedSpotlightGame.id : "";
+
+    const rawStageGames = (stage.games || []).map((g) => ({
       ...g,
       stageLabel: stage.shortLabel,
-      heroEmoji: stage.heroEmoji
+      heroEmoji: stage.heroEmoji,
+      isSpotlight: g.id === spotlightGameId
     }));
+
+    // Zet de 'Speltip deze week' altijd op plek #1 binnen de huidige fase zodat hij direct zichtbaar is (ook bij progressive disclosure '2 van 6' op mobiel!)
+    const stageGames = [...rawStageGames].sort((a, b) => (b.isSpotlight ? 1 : 0) - (a.isSpotlight ? 1 : 0));
 
     const gamesHeaderTitleEl = document.getElementById("gamesHeaderTitle");
     const gamesHeaderSubEl = document.getElementById("gamesHeaderSubtitle");
@@ -2635,9 +2713,13 @@
     grid.innerHTML = visibleGames
       .map((g) => {
         const fav = Boolean(store.favoriteGames[g.id]);
+        const isSpot = g.id === spotlightGameId;
+        const spotlightBadge = isSpot
+          ? `<span class="pill-small pill-spotlight">✨ Speltip deze week</span>`
+          : "";
         const energyBadge = g.energy === "low" ? `<span class="pill-small">☕ Rustig</span>` : "";
         return `
-        <article class="item-card">
+        <article class="item-card ${isSpot ? "is-spotlight-game" : ""}" data-game-card-id="${g.id}">
           <div class="item-card-top">
             <h3 class="item-title">${escapeHtml(g.title)}</h3>
             <button type="button" class="log-btn ${fav ? "is-logged" : ""}" data-game-id="${g.id}">
@@ -2645,6 +2727,7 @@
             </button>
           </div>
           <div class="item-card-badges">
+            ${spotlightBadge}
             <span class="pill-small">${g.heroEmoji} ${escapeHtml(g.stageLabel)}</span>
             <span class="pill-small">${catNames[g.category] || g.category}</span>
             <span class="pill-small pill-ok">⏱️ ${escapeHtml(g.duration)}</span>

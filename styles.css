@@ -4804,6 +4804,32 @@ p, li {
   line-height: 1.1;
 }
 
+/* =========================================================================
+   SPELTIP DEZE WEEK — SPOTLIGHT PRIORITERING & DEEP-LINK HIGHLIGHT
+   ========================================================================= */
+.spotlight-game-sub {
+  display: block;
+  margin-top: 0.22rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.38;
+}
 
+.pill-spotlight {
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.16), rgba(43, 122, 105, 0.14));
+  color: var(--primary);
+  border: 1px solid rgba(43, 122, 105, 0.35);
+  font-weight: 800;
+}
 
+[data-theme="dark"] .pill-spotlight {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(79, 179, 157, 0.2));
+  color: var(--primary);
+  border-color: rgba(79, 179, 157, 0.42);
+}
 
+.item-card.is-spotlight-game {
+  border-color: rgba(43, 122, 105, 0.45);
+  box-shadow: 0 6px 20px rgba(43, 122, 105, 0.09);
+}
