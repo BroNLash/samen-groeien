@@ -3022,6 +3022,7 @@
     };
 
     renderMilestonesList();
+    renderTeethTracker(stage, week);
   }
 
   // =========================================================================
@@ -5271,6 +5272,9 @@
       ? `🦷 Gebit &amp; Wisselen (${escapeHtml(stage.shortLabel)})`
       : `😁 Tandjes &amp; Gebit (${escapeHtml(stage.shortLabel)})`;
 
+    const store = getActiveStore();
+    const checkedTeethCount = store.checkedTeeth ? Object.keys(store.checkedTeeth).filter((k) => Boolean(store.checkedTeeth[k])).length : 0;
+
     cbGrid.innerHTML = `
       <div class="cb-item-box">
         <span class="cb-item-label">${cbFirstLabel}</span>
@@ -5283,8 +5287,26 @@
       <div class="cb-item-box">
         <span class="cb-item-label">${cbTeethLabel}</span>
         ${formatCbBoxHtml(h.teeth)}
+        <button type="button" class="cb-open-teeth-btn" data-jump-teeth-model="1">
+          🦷 Open interactief gebitsmodel (${checkedTeethCount}/20) →
+        </button>
       </div>
     `;
+
+    cbGrid.querySelectorAll("[data-jump-teeth-model]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        setView("tips", false);
+        const teethDet = document.getElementById("teethTrackerDetails");
+        if (teethDet) {
+          teethDet.open = true;
+          setTimeout(() => {
+            const offset = getStickyNavOffset(14);
+            const top = teethDet.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0);
+            window.scrollTo({ top: Math.max(0, Math.round(top - offset)), behavior: "smooth" });
+          }, 60);
+        }
+      });
+    });
 
     let ageGroupLabel = "Baby 0–3 maanden";
     let shortAgeTag = "0–3 mnd";
@@ -5706,58 +5728,175 @@
   }
 
   // =========================================================================
-  // 10C. FEATURE 6: INTERACTIEF TANDJES- & WISSELGEBIT-KAARTJE
+  // 10C. FEATURE 6: INTERACTIEF ANATOMISCH GEBITSMODEL (BOVEN- & ONDERKAAK)
   // =========================================================================
   const PRIMARY_TEETH_CATALOG = {
     upper: [
-      { id: "u-m2-r", short: "K2", name: "2e Melkkies rechtsboven", ageErupt: "23–31 mnd", ageShed: "10–12 jr", minW: 96, maxW: 135, shedMinW: 480, shedMaxW: 624, isMolar: true },
-      { id: "u-m1-r", short: "K1", name: "1e Melkkies rechtsboven", ageErupt: "13–19 mnd", ageShed: "9–11 jr", minW: 54, maxW: 84, shedMinW: 450, shedMaxW: 572, isMolar: true },
-      { id: "u-c-r", short: "H", name: "Hoektand rechtsboven", ageErupt: "16–22 mnd", ageShed: "10–12 jr", minW: 68, maxW: 96, shedMinW: 500, shedMaxW: 624, isMolar: false },
-      { id: "u-i2-r", short: "S2", name: "Zij-snijtand rechtsboven", ageErupt: "9–13 mnd", ageShed: "7–8 jr", minW: 37, maxW: 58, shedMinW: 350, shedMaxW: 440, isMolar: false },
-      { id: "u-i1-r", short: "S1", name: "Middelste snijtand rechtsboven", ageErupt: "8–12 mnd", ageShed: "6–7 jr", minW: 32, maxW: 52, shedMinW: 295, shedMaxW: 380, isMolar: false },
-      { id: "u-i1-l", short: "S1", name: "Middelste snijtand linksboven", ageErupt: "8–12 mnd", ageShed: "6–7 jr", minW: 32, maxW: 52, shedMinW: 295, shedMaxW: 380, isMolar: false },
-      { id: "u-i2-l", short: "S2", name: "Zij-snijtand linksboven", ageErupt: "9–13 mnd", ageShed: "7–8 jr", minW: 37, maxW: 58, shedMinW: 350, shedMaxW: 440, isMolar: false },
-      { id: "u-c-l", short: "H", name: "Hoektand linksboven", ageErupt: "16–22 mnd", ageShed: "10–12 jr", minW: 68, maxW: 96, shedMinW: 500, shedMaxW: 624, isMolar: false },
-      { id: "u-m1-l", short: "K1", name: "1e Melkkies linksboven", ageErupt: "13–19 mnd", ageShed: "9–11 jr", minW: 54, maxW: 84, shedMinW: 450, shedMaxW: 572, isMolar: true },
-      { id: "u-m2-l", short: "K2", name: "2e Melkkies linksboven", ageErupt: "23–31 mnd", ageShed: "10–12 jr", minW: 96, maxW: 135, shedMinW: 480, shedMaxW: 624, isMolar: true }
+      { id: "u-m2-r", short: "K2", groupKey: "k2", jaw: "upper", side: "Rechtsboven", toothType: "molar", name: "2e Melkkies rechtsboven", ageErupt: "23–31 mnd", ageShed: "10–12 jr", minW: 96, maxW: 135, shedMinW: 480, shedMaxW: 624, isMolar: true, x: 70, y: 164, rot: -78 },
+      { id: "u-m1-r", short: "K1", groupKey: "k1", jaw: "upper", side: "Rechtsboven", toothType: "molarFirst", name: "1e Melkkies rechtsboven", ageErupt: "13–19 mnd", ageShed: "9–11 jr", minW: 54, maxW: 84, shedMinW: 450, shedMaxW: 572, isMolar: true, x: 80, y: 122, rot: -62 },
+      { id: "u-c-r", short: "H", groupKey: "h", jaw: "upper", side: "Rechtsboven", toothType: "canine", name: "Hoektand rechtsboven", ageErupt: "16–22 mnd", ageShed: "10–12 jr", minW: 68, maxW: 96, shedMinW: 500, shedMaxW: 624, isMolar: false, x: 100, y: 85, rot: -42 },
+      { id: "u-i2-r", short: "S2", groupKey: "s2", jaw: "upper", side: "Rechtsboven", toothType: "incisorLat", name: "Zij-snijtand rechtsboven", ageErupt: "9–13 mnd", ageShed: "7–8 jr", minW: 37, maxW: 58, shedMinW: 350, shedMaxW: 440, isMolar: false, x: 132, y: 58, rot: -22 },
+      { id: "u-i1-r", short: "S1", groupKey: "s1", jaw: "upper", side: "Rechtsboven", toothType: "incisorCent", name: "Middelste snijtand rechtsboven", ageErupt: "8–12 mnd", ageShed: "6–7 jr", minW: 32, maxW: 52, shedMinW: 295, shedMaxW: 380, isMolar: false, x: 170, y: 45, rot: -7 },
+      { id: "u-i1-l", short: "S1", groupKey: "s1", jaw: "upper", side: "Linksboven", toothType: "incisorCent", name: "Middelste snijtand linksboven", ageErupt: "8–12 mnd", ageShed: "6–7 jr", minW: 32, maxW: 52, shedMinW: 295, shedMaxW: 380, isMolar: false, x: 210, y: 45, rot: 7 },
+      { id: "u-i2-l", short: "S2", groupKey: "s2", jaw: "upper", side: "Linksboven", toothType: "incisorLat", name: "Zij-snijtand linksboven", ageErupt: "9–13 mnd", ageShed: "7–8 jr", minW: 37, maxW: 58, shedMinW: 350, shedMaxW: 440, isMolar: false, x: 248, y: 58, rot: 22 },
+      { id: "u-c-l", short: "H", groupKey: "h", jaw: "upper", side: "Linksboven", toothType: "canine", name: "Hoektand linksboven", ageErupt: "16–22 mnd", ageShed: "10–12 jr", minW: 68, maxW: 96, shedMinW: 500, shedMaxW: 624, isMolar: false, x: 280, y: 85, rot: 42 },
+      { id: "u-m1-l", short: "K1", groupKey: "k1", jaw: "upper", side: "Linksboven", toothType: "molarFirst", name: "1e Melkkies linksboven", ageErupt: "13–19 mnd", ageShed: "9–11 jr", minW: 54, maxW: 84, shedMinW: 450, shedMaxW: 572, isMolar: true, x: 300, y: 122, rot: 62 },
+      { id: "u-m2-l", short: "K2", groupKey: "k2", jaw: "upper", side: "Linksboven", toothType: "molar", name: "2e Melkkies linksboven", ageErupt: "23–31 mnd", ageShed: "10–12 jr", minW: 96, maxW: 135, shedMinW: 480, shedMaxW: 624, isMolar: true, x: 310, y: 164, rot: 78 }
     ],
     lower: [
-      { id: "l-m2-r", short: "K2", name: "2e Melkkies rechtsonder", ageErupt: "20–30 mnd", ageShed: "10–12 jr", minW: 86, maxW: 130, shedMinW: 480, shedMaxW: 624, isMolar: true },
-      { id: "l-m1-r", short: "K1", name: "1e Melkkies rechtsonder", ageErupt: "14–18 mnd", ageShed: "9–11 jr", minW: 58, maxW: 80, shedMinW: 450, shedMaxW: 572, isMolar: true },
-      { id: "l-c-r", short: "H", name: "Hoektand rechtsonder", ageErupt: "17–23 mnd", ageShed: "9–12 jr", minW: 72, maxW: 100, shedMinW: 450, shedMaxW: 600, isMolar: false },
-      { id: "l-i2-r", short: "S2", name: "Zij-snijtand rechtsonder", ageErupt: "10–16 mnd", ageShed: "7–8 jr", minW: 42, maxW: 70, shedMinW: 340, shedMaxW: 430, isMolar: false },
-      { id: "l-i1-r", short: "S1", name: "Middelste snijtand rechtsonder", ageErupt: "6–10 mnd", ageShed: "6–7 jr", minW: 22, maxW: 44, shedMinW: 280, shedMaxW: 370, isMolar: false },
-      { id: "l-i1-l", short: "S1", name: "Middelste snijtand linksonder", ageErupt: "6–10 mnd", ageShed: "6–7 jr", minW: 22, maxW: 44, shedMinW: 280, shedMaxW: 370, isMolar: false },
-      { id: "l-i2-l", short: "S2", name: "Zij-snijtand linksonder", ageErupt: "10–16 mnd", ageShed: "7–8 jr", minW: 42, maxW: 70, shedMinW: 340, shedMaxW: 430, isMolar: false },
-      { id: "l-c-l", short: "H", name: "Hoektand linksonder", ageErupt: "17–23 mnd", ageShed: "9–12 jr", minW: 72, maxW: 100, shedMinW: 450, shedMaxW: 600, isMolar: false },
-      { id: "l-m1-l", short: "K1", name: "1e Melkkies linksonder", ageErupt: "14–18 mnd", ageShed: "9–11 jr", minW: 58, maxW: 80, shedMinW: 450, shedMaxW: 572, isMolar: true },
-      { id: "l-m2-l", short: "K2", name: "2e Melkkies linksonder", ageErupt: "20–30 mnd", ageShed: "10–12 jr", minW: 86, maxW: 130, shedMinW: 480, shedMaxW: 624, isMolar: true }
+      { id: "l-m2-r", short: "K2", groupKey: "k2", jaw: "lower", side: "Rechtsonder", toothType: "molar", name: "2e Melkkies rechtsonder", ageErupt: "20–30 mnd", ageShed: "10–12 jr", minW: 86, maxW: 130, shedMinW: 480, shedMaxW: 624, isMolar: true, x: 74, y: 266, rot: 78 },
+      { id: "l-m1-r", short: "K1", groupKey: "k1", jaw: "lower", side: "Rechtsonder", toothType: "molarFirst", name: "1e Melkkies rechtsonder", ageErupt: "14–18 mnd", ageShed: "9–11 jr", minW: 58, maxW: 80, shedMinW: 450, shedMaxW: 572, isMolar: true, x: 84, y: 306, rot: 62 },
+      { id: "l-c-r", short: "H", groupKey: "h", jaw: "lower", side: "Rechtsonder", toothType: "canine", name: "Hoektand rechtsonder", ageErupt: "17–23 mnd", ageShed: "9–12 jr", minW: 72, maxW: 100, shedMinW: 450, shedMaxW: 600, isMolar: false, x: 104, y: 342, rot: 42 },
+      { id: "l-i2-r", short: "S2", groupKey: "s2", jaw: "lower", side: "Rechtsonder", toothType: "incisorLat", name: "Zij-snijtand rechtsonder", ageErupt: "10–16 mnd", ageShed: "7–8 jr", minW: 42, maxW: 70, shedMinW: 340, shedMaxW: 430, isMolar: false, x: 135, y: 368, rot: 22 },
+      { id: "l-i1-r", short: "S1", groupKey: "s1", jaw: "lower", side: "Rechtsonder", toothType: "incisorCent", name: "Middelste snijtand rechtsonder", ageErupt: "6–10 mnd", ageShed: "6–7 jr", minW: 22, maxW: 44, shedMinW: 280, shedMaxW: 370, isMolar: false, x: 171, y: 382, rot: 7 },
+      { id: "l-i1-l", short: "S1", groupKey: "s1", jaw: "lower", side: "Linksonder", toothType: "incisorCent", name: "Middelste snijtand linksonder", ageErupt: "6–10 mnd", ageShed: "6–7 jr", minW: 22, maxW: 44, shedMinW: 280, shedMaxW: 370, isMolar: false, x: 209, y: 382, rot: -7 },
+      { id: "l-i2-l", short: "S2", groupKey: "s2", jaw: "lower", side: "Linksonder", toothType: "incisorLat", name: "Zij-snijtand linksonder", ageErupt: "10–16 mnd", ageShed: "7–8 jr", minW: 42, maxW: 70, shedMinW: 340, shedMaxW: 430, isMolar: false, x: 245, y: 368, rot: -22 },
+      { id: "l-c-l", short: "H", groupKey: "h", jaw: "lower", side: "Linksonder", toothType: "canine", name: "Hoektand linksonder", ageErupt: "17–23 mnd", ageShed: "9–12 jr", minW: 72, maxW: 100, shedMinW: 450, shedMaxW: 600, isMolar: false, x: 276, y: 342, rot: -42 },
+      { id: "l-m1-l", short: "K1", groupKey: "k1", jaw: "lower", side: "Linksonder", toothType: "molarFirst", name: "1e Melkkies linksonder", ageErupt: "14–18 mnd", ageShed: "9–11 jr", minW: 58, maxW: 80, shedMinW: 450, shedMaxW: 572, isMolar: true, x: 296, y: 306, rot: -62 },
+      { id: "l-m2-l", short: "K2", groupKey: "k2", jaw: "lower", side: "Linksonder", toothType: "molar", name: "2e Melkkies linksonder", ageErupt: "20–30 mnd", ageShed: "10–12 jr", minW: 86, maxW: 130, shedMinW: 480, shedMaxW: 624, isMolar: true, x: 306, y: 266, rot: -78 }
     ]
   };
 
-  let lastClickedToothInfo = "";
+  const TEETH_GROUPS_ORDER = [
+    { key: "s1", code: "S1", label: "Middelste snijtanden", eruptRange: "6–12 mnd", shedRange: "6–7 jr", firstId: "l-i1-r" },
+    { key: "s2", code: "S2", label: "Zij-snijtanden", eruptRange: "9–16 mnd", shedRange: "7–8 jr", firstId: "u-i2-r" },
+    { key: "k1", code: "K1", label: "1e Melkkiezen", eruptRange: "13–19 mnd", shedRange: "9–11 jr", firstId: "u-m1-r" },
+    { key: "h", code: "H", label: "Hoektanden", eruptRange: "16–23 mnd", shedRange: "9–12 jr", firstId: "u-c-r" },
+    { key: "k2", code: "K2", label: "2e Melkkiezen", eruptRange: "20–31 mnd", shedRange: "10–12 jr", firstId: "l-m2-r" }
+  ];
 
-  function renderTeethTracker(stage, week) {
-    const container = document.getElementById("teethTrackerContainer");
-    const titleEl = document.getElementById("teethTrackerSummaryTitle") || document.getElementById("teethTrackerTitle");
-    const badgeEl = document.getElementById("teethTrackerBadge");
-    if (!container) return;
+  let selectedToothId = "";
 
-    const store = getActiveStore();
+  function getToothCareTip(tooth, isSheddingMode) {
+    if (isSheddingMode) {
+      if (tooth.isMolar) {
+        return "Wisselgebit & kiezen: achter de 2e melkkiezen (K2) breken rond 6 jaar ook de 4 blijvende 6-jaarskiezen door. Zet de borstel daar dwars op het kauwvlak en poets nog 1× per dag (’s avonds) na tot 10 jaar!";
+      }
+      return "Wiebeltand? Laat je kind de tand zelf met de tong of schone vingers loswiebelen. Poets voorzichtig langs het gevoelige tandvlees met fluoride-kindertandpasta (vanaf 5 jaar: 1450 ppm fluoride).";
+    }
+    if (tooth.toothType === "incisorCent" || tooth.toothType === "incisorLat") {
+      return "Ivoren Kruis-tip (Snijtanden): Start zodra het allereerste witte puntje zichtbaar is met 1× per dag poetsen (en vanaf 2 jaar 2× per dag) met een zacht babyborsteltje en een rijstkorrel fluoride-peutertandpasta. Til de bovenlip bij het poetsen van de boventandjes even voorzichtig op.";
+    }
+    if (tooth.toothType === "canine") {
+      return "Ivoren Kruis-tip (Hoektanden): Hoektanden vullen het plekje tussen de snijtanden en de 1e melkkiezen op. Een gekoelde bijtring (uit de koelkast, niet de vriezer!) geeft fijne tegendruk bij gevoelig tandvlees.";
+    }
+    return "Ivoren Kruis-tip (Melkkiezen): Melkkiezen hebben diepe groefjes (fissuren) op het kauwvlak. Zet de tandenborstel bij doorkomende kiezen dwars op de tandenrij zodat de haartjes goed in het nog lage kauwvlak komen!";
+  }
+
+  function buildArchCrownSvgInner(tooth) {
+    if (tooth.toothType === "incisorCent") {
+      return `
+        <path class="arch-crown-outline" d="M -14,-11 C -15,-15 -9,-16 0,-16 C 9,-16 15,-15 14,-11 L 12,9 C 11,14 6,15 0,15 C -6,15 -11,14 -12,9 Z" />
+        <path class="arch-crown-shine" d="M -9,-11 C -4,-13 4,-13 9,-11" />
+        <path class="arch-crown-fissure" d="M -7,7 Q 0,10 7,7" />
+      `;
+    }
+    if (tooth.toothType === "incisorLat") {
+      return `
+        <path class="arch-crown-outline" d="M -12,-10 C -13,-14 -7,-15 0,-15 C 7,-15 13,-14 12,-10 L 10,9 C 9,13 5,14 0,14 C -5,14 -9,13 -10,9 Z" />
+        <path class="arch-crown-shine" d="M -7,-10 C -3,-12 3,-12 7,-10" />
+        <path class="arch-crown-fissure" d="M -5,6 Q 0,9 5,6" />
+      `;
+    }
+    if (tooth.toothType === "canine") {
+      return `
+        <path class="arch-crown-outline" d="M -13,-5 C -14,-12 -6,-16 0,-18 C 6,-16 14,-12 13,-5 C 14,7 9,14 0,15 C -9,14 -14,7 -13,-5 Z" />
+        <path class="arch-crown-shine" d="M 0,-14 L 0,4 M -6,-7 Q 0,-11 6,-7" />
+      `;
+    }
+    if (tooth.toothType === "molarFirst") {
+      return `
+        <path class="arch-crown-outline" d="M -15,-8 C -16,-14 -9,-16 -2,-15 C 0,-14 2,-15 2,-15 C 9,-16 16,-14 15,-8 C 16,-1 16,6 14,11 C 12,15 5,16 0,15 C -5,16 -12,15 -14,11 C -16,6 -16,-1 -15,-8 Z" />
+        <path class="arch-crown-fissure" d="M -9,0 H 9 M -1,-7 V 7 M -9,0 L -12,-5 M -9,0 L -12,5 M 9,0 L 12,-5 M 9,0 L 12,5" />
+        <circle class="arch-crown-cusp" cx="-7" cy="-7" r="2.2" />
+        <circle class="arch-crown-cusp" cx="7" cy="-7" r="2.2" />
+        <circle class="arch-crown-cusp" cx="-7" cy="7" r="2.2" />
+        <circle class="arch-crown-cusp" cx="7" cy="7" r="2.2" />
+      `;
+    }
+    // 2e Melkkies (molar) — grote kroon met 4-5 knobbels en kruisgroeven
+    return `
+      <path class="arch-crown-outline" d="M -16,-9 C -17,-15 -10,-17 -2,-16 C 0,-15 2,-16 2,-16 C 10,-17 17,-15 16,-9 C 18,-1 18,7 15,12 C 12,16 5,17 0,16 C -5,17 -12,16 -15,12 C -18,7 -18,-1 -16,-9 Z" />
+      <path class="arch-crown-fissure" d="M -10,0 H 10 M -2,-8 V 8 M 4,-8 V 7 M -10,0 L -13,-6 M -10,0 L -13,6 M 10,0 L 13,-6 M 10,0 L 13,6" />
+      <circle class="arch-crown-cusp" cx="-8" cy="-8" r="2.4" />
+      <circle class="arch-crown-cusp" cx="8" cy="-8" r="2.4" />
+      <circle class="arch-crown-cusp" cx="-8" cy="8" r="2.4" />
+      <circle class="arch-crown-cusp" cx="8" cy="8" r="2.4" />
+    `;
+  }
+
+  function buildSingleToothInspectorSvg(tooth, isErupted, isExpected) {
+    const strokeCol = isErupted ? "var(--primary)" : isExpected ? "var(--accent)" : "#94a3b8";
+    const fillCol = isErupted ? "#ffffff" : isExpected ? "#fffbeb" : "#f8fafc";
+    let anatomicalPaths = "";
+    if (tooth.isMolar) {
+      // Gedetailleerde molaar met 2 wortels in het tandvlees + geprofileerde kroon en kauwvlakgroeven
+      anatomicalPaths = `
+        <path d="M 18 34 C 15 46, 13 54, 17 57 C 20 58, 23 50, 26 40 L 30 40 C 33 50, 36 58, 39 57 C 43 54, 41 46, 38 34 Z" fill="#fef3c7" stroke="${strokeCol}" stroke-width="1.6" />
+        <path d="M 10 20 C 10 11, 18 9, 25 12 C 28 13, 28 13, 31 12 C 38 9, 46 11, 46 20 C 46 29, 43 35, 38 36 L 18 36 C 13 35, 10 29, 10 20 Z" fill="${fillCol}" stroke="${strokeCol}" stroke-width="2.2" />
+        <path d="M 17 21 C 22 25, 34 25, 39 21 M 28 13 V 27 M 21 16 C 23 19, 25 20, 28 20 C 31 20, 33 19, 35 16" stroke="${strokeCol}" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.65" />
+      `;
+    } else if (tooth.toothType === "canine") {
+      // Hoektand met lange conische wortel en spitse cuspid-kroon
+      anatomicalPaths = `
+        <path d="M 21 34 C 22 46, 25 57, 28 58 C 31 57, 34 46, 35 34 Z" fill="#fef3c7" stroke="${strokeCol}" stroke-width="1.6" />
+        <path d="M 15 24 C 14 16, 22 10, 28 7 C 34 10, 42 16, 41 24 C 40 31, 36 35, 28 35 C 20 35, 16 31, 15 24 Z" fill="${fillCol}" stroke="${strokeCol}" stroke-width="2.2" />
+        <path d="M 28 11 V 29 M 21 20 Q 28 15 35 20" stroke="${strokeCol}" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.55" />
+      `;
+    } else {
+      // Snijtand met enkele wortel en beitelvormige kroon met glazuurrand
+      anatomicalPaths = `
+        <path d="M 21 34 C 22 45, 24 55, 28 56 C 32 55, 34 45, 35 34 Z" fill="#fef3c7" stroke="${strokeCol}" stroke-width="1.6" />
+        <path d="M 15 14 C 15 10, 21 9, 28 9 C 35 9, 41 10, 41 14 L 38 32 C 37 35, 33 36, 28 36 C 23 36, 19 35, 18 32 Z" fill="${fillCol}" stroke="${strokeCol}" stroke-width="2.2" />
+        <path d="M 20 14 H 36 M 21 28 Q 28 31 35 28" stroke="${strokeCol}" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.55" />
+      `;
+    }
+
+    return `
+      <svg viewBox="0 0 56 64" class="tooth-detail-svg" aria-hidden="true">
+        <rect x="2" y="2" width="52" height="60" rx="14" fill="var(--surface-soft)" />
+        <path d="M 4 35 Q 28 31 52 35 L 52 50 C 52 57 46 60 40 60 H 16 C 10 60 4 57 4 50 Z" fill="rgba(244, 114, 182, 0.16)" />
+        ${anatomicalPaths}
+      </svg>
+    `;
+  }
+
+  function normalizeToothDateForInput(rawVal) {
+    if (!rawVal || typeof rawVal !== "string") return new Date().toISOString().slice(0, 10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(rawVal)) return rawVal;
+    const m = rawVal.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+    if (m) {
+      return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+    }
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function formatToothDateDisplay(rawVal) {
+    if (!rawVal || typeof rawVal !== "string") return "Afgevinkt";
+    const iso = normalizeToothDateForInput(rawVal);
+    const [yy, mm, dd] = iso.split("-");
+    if (yy && mm && dd) return `${dd}-${mm}-${yy}`;
+    return rawVal;
+  }
+
+  function renderSingleTeethModelInstance(containerEl, titleEl, badgeEl, store, stage, week, childDisplayName) {
+    if (!containerEl) return;
     if (!store.checkedTeeth) store.checkedTeeth = {};
 
     const isSheddingMode = week > 208;
-    if (titleEl) {
-      titleEl.textContent = isSheddingMode
-        ? "🦷 Interactief Wisselgebit-Kaartje (6–12 jaar)"
-        : "🦷 Interactief Tandjes-Kaartje (Melkgebit 20 tandjes)";
-    }
-
     const allTeeth = [...PRIMARY_TEETH_CATALOG.upper, ...PRIMARY_TEETH_CATALOG.lower];
     const checkedCount = allTeeth.filter((t) => Boolean(store.checkedTeeth[t.id])).length;
+
+    if (titleEl) {
+      const forChildSuffix = childDisplayName ? ` van ${childDisplayName}` : "";
+      titleEl.textContent = isSheddingMode
+        ? `🦷 Interactief Wisselgebit-Model${forChildSuffix} (6–12 jaar)`
+        : `🦷 Interactief Gebitsmodel${forChildSuffix} (Boven- & Onderkaak)`;
+    }
+
     if (badgeEl) {
       badgeEl.textContent = isSheddingMode
-        ? `${checkedCount} / 20 afgevinkt`
+        ? `${checkedCount} / 20 gewisseld`
         : `${checkedCount} / 20 doorgekomen`;
     }
 
@@ -5768,86 +5907,320 @@
       return week >= t.minW && week <= t.maxW;
     };
 
-    const renderToothRowHtml = (list) =>
-      list
-        .map((t) => {
-          const isErupted = Boolean(store.checkedTeeth[t.id]);
-          const isExpected = !isErupted && isExpectedInCurrentWeek(t);
-          const ageLabel = isSheddingMode ? t.ageShed : t.ageErupt;
-          return `
-            <button
-              type="button"
-              class="tooth-btn ${t.isMolar ? "is-molar" : ""} ${isErupted ? "is-erupted" : ""} ${
-                isExpected ? "is-expected-now" : ""
-              }"
-              data-tooth-id="${t.id}"
-              title="${escapeHtml(t.name)} (${escapeHtml(ageLabel)})"
-            >
-              <span class="tooth-icon">${isErupted ? "🦷" : "○"}</span>
-              <span class="tooth-code">${escapeHtml(t.short)}</span>
-              <span class="tooth-age">${escapeHtml(ageLabel.replace(" mnd", "m").replace(" jr", "j"))}</span>
-            </button>
-          `;
-        })
-        .join("");
-
     const expectedNowList = allTeeth.filter((t) => isExpectedInCurrentWeek(t));
-    const expectedSummary =
-      expectedNowList.length > 0
-        ? `🌟 <strong>Verwacht rond deze leeftijd (${escapeHtml(stage.shortLabel)}):</strong> ${escapeHtml(
-            expectedNowList[0].name.replace(/ (rechts|links)(boven|onder)/, "")
-          )} (${escapeHtml(isSheddingMode ? expectedNowList[0].ageShed : expectedNowList[0].ageErupt)}).`
-        : isSheddingMode
-          ? `💡 <strong>Tip (6-jaarskiezen):</strong> Rond 5,5–6 jaar breken helemaal achter de laatste melkkiezen 4 nieuwe blijvende kiezen door (zonder dat er eerst een melkkies uitvalt). Zet de borstel daar dwars op!`
-          : week < 22
-            ? `💡 <strong>Goed om te weten:</strong> De eerste twee onderste snijtandjes (S1) komen gemiddeld tussen <strong>6 en 10 maanden</strong> door, maar kwijlen en op handjes sabbelen begint vaak al rond 3–4 maanden.`
-            : `💡 <strong>Compleet melkgebit:</strong> Rond 2,5 tot 3 jaar zijn alle 20 melktandjes en -kiezen doorgekomen. Poets 2× per dag met fluoridetandpasta!`;
+    if (!selectedToothId || !allTeeth.some((t) => t.id === selectedToothId)) {
+      const firstExpected = expectedNowList.find((t) => !store.checkedTeeth[t.id]) || expectedNowList[0];
+      selectedToothId = firstExpected ? firstExpected.id : "l-i1-r";
+    }
+    const activeTooth = allTeeth.find((t) => t.id === selectedToothId) || allTeeth[0];
+    const activeIsErupted = Boolean(store.checkedTeeth[activeTooth.id]);
+    const activeIsExpected = !activeIsErupted && isExpectedInCurrentWeek(activeTooth);
 
-    container.innerHTML = `
-      <div class="teeth-jaw-box">
-        <span class="teeth-jaw-label">👄 Bovenkaak (10 ${isSheddingMode ? "tanden/kiezen" : "melktandjes"})</span>
-        <div class="teeth-arch-row">
-          ${renderToothRowHtml(PRIMARY_TEETH_CATALOG.upper)}
+    const renderArchToothGroup = (t) => {
+      const isErupted = Boolean(store.checkedTeeth[t.id]);
+      const isExpected = !isErupted && isExpectedInCurrentWeek(t);
+      const isSel = t.id === activeTooth.id;
+      const ageLabel = isSheddingMode ? t.ageShed : t.ageErupt;
+      const stateClasses = [
+        "arch-tooth-group",
+        `type-${t.toothType}`,
+        t.isMolar ? "is-molar" : "is-anterior",
+        isErupted ? "is-erupted" : "is-unerupted",
+        isExpected ? "is-expected-now" : "",
+        isSel ? "is-selected" : ""
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      return `
+        <g
+          class="${stateClasses}"
+          transform="translate(${t.x}, ${t.y})"
+          data-tooth-id="${t.id}"
+          role="button"
+          tabindex="0"
+          aria-label="${escapeHtml(t.name)} (${escapeHtml(ageLabel)}) — ${isErupted ? "Afgevinkt" : "Nog niet afgevinkt"}"
+        >
+          <title>${escapeHtml(t.name)} (${escapeHtml(ageLabel)})</title>
+          ${isExpected ? `<circle cx="0" cy="0" r="21.5" class="arch-expected-halo" />` : ""}
+          ${isSel ? `<circle cx="0" cy="0" r="22.5" class="arch-selected-ring" />` : ""}
+          <g transform="rotate(${t.rot})" class="arch-crown-rot">
+            ${buildArchCrownSvgInner(t)}
+          </g>
+          <text x="0" y="3.5" text-anchor="middle" class="arch-tooth-code">${escapeHtml(t.short)}</text>
+          ${
+            isErupted
+              ? `
+                <g transform="translate(11, -11)" class="arch-check-badge">
+                  <circle cx="0" cy="0" r="6.2" class="arch-check-circle" />
+                  <path d="M -2.7 0.2 L -0.7 2.2 L 2.9 -1.8" class="arch-check-tick" />
+                </g>
+              `
+              : isExpected
+                ? `<circle cx="11" cy="-11" r="4.8" class="arch-expected-dot" />`
+                : ""
+          }
+        </g>
+      `;
+    };
+
+    const groupsHtml = TEETH_GROUPS_ORDER.map((grp) => {
+      const groupTeeth = allTeeth.filter((t) => t.groupKey === grp.key);
+      const doneInGroup = groupTeeth.filter((t) => Boolean(store.checkedTeeth[t.id])).length;
+      const isActGrp = activeTooth.groupKey === grp.key;
+      const rangeText = isSheddingMode ? grp.shedRange : grp.eruptRange;
+      return `
+        <button
+          type="button"
+          class="teeth-group-pill ${isActGrp ? "is-active" : ""} ${doneInGroup === groupTeeth.length ? "is-complete" : ""}"
+          data-select-tooth-group="${grp.firstId}"
+        >
+          <span class="teeth-group-code">${escapeHtml(grp.code)}</span>
+          <span class="teeth-group-name">${escapeHtml(grp.label)} <small>(${escapeHtml(rangeText)})</small></span>
+          <span class="teeth-group-count">${doneInGroup}/${groupTeeth.length}</span>
+        </button>
+      `;
+    }).join("");
+
+    const statusBadgeHtml = activeIsErupted
+      ? `<span class="pill-small pill-ok">✓ ${isSheddingMode ? "Gewisseld" : "Doorgekomen"} (${escapeHtml(
+          formatToothDateDisplay(store.checkedTeeth[activeTooth.id])
+        )})</span>`
+      : activeIsExpected
+        ? `<span class="pill-small pill-spotlight">🌟 Nu aan de beurt (${escapeHtml(stage.shortLabel)})</span>`
+        : `<span class="pill-small">○ Nog in het tandvlees</span>`;
+
+    const dateInputVal = activeIsErupted ? normalizeToothDateForInput(store.checkedTeeth[activeTooth.id]) : "";
+
+    containerEl.innerHTML = `
+      <div class="teeth-model-layout">
+        <!-- LINKS / BOVEN: Anatomisch Kaakboog-Model (Bovenkaak boven, Onderkaak onder) -->
+        <div class="teeth-arch-card">
+          <div class="teeth-arch-svg-wrap">
+            <svg viewBox="0 0 380 430" class="dental-arch-svg" role="group" aria-label="Anatomisch model van boven- en ondergebit">
+              <defs>
+                <radialGradient id="${containerEl.id || "arch"}-palateGlow" cx="50%" cy="46%" r="50%">
+                  <stop offset="0%" stop-color="rgba(244, 114, 182, 0.08)" />
+                  <stop offset="100%" stop-color="rgba(244, 114, 182, 0.22)" />
+                </radialGradient>
+              </defs>
+
+              <!-- Bovenkaak gehemelte & tandvleesboog (Maxilla) -->
+              <path
+                d="M 68 168 C 68 58, 122 24, 190 24 C 258 24, 312 58, 312 168 C 282 184, 98 184, 68 168 Z"
+                fill="url(#${containerEl.id || "arch"}-palateGlow)"
+              />
+              <path
+                d="M 70 164 C 70 62, 123 30, 190 30 C 257 30, 310 62, 310 164"
+                class="dental-gum-arch"
+              />
+              <!-- Gehemelte-plooien (Rugae palatinae) voor anatomisch detail -->
+              <path d="M 156 88 Q 190 78 224 88 M 148 104 Q 190 95 232 104 M 155 120 Q 190 112 225 120" class="dental-palate-rugae" />
+
+              <!-- Onderkaak mondbodem/tong & tandvleesboog (Mandibula) -->
+              <path
+                d="M 72 262 C 72 368, 124 404, 190 404 C 256 404, 308 368, 308 262 C 278 246, 102 246, 72 262 Z"
+                fill="url(#${containerEl.id || "arch"}-palateGlow)"
+              />
+              <path
+                d="M 142 330 C 142 276, 238 276, 238 330"
+                class="dental-tongue-contour"
+              />
+              <path
+                d="M 74 266 C 74 366, 125 398, 190 398 C 255 398, 306 366, 306 266"
+                class="dental-gum-arch"
+              />
+
+              <!-- Symmetrie-assen & Rechts/Links oriëntatie -->
+              <line x1="190" y1="22" x2="190" y2="408" class="dental-midline" />
+              <line x1="36" y1="215" x2="344" y2="215" class="dental-midline" />
+
+              <text x="190" y="15" text-anchor="middle" class="dental-jaw-heading">👄 BOVENGEBIT (BOVENKAAK)</text>
+              <text x="190" y="424" text-anchor="middle" class="dental-jaw-heading">👅 ONDERGEBIT (ONDERKAAK)</text>
+
+              <text x="64" y="210" text-anchor="middle" class="dental-side-label">RECHTS</text>
+              <text x="64" y="224" text-anchor="middle" class="dental-side-sub">(kind)</text>
+              <text x="316" y="210" text-anchor="middle" class="dental-side-label">LINKS</text>
+              <text x="316" y="224" text-anchor="middle" class="dental-side-sub">(kind)</text>
+
+              <!-- Centrale voortgangsbadge midden tussen boven- en onderkaak -->
+              <g transform="translate(190, 215)">
+                <rect x="-64" y="-21" width="128" height="42" rx="21" class="dental-center-pill" />
+                <text x="0" y="-3" text-anchor="middle" class="dental-center-count">🦷 ${checkedCount} / 20 ${
+                  isSheddingMode ? "gewisseld" : "door"
+                }</text>
+                <text x="0" y="12" text-anchor="middle" class="dental-center-sub">Tik op een tand in de boog</text>
+              </g>
+
+              <!-- 10 Boventanden langs de bovenste hoefijzerboog -->
+              ${PRIMARY_TEETH_CATALOG.upper.map(renderArchToothGroup).join("")}
+
+              <!-- 10 Ondertanden langs de onderste hoefijzerboog -->
+              ${PRIMARY_TEETH_CATALOG.lower.map(renderArchToothGroup).join("")}
+            </svg>
+          </div>
+
+          <div class="teeth-legend-row">
+            <span><span class="teeth-legend-dot is-erupted"></span>${isSheddingMode ? "Gewisseld" : "Doorgekomen"} (${checkedCount}/20)</span>
+            <span><span class="teeth-legend-dot is-expected"></span>Nu verwacht (${escapeHtml(stage.shortLabel)})</span>
+            <span><span class="teeth-legend-dot"></span>Nog in tandvlees</span>
+          </div>
         </div>
-      </div>
-      <div class="teeth-jaw-box">
-        <span class="teeth-jaw-label">👅 Onderkaak (10 ${isSheddingMode ? "tanden/kiezen" : "melktandjes"})</span>
-        <div class="teeth-arch-row">
-          ${renderToothRowHtml(PRIMARY_TEETH_CATALOG.lower)}
+
+        <!-- RECHTS / ONDER: Geselecteerde Tand Detail-Inspector & Volgorde-overzicht -->
+        <div class="teeth-inspector-panel">
+          <div class="teeth-detail-card ${activeIsErupted ? "is-erupted" : ""} ${activeIsExpected ? "is-expected" : ""}">
+            <div class="teeth-detail-top">
+              ${buildSingleToothInspectorSvg(activeTooth, activeIsErupted, activeIsExpected)}
+              <div class="teeth-detail-title-wrap">
+                <div class="teeth-detail-badges">
+                  <span class="pill-small">${escapeHtml(activeTooth.side)} • Code ${escapeHtml(activeTooth.short)}</span>
+                  ${statusBadgeHtml}
+                </div>
+                <h4 class="teeth-detail-name">${escapeHtml(activeTooth.name)}</h4>
+                <div class="teeth-detail-ages">
+                  <span>🌱 <strong>Doorkomen:</strong> ${escapeHtml(activeTooth.ageErupt)}</span>
+                  <span>•</span>
+                  <span>🧚 <strong>Wisselen:</strong> ${escapeHtml(activeTooth.ageShed)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="teeth-detail-actions">
+              <button
+                type="button"
+                class="${activeIsErupted ? "btn-secondary" : "btn-primary"} btn-small teeth-toggle-main-btn"
+                data-toggle-selected-tooth="${activeTooth.id}"
+              >
+                ${
+                  activeIsErupted
+                    ? `✓ ${isSheddingMode ? "Gewisseld" : "Doorgekomen"} — Tik om uit te vinken`
+                    : `🦷 ${isSheddingMode ? "Markeer als gewisseld" : "Tandje is doorgekomen! (Afvinken)"}`
+                }
+              </button>
+              ${
+                activeIsErupted
+                  ? `
+                    <label class="teeth-date-label">
+                      <span>📅 Datum:</span>
+                      <input
+                        type="date"
+                        class="ms-date-input"
+                        data-tooth-date-input="${activeTooth.id}"
+                        value="${escapeHtml(dateInputVal)}"
+                        aria-label="Doorkomstdatum van ${escapeHtml(activeTooth.name)}"
+                      />
+                    </label>
+                  `
+                  : ""
+              }
+            </div>
+
+            <p class="teeth-care-tip">
+              💡 ${escapeHtml(getToothCareTip(activeTooth, isSheddingMode))}
+            </p>
+          </div>
+
+          <div class="teeth-groups-box">
+            <span class="teeth-groups-heading">📋 Gemiddelde volgorde van doorkomen (tik om te bekijken):</span>
+            <div class="teeth-groups-grid">
+              ${groupsHtml}
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="teeth-legend-row">
-        <span><span class="teeth-legend-dot is-erupted"></span>Afgevinkt (${checkedCount}/20)</span>
-        <span><span class="teeth-legend-dot is-expected"></span>Nu aan de beurt in ${escapeHtml(stage.shortLabel)}</span>
-        <span>Tik op een tandje om hem aan of uit te vinken</span>
-      </div>
-      <div class="teeth-selected-info">
-        ${lastClickedToothInfo || expectedSummary}
       </div>
     `;
 
-    container.querySelectorAll("[data-tooth-id]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const tid = btn.dataset.toothId;
-        const toothObj = allTeeth.find((t) => t.id === tid);
-        if (!toothObj) return;
-
-        const todayStr = new Date().toLocaleDateString("nl-NL");
+    const toggleToothById = (tid, shouldToggleStatus) => {
+      const toothObj = allTeeth.find((t) => t.id === tid);
+      if (!toothObj) return;
+      selectedToothId = tid;
+      if (shouldToggleStatus) {
         if (store.checkedTeeth[tid]) {
           delete store.checkedTeeth[tid];
-          lastClickedToothInfo = `○ <strong>${escapeHtml(toothObj.name)}</strong> weer uitgevinkt (gemiddeld: ${escapeHtml(
-            isSheddingMode ? toothObj.ageShed : toothObj.ageErupt
-          )}).`;
         } else {
-          store.checkedTeeth[tid] = todayStr;
-          lastClickedToothInfo = `🦷 <strong>Hoera! ${escapeHtml(toothObj.name)}</strong> afgevinkt op ${escapeHtml(
-            todayStr
-          )} (gemiddeld: ${escapeHtml(isSheddingMode ? `wisselt ${toothObj.ageShed}` : `komt door met ${toothObj.ageErupt}`)}).`;
+          store.checkedTeeth[tid] = new Date().toISOString().slice(0, 10);
         }
         saveState();
-        renderTeethTracker(stage, week);
+      }
+      renderTeethTracker(stage, week);
+      renderSosAndCb(stage, week);
+    };
+
+    // Klik of Enter/Spatie op een tand in het anatomische kaakboog-model: selecteer én vink direct aan/uit
+    containerEl.querySelectorAll("[data-tooth-id]").forEach((node) => {
+      node.addEventListener("click", () => {
+        toggleToothById(node.dataset.toothId, true);
+      });
+      node.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter" || ev.key === " ") {
+          ev.preventDefault();
+          toggleToothById(node.dataset.toothId, true);
+        }
       });
     });
+
+    // Actieknop in de detailkaart
+    containerEl.querySelectorAll("[data-toggle-selected-tooth]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        toggleToothById(btn.dataset.toggleSelectedTooth, true);
+      });
+    });
+
+    // Datum aanpassen wanneer een tandje is afgevinkt
+    containerEl.querySelectorAll("[data-tooth-date-input]").forEach((inp) => {
+      inp.addEventListener("change", () => {
+        const tid = inp.dataset.toothDateInput;
+        if (tid && inp.value) {
+          store.checkedTeeth[tid] = inp.value;
+          saveState();
+          renderTeethTracker(stage, week);
+        }
+      });
+    });
+
+    // Klik op een van de 5 tandgroepen om die tandsoort te bekijken zonder hem direct aan te vinken
+    containerEl.querySelectorAll("[data-select-tooth-group]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        toggleToothById(btn.dataset.selectToothGroup, false);
+      });
+    });
+  }
+
+  function renderTeethTracker(stage, week) {
+    const activeStage = stage || getStageForWeek(state.currentWeek);
+    const activeWeek = week || state.currentWeek;
+    const activeChild = getActiveChild();
+    const activeStore = getActiveStore();
+
+    // 1. Render het gebitsmodel op de '🌙 Slaap & Groei' tab (onder Mijlpalen)
+    renderSingleTeethModelInstance(
+      document.getElementById("teethTrackerContainer"),
+      document.getElementById("teethTrackerSummaryTitle") || document.getElementById("teethTrackerTitle"),
+      document.getElementById("teethTrackerBadge"),
+      activeStore,
+      activeStage,
+      activeWeek,
+      activeChild ? activeChild.name : state.profile.name || ""
+    );
+
+    // 2. Render hetzelfde gebitsmodel óók in het Kindprofiel-dialoogvenster (voor het daar geselecteerde kind!)
+    const editingId = document.getElementById("editingChildIdInput")?.value || "";
+    const editingChild = state.children.find((c) => c.id === editingId) || activeChild;
+    const profileStore = editingChild || activeStore;
+    const profileCalc = editingChild ? calculateAgeForProfile(editingChild) : null;
+    const profileWeek = profileCalc ? profileCalc.activeTargetWeek : activeWeek;
+    const profileStage = getStageForWeek(profileWeek);
+
+    renderSingleTeethModelInstance(
+      document.getElementById("profileTeethTrackerContainer"),
+      document.getElementById("profileTeethSummaryTitle"),
+      document.getElementById("profileTeethBadge"),
+      profileStore,
+      profileStage,
+      profileWeek,
+      editingChild ? editingChild.name : state.profile.name || ""
+    );
   }
 
 
@@ -6123,6 +6496,7 @@
     }
     renderProfileModalChildrenList(ch ? ch.id : "");
     updateProfilePreview();
+    renderTeethTracker();
   }
 
   function updateProfilePreview() {

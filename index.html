@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=46" />
+  <link rel="stylesheet" href="styles.css?v=47" />
 </head>
 <body>
   <a href="#mainContent" class="skip-link">Direct naar inhoud</a>
@@ -508,6 +508,15 @@
         </div>
         <div class="checklist-grid" id="milestonesChecklist"></div>
       </article>
+
+      <!-- Feature 6: Interactief Anatomisch Gebitsmodel (Boven- & Onderkaak) -->
+      <details class="minimal-details teeth-tracker-details" id="teethTrackerDetails" open>
+        <summary>
+          <span class="summary-title" id="teethTrackerSummaryTitle">🦷 Interactief Gebitsmodel (Melkgebit &amp; Wisselgebit)</span>
+          <span class="summary-badge" id="teethTrackerBadge">0 / 20 doorgekomen</span>
+        </summary>
+        <div class="teeth-tracker-body" id="teethTrackerContainer"></div>
+      </details>
     </section>
 
     <!-- =================================================================== -->
@@ -688,15 +697,6 @@
         </div>
       </details>
 
-      <!-- Feature 6: Interactief Tandjes- & Wisselgebit-Kaartje -->
-      <details class="minimal-details teeth-tracker-details" id="teethTrackerDetails">
-        <summary>
-          <span class="summary-title" id="teethTrackerSummaryTitle">🦷 Interactief Tandjes- &amp; Wisselgebit-kaartje</span>
-          <span class="summary-badge" id="teethTrackerBadge">0 / 20 door</span>
-        </summary>
-        <div class="teeth-tracker-body" id="teethTrackerContainer"></div>
-      </details>
-
       <!-- SOS Eerste Hulp bij Lastige Momenten (afgestemd op huidige leeftijd) -->
       <article class="minimal-card">
         <div class="card-head-between">
@@ -826,6 +826,15 @@
         <input type="checkbox" id="useAdjustedAgeCheckbox" checked />
         <span>Vroeggeboorte (&lt;37 weken): toon ontwikkeling op basis van gecorrigeerde leeftijd</span>
       </label>
+
+      <!-- Interactief Gebitsmodel direct in het Kindprofiel -->
+      <details class="minimal-details profile-teeth-details" id="profileTeethDetails">
+        <summary>
+          <span class="summary-title" id="profileTeethSummaryTitle">🦷 Gebit &amp; Tandjes bijhouden</span>
+          <span class="summary-badge" id="profileTeethBadge">0 / 20 doorgekomen</span>
+        </summary>
+        <div class="teeth-tracker-body" id="profileTeethTrackerContainer"></div>
+      </details>
 
       <div class="preview-banner" id="profilePreviewBox">
         Kies een geboortedatum om de huidige week te berekenen.
@@ -1077,7 +1086,7 @@
     </div>
   </dialog>
 
-  <script src="data.js?v=46"></script>
-  <script src="app.js?v=46"></script>
+  <script src="data.js?v=47"></script>
+  <script src="app.js?v=47"></script>
 </body>
 </html>
