@@ -4488,6 +4488,7 @@
         if (textInput) textInput.value = "";
         if (emailInput) emailInput.value = "";
         if (feedbackStatusMsg) feedbackStatusMsg.textContent = "";
+        renderFeedbackAdminList();
         feedbackDialog.showModal();
         if (textInput) textInput.focus();
       });
@@ -4498,6 +4499,118 @@
     }
     if (cancelFeedbackBtn && feedbackDialog) {
       cancelFeedbackBtn.addEventListener("click", () => feedbackDialog.close());
+    }
+
+    function renderFeedbackAdminList() {
+      const listEl = document.getElementById("feedbackEntriesList");
+      const countBadge = document.getElementById("feedbackCountBadge");
+      if (!listEl) return;
+
+      let entries = [];
+      try {
+        const raw = localStorage.getItem("samen_groeien_feedback_v1");
+        if (raw) entries = JSON.parse(raw);
+      } catch (e) {
+        entries = [];
+      }
+
+      if (countBadge) countBadge.textContent = String(entries.length);
+
+      if (entries.length === 0) {
+        listEl.innerHTML = `<p class="subtle-hint" style="margin: 0; padding: 8px 0;">Nog geen feedback opgeslagen op dit apparaat.</p>`;
+        return;
+      }
+
+      const typeBadges = {
+        compliment: "🌟 Compliment",
+        suggestion: "💡 Suggestie",
+        bug: "🐛 Fout / Probleem"
+      };
+
+      listEl.innerHTML = [...entries]
+        .reverse()
+        .map((fb) => {
+          const dt = fb.timestamp
+            ? new Date(fb.timestamp).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" })
+            : "";
+          const emailLine = fb.email
+            ? `<div style="color: var(--primary); margin-top: 2px;">📧 ${escapeHtml(fb.email)}</div>`
+            : "";
+          return `
+            <div class="feedback-entry-card">
+              <div class="feedback-entry-head">
+                <span class="pill-small ${fb.type === "compliment" ? "pill-ok" : fb.type === "bug" ? "pill-wait" : ""}">
+                  ${typeBadges[fb.type] || fb.type}
+                </span>
+                <span class="subtle-hint">${escapeHtml(fb.section || "algemeen")} • W${fb.week || "?"} • ${dt}</span>
+              </div>
+              <div class="feedback-entry-text">${escapeHtml(fb.message || "")}</div>
+              ${emailLine}
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    const toggleAdminBtn = document.getElementById("toggleFeedbackAdminBtn");
+    const adminPanel = document.getElementById("feedbackAdminPanel");
+    if (toggleAdminBtn && adminPanel) {
+      toggleAdminBtn.addEventListener("click", () => {
+        const isHidden = adminPanel.classList.toggle("hidden");
+        toggleAdminBtn.classList.toggle("active", !isHidden);
+        if (!isHidden) {
+          renderFeedbackAdminList();
+        }
+      });
+    }
+
+    const exportFbBtn = document.getElementById("exportFeedbackBtn");
+    if (exportFbBtn) {
+      exportFbBtn.addEventListener("click", () => {
+        const raw = localStorage.getItem("samen_groeien_feedback_v1") || "[]";
+        const blob = new Blob([raw], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `samen_groeien_feedback_${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    const copyFbBtn = document.getElementById("copyFeedbackBtn");
+    if (copyFbBtn) {
+      copyFbBtn.addEventListener("click", () => {
+        let entries = [];
+        try {
+          const raw = localStorage.getItem("samen_groeien_feedback_v1");
+          if (raw) entries = JSON.parse(raw);
+        } catch (e) {
+          entries = [];
+        }
+        if (entries.length === 0) return;
+        const text = entries
+          .map((e, idx) => `#${idx + 1} [${(e.type || "").toUpperCase()}] (${e.section || "algemeen"} • W${e.week || "?"} • ${e.timestamp || ""})\nBericht: ${e.message}${e.email ? "\nE-mail: " + e.email : ""}`)
+          .join("\n\n---\n\n");
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(text);
+        }
+        const orig = copyFbBtn.textContent;
+        copyFbBtn.textContent = "✓ Gekopieerd!";
+        setTimeout(() => {
+          copyFbBtn.textContent = orig;
+        }, 1500);
+      });
+    }
+
+    const clearFbBtn = document.getElementById("clearFeedbackBtn");
+    if (clearFbBtn) {
+      clearFbBtn.addEventListener("click", () => {
+        if (confirm("Weet je zeker dat je alle opgeslagen feedback op dit apparaat wilt wissen?")) {
+          localStorage.removeItem("samen_groeien_feedback_v1");
+          renderFeedbackAdminList();
+        }
+      });
     }
 
     if (feedbackForm && feedbackDialog) {
@@ -4529,6 +4642,8 @@
         } catch (err) {
           // ignore error
         }
+
+        renderFeedbackAdminList();
 
         if (feedbackStatusMsg) {
           feedbackStatusMsg.textContent = "✓ Hartelijk dank voor je waardevolle feedback! We nemen je ervaring zorgvuldig mee.";

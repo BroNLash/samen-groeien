@@ -3787,3 +3787,33 @@ p, li {
   border-color: var(--primary);
 }
 
+/* Feedback-beheerderspaneel styling */
+.feedback-entry-card {
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: var(--fs-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.feedback-entry-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.feedback-entry-text {
+  color: var(--text);
+  font-size: var(--fs-sm);
+  margin-top: 2px;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+
