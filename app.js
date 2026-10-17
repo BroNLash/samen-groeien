@@ -4487,8 +4487,10 @@
         const emailInput = document.getElementById("feedbackEmailInput");
         if (textInput) textInput.value = "";
         if (emailInput) emailInput.value = "";
-        if (feedbackStatusMsg) feedbackStatusMsg.textContent = "";
-        renderFeedbackAdminList();
+        if (feedbackStatusMsg) {
+          feedbackStatusMsg.textContent = "";
+          feedbackStatusMsg.style.color = "";
+        }
         feedbackDialog.showModal();
         if (textInput) textInput.focus();
       });
@@ -4501,158 +4503,134 @@
       cancelFeedbackBtn.addEventListener("click", () => feedbackDialog.close());
     }
 
-    function renderFeedbackAdminList() {
-      const listEl = document.getElementById("feedbackEntriesList");
-      const countBadge = document.getElementById("feedbackCountBadge");
-      if (!listEl) return;
-
-      let entries = [];
+    // Beheerdersfuncties voor app-eigenaar (beschikbaar via browser-console)
+    window.viewFeedback = () => {
       try {
         const raw = localStorage.getItem("samen_groeien_feedback_v1");
-        if (raw) entries = JSON.parse(raw);
+        const entries = raw ? JSON.parse(raw) : [];
+        console.table(entries);
+        return entries;
       } catch (e) {
-        entries = [];
+        return [];
       }
+    };
 
-      if (countBadge) countBadge.textContent = String(entries.length);
-
-      if (entries.length === 0) {
-        listEl.innerHTML = `<p class="subtle-hint" style="margin: 0; padding: 8px 0;">Nog geen feedback opgeslagen op dit apparaat.</p>`;
-        return;
-      }
-
-      const typeBadges = {
-        compliment: "🌟 Compliment",
-        suggestion: "💡 Suggestie",
-        bug: "🐛 Fout / Probleem"
-      };
-
-      listEl.innerHTML = [...entries]
-        .reverse()
-        .map((fb) => {
-          const dt = fb.timestamp
-            ? new Date(fb.timestamp).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" })
-            : "";
-          const emailLine = fb.email
-            ? `<div style="color: var(--primary); margin-top: 2px;">📧 ${escapeHtml(fb.email)}</div>`
-            : "";
-          return `
-            <div class="feedback-entry-card">
-              <div class="feedback-entry-head">
-                <span class="pill-small ${fb.type === "compliment" ? "pill-ok" : fb.type === "bug" ? "pill-wait" : ""}">
-                  ${typeBadges[fb.type] || fb.type}
-                </span>
-                <span class="subtle-hint">${escapeHtml(fb.section || "algemeen")} • W${fb.week || "?"} • ${dt}</span>
-              </div>
-              <div class="feedback-entry-text">${escapeHtml(fb.message || "")}</div>
-              ${emailLine}
-            </div>
-          `;
-        })
-        .join("");
-    }
-
-    const toggleAdminBtn = document.getElementById("toggleFeedbackAdminBtn");
-    const adminPanel = document.getElementById("feedbackAdminPanel");
-    if (toggleAdminBtn && adminPanel) {
-      toggleAdminBtn.addEventListener("click", () => {
-        const isHidden = adminPanel.classList.toggle("hidden");
-        toggleAdminBtn.classList.toggle("active", !isHidden);
-        if (!isHidden) {
-          renderFeedbackAdminList();
-        }
-      });
-    }
-
-    const exportFbBtn = document.getElementById("exportFeedbackBtn");
-    if (exportFbBtn) {
-      exportFbBtn.addEventListener("click", () => {
-        const raw = localStorage.getItem("samen_groeien_feedback_v1") || "[]";
-        const blob = new Blob([raw], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `samen_groeien_feedback_${new Date().toISOString().slice(0, 10)}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-      });
-    }
-
-    const copyFbBtn = document.getElementById("copyFeedbackBtn");
-    if (copyFbBtn) {
-      copyFbBtn.addEventListener("click", () => {
-        let entries = [];
-        try {
-          const raw = localStorage.getItem("samen_groeien_feedback_v1");
-          if (raw) entries = JSON.parse(raw);
-        } catch (e) {
-          entries = [];
-        }
-        if (entries.length === 0) return;
-        const text = entries
-          .map((e, idx) => `#${idx + 1} [${(e.type || "").toUpperCase()}] (${e.section || "algemeen"} • W${e.week || "?"} • ${e.timestamp || ""})\nBericht: ${e.message}${e.email ? "\nE-mail: " + e.email : ""}`)
-          .join("\n\n---\n\n");
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(text);
-        }
-        const orig = copyFbBtn.textContent;
-        copyFbBtn.textContent = "✓ Gekopieerd!";
-        setTimeout(() => {
-          copyFbBtn.textContent = orig;
-        }, 1500);
-      });
-    }
-
-    const clearFbBtn = document.getElementById("clearFeedbackBtn");
-    if (clearFbBtn) {
-      clearFbBtn.addEventListener("click", () => {
-        if (confirm("Weet je zeker dat je alle opgeslagen feedback op dit apparaat wilt wissen?")) {
-          localStorage.removeItem("samen_groeien_feedback_v1");
-          renderFeedbackAdminList();
-        }
-      });
-    }
+    window.exportFeedback = () => {
+      const raw = localStorage.getItem("samen_groeien_feedback_v1") || "[]";
+      const blob = new Blob([raw], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `samen_groeien_feedback_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
 
     if (feedbackForm && feedbackDialog) {
-      feedbackForm.addEventListener("submit", (e) => {
+      feedbackForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const textInput = document.getElementById("feedbackTextInput");
         const sectionSelect = document.getElementById("feedbackSectionSelect");
         const emailInput = document.getElementById("feedbackEmailInput");
+        const submitBtn = document.getElementById("submitFeedbackBtn");
 
         const msg = textInput ? textInput.value.trim() : "";
         if (!msg) return;
 
+        const emailVal = emailInput ? emailInput.value.trim() : "";
+        const sectionVal = sectionSelect ? sectionSelect.value : "algemeen";
+        const child = typeof getActiveChild === "function" ? getActiveChild() : null;
+        const childName = child && child.name ? child.name : "";
+        const curStage = typeof getStageForWeek === "function" ? getStageForWeek(state.currentWeek) : null;
+        const stageName = curStage ? curStage.title : `Week ${state.currentWeek}`;
+
+        const typeLabels = {
+          compliment: "🌟 Compliment",
+          suggestion: "💡 Verbetersuggestie",
+          bug: "🐛 Fout / Probleem"
+        };
+        const typeLabel = typeLabels[activeFeedbackType] || activeFeedbackType;
+
         const entry = {
           id: "fb-" + Date.now(),
           type: activeFeedbackType,
-          section: sectionSelect ? sectionSelect.value : "algemeen",
+          section: sectionVal,
           message: msg,
-          email: emailInput ? emailInput.value.trim() : "",
+          email: emailVal,
           timestamp: new Date().toISOString(),
           week: state.currentWeek,
-          childName: getActiveChild() ? getActiveChild().name : ""
+          stage: stageName,
+          childName: childName
         };
 
+        // Altijd ook lokaal opslaan als veilige offline back-up
         try {
           const existingRaw = localStorage.getItem("samen_groeien_feedback_v1");
           const existingList = existingRaw ? JSON.parse(existingRaw) : [];
           existingList.push(entry);
           localStorage.setItem("samen_groeien_feedback_v1", JSON.stringify(existingList));
         } catch (err) {
-          // ignore error
+          // ignore localStorage error
         }
 
-        renderFeedbackAdminList();
-
+        // Knop op verzenden zetten
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Versturen...";
+        }
         if (feedbackStatusMsg) {
-          feedbackStatusMsg.textContent = "✓ Hartelijk dank voor je waardevolle feedback! We nemen je ervaring zorgvuldig mee.";
+          feedbackStatusMsg.textContent = "Even geduld, je feedback wordt verstuurd...";
+          feedbackStatusMsg.style.color = "var(--text-muted)";
         }
 
-        setTimeout(() => {
-          if (feedbackDialog.open) feedbackDialog.close();
-          if (feedbackStatusMsg) feedbackStatusMsg.textContent = "";
-        }, 1600);
+        // FormSubmit AJAX naar brendan@bbold.app (Optie A)
+        const payload = {
+          naam: childName ? `Ouder van ${childName}` : "Ouder (Samen Groeien)",
+          email: emailVal || "anoniem@bbold.app",
+          _replyto: emailVal || "brendan@bbold.app",
+          _subject: `Samen Groeien Feedback [${typeLabel}] - ${sectionVal}`,
+          type_feedback: typeLabel,
+          onderdeel: sectionVal,
+          ontwikkelingsfase: `Week ${state.currentWeek} • ${stageName}`,
+          bericht: msg,
+          _captcha: "false"
+        };
+
+        try {
+          await fetch("https://formsubmit.co/ajax/brendan@bbold.app", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (feedbackStatusMsg) {
+            feedbackStatusMsg.textContent = "✓ Hartelijk dank voor je waardevolle feedback! We nemen je ervaring zorgvuldig mee.";
+            feedbackStatusMsg.style.color = "var(--primary)";
+          }
+        } catch (fetchErr) {
+          // Offline fallback
+          if (feedbackStatusMsg) {
+            feedbackStatusMsg.textContent = "✓ Opgeslagen! Zodra er verbinding is wordt het verwerkt. Hartelijk dank!";
+            feedbackStatusMsg.style.color = "var(--primary)";
+          }
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "✓ Verstuur feedback";
+          }
+          setTimeout(() => {
+            if (feedbackDialog.open) feedbackDialog.close();
+            if (feedbackStatusMsg) {
+              feedbackStatusMsg.textContent = "";
+              feedbackStatusMsg.style.color = "";
+            }
+            if (textInput) textInput.value = "";
+            if (emailInput) emailInput.value = "";
+          }, 1600);
+        }
       });
     }
   }

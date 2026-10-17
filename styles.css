@@ -171,7 +171,6 @@ p, li {
 }
 
 .brand-logo {
-  font-size: 1.45rem;
   width: 36px;
   height: 36px;
   border-radius: var(--radius-sm);
@@ -179,6 +178,13 @@ p, li {
   display: grid;
   place-items: center;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(43, 122, 105, 0.08);
+}
+
+.brand-logo-svg {
+  width: 24px;
+  height: 24px;
+  display: block;
 }
 
 .brand-title {
@@ -3814,6 +3820,100 @@ p, li {
   margin-top: 2px;
   word-break: break-word;
   line-height: 1.4;
+}
+
+/* ==========================================================================
+   APP FOOTER — Rustige feedbacksectie & subtiele colofon onderaan de pagina
+   ========================================================================== */
+.app-footer {
+  margin-top: 24px;
+  padding-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.footer-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.footer-card:hover {
+  border-color: var(--primary);
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.footer-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--primary-soft);
+  color: var(--primary);
+  display: grid;
+  place-items: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.footer-text {
+  min-width: 0;
+}
+
+.footer-title {
+  margin: 0;
+  font-size: var(--fs-card-title);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.footer-desc {
+  margin: 3px 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.footer-feedback-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 9px 16px;
+  font-weight: 600;
+}
+
+.footer-subtext {
+  text-align: center;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin: 0;
+  opacity: 0.8;
+}
+
+@media (max-width: 600px) {
+  .footer-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .footer-feedback-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 
