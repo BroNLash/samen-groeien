@@ -1573,6 +1573,39 @@ p, li {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  scroll-margin-top: calc(90px + 16px);
+}
+
+/* Sectiekop-kaarten bovenaan tab-panelen */
+.section-header-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 13px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Subtiele visuele highlight / focus indicatie bij tab navigatie */
+@keyframes tabArrivalGlow {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent);
+    border-color: var(--primary);
+  }
+  35% {
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--primary) 24%, transparent);
+    border-color: var(--primary);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    border-color: var(--border);
+  }
+}
+
+.tab-arrival-highlight {
+  animation: tabArrivalGlow 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
 .two-col-grid {

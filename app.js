@@ -1450,6 +1450,18 @@
     if (bestFoodsStagePillEl) bestFoodsStagePillEl.textContent = stage.shortLabel;
     if (recipesStagePillEl) recipesStagePillEl.textContent = stage.shortLabel;
 
+    const foodHeaderStagePillEl = document.getElementById("foodHeaderStagePill");
+    const foodHeaderSubtitleEl = document.getElementById("foodHeaderSubtitle");
+    if (foodHeaderStagePillEl) foodHeaderStagePillEl.textContent = stage.shortLabel;
+    if (foodHeaderSubtitleEl) {
+      foodHeaderSubtitleEl.textContent =
+        week <= 16
+          ? "Uitsluitend melkvoeding op verzoek en dagelijks 10 mcg vitamine D (0–3 maanden)."
+          : week <= 23
+            ? "Start van de eerste gladde oefenhapjes (4–5 maanden) naast borst- of flesmelk."
+            : `Voedingsadviezen, veilige serveervorm, dagritme en gezonde maaltijden (${stage.shortLabel}).`;
+    }
+
     const pureeKeyBarEl = document.getElementById("pureeKeyMetricBar");
     if (pureeKeyBarEl) {
       pureeKeyBarEl.innerHTML = `🍼 <strong>Richtlijn ${escapeHtml(stage.shortLabel)}:</strong> ${boldNumbersInEscapedHtml(
@@ -3354,7 +3366,18 @@
     renderAll(true);
   }
 
+  function getStickyNavOffset(extraPadding = 18) {
+    const dock = document.getElementById("timelineDock");
+    if (!dock) return 80 + extraPadding;
+    if (!dock.classList.contains("is-compact")) {
+      dock.classList.add("is-compact");
+    }
+    const compactHeight = Math.ceil(dock.getBoundingClientRect().height);
+    return Math.max(compactHeight, 70) + extraPadding;
+  }
+
   function setView(view, autoScroll = false) {
+    const isSameView = state.activeView === view;
     state.activeView = view;
     document.querySelectorAll(".nav-tab").forEach((t) => {
       const isAct = t.dataset.view === view;
@@ -3369,21 +3392,44 @@
     });
     saveState();
 
-    if (autoScroll && activePanel) {
-      requestAnimationFrame(() => {
-        const stickyBar = document.querySelector(".sticky-phase-nav");
-        const stickyHeight = stickyBar ? stickyBar.getBoundingClientRect().height : 54;
-        const panelRect = activePanel.getBoundingClientRect();
-        const currentY = window.scrollY || window.pageYOffset || 0;
-        const targetY = Math.max(0, panelRect.top + currentY - stickyHeight - 12);
+    if (isSameView && autoScroll) {
+      // Als de ouder al op dit tabblad staat en er nogmaals op tikt: vloeiend terug naar boven scrollen (native app best practice)
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
 
-        // Vloeiend naar het actieve paneel scrollen als het nog niet direct in beeld is
-        if (Math.abs(currentY - targetY) > 35) {
-          window.scrollTo({
-            top: targetY,
-            behavior: "smooth"
-          });
-        }
+    if (autoScroll && activePanel) {
+      // Zet de sticky dock direct in compacte stand zodat het layout-model stabiel is en niet verspringt tijdens het scrollen
+      const dock = document.getElementById("timelineDock");
+      if (dock && !dock.classList.contains("is-compact")) {
+        dock.classList.add("is-compact");
+      }
+
+      // Wacht twee animatieframes zodat de browser de DOM-layout na het zichtbaar maken volledig heeft doorberekend
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const offset = getStickyNavOffset(18);
+          const panelRect = activePanel.getBoundingClientRect();
+          const currentY = window.scrollY || window.pageYOffset || 0;
+          const targetY = Math.max(0, Math.round(panelRect.top + currentY - offset));
+
+          // Vloeiend naar het actieve paneel scrollen als er een waarneembare verschuiving is (> 3px)
+          if (Math.abs(currentY - targetY) > 3) {
+            window.scrollTo({
+              top: targetY,
+              behavior: "smooth"
+            });
+          }
+
+          // Subtiele highlight op de bovenste kaart van het geopende paneel voor directe visuele herkenning
+          const topCard = activePanel.querySelector(".section-header-card, .search-header-card, .games-header-card, .minimal-card, article");
+          if (topCard) {
+            topCard.classList.remove("tab-arrival-highlight");
+            void topCard.offsetWidth; // trigger reflow
+            topCard.classList.add("tab-arrival-highlight");
+            setTimeout(() => topCard.classList.remove("tab-arrival-highlight"), 1200);
+          }
+        });
       });
     }
   }
@@ -3532,11 +3578,10 @@
         if (wasExpanded) {
           const cardEl = document.getElementById("stageRecipesCard");
           if (cardEl) {
-            const stickyBar = document.querySelector(".sticky-phase-nav");
-            const stickyHeight = stickyBar ? stickyBar.getBoundingClientRect().height : 54;
+            const offset = getStickyNavOffset(16);
             const cardTop = cardEl.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0);
             window.scrollTo({
-              top: Math.max(0, cardTop - stickyHeight - 12),
+              top: Math.max(0, Math.round(cardTop - offset)),
               behavior: "smooth"
             });
           }

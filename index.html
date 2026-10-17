@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=31" />
+  <link rel="stylesheet" href="styles.css?v=32" />
 </head>
 <body>
   <a href="#mainContent" class="skip-link">Direct naar inhoud</a>
@@ -248,6 +248,17 @@
     <!-- TAB 1: VOEDING, SNIJ-GIDS & 5-MIN RECEPTEN (STANDAARD ZICHTBAAR)    -->
     <!-- =================================================================== -->
     <section class="tab-panel" id="panelFood" data-pillar="food">
+      <!-- Sectie-Kop: Direct duidelijk op welk tabblad de ouder is geland -->
+      <div class="minimal-card section-header-card" id="foodSectionHeaderCard">
+        <div class="card-head-between">
+          <div>
+            <h3 id="foodHeaderTitle"><span>🥑 Voeding &amp; Eetontwikkeling</span></h3>
+            <p class="subtle-hint" id="foodHeaderSubtitle">Fase-adviezen, dagritme, veilige snijgids en 5-minuten recepten.</p>
+          </div>
+          <span class="mini-pill" id="foodHeaderStagePill">6–7 mnd</span>
+        </div>
+      </div>
+
       <!-- Dynamische voedingskaarten afgestemd op leeftijd -->
       <div class="two-col-grid">
         <article class="minimal-card card-tint-green" id="pureePathCard">
@@ -739,7 +750,7 @@
     </div>
   </dialog>
 
-  <script src="data.js?v=31"></script>
-  <script src="app.js?v=31"></script>
+  <script src="data.js?v=32"></script>
+  <script src="app.js?v=32"></script>
 </body>
 </html>
