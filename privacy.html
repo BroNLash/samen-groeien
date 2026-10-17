@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#2b7a69" />
+  <title>Privacyverklaring, Medische Disclaimer &amp; Voorwaarden — Samen Groeien</title>
+  <meta name="description" content="Officiële privacyverklaring (AVG / Google Play Data Safety), medische disclaimer, wetenschappelijke bronverantwoording en gebruiksvoorwaarden van de Samen Groeien app." />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=37" />
+  <style>
+    .privacy-page-wrap {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+    .privacy-header-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg, 18px);
+      padding: 1.5rem 1.5rem 1.35rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 6px 22px rgba(24, 52, 46, 0.06);
+    }
+    .privacy-back-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .privacy-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      padding: 0.42rem 0.85rem;
+      border-radius: 999px;
+      background: var(--primary-soft, rgba(43, 122, 105, 0.1));
+      border: 1px solid rgba(43, 122, 105, 0.22);
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    .privacy-back-link:hover {
+      transform: translateY(-1px);
+    }
+    .privacy-updated-badge {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--surface-soft);
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+    .privacy-header-card h1 {
+      font-family: "Nunito", sans-serif;
+      font-size: clamp(1.35rem, 3vw, 1.75rem);
+      font-weight: 800;
+      color: var(--text);
+      margin: 0 0 0.45rem;
+      line-height: 1.25;
+    }
+    .privacy-header-card p {
+      margin: 0;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      color: var(--text-soft);
+    }
+    .privacy-section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg, 18px);
+      padding: 1.35rem 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 14px rgba(24, 52, 46, 0.04);
+    }
+    .privacy-section-card h2 {
+      font-family: "Nunito", sans-serif;
+      font-size: 1.08rem;
+      font-weight: 800;
+      color: var(--text);
+      margin: 0 0 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .privacy-section-card p,
+    .privacy-section-card li {
+      font-size: 0.88rem;
+      line-height: 1.62;
+      color: var(--text-soft);
+    }
+    .privacy-section-card p {
+      margin: 0 0 0.65rem;
+    }
+    .privacy-section-card p:last-child {
+      margin-bottom: 0;
+    }
+    .privacy-section-card ul {
+      margin: 0.4rem 0 0.75rem;
+      padding-left: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.38rem;
+    }
+    .privacy-highlight-box {
+      background: rgba(43, 122, 105, 0.08);
+      border: 1px solid rgba(43, 122, 105, 0.24);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      margin: 0.65rem 0;
+    }
+    .privacy-warning-box {
+      background: rgba(217, 119, 6, 0.1);
+      border: 1px solid rgba(217, 119, 6, 0.3);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      margin: 0.65rem 0;
+    }
+    .privacy-data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.75rem 0;
+      font-size: 0.83rem;
+    }
+    .privacy-data-table th,
+    .privacy-data-table td {
+      text-align: left;
+      padding: 0.6rem 0.7rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .privacy-data-table th {
+      font-weight: 700;
+      color: var(--text);
+      background: var(--surface-soft);
+    }
+    .privacy-data-table td {
+      color: var(--text-soft);
+    }
+    .privacy-action-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 0.85rem;
+    }
+  </style>
+  <script>
+    (function () {
+      try {
+        var raw = localStorage.getItem("samen_groeien_v2_state");
+        if (raw) {
+          var parsed = JSON.parse(raw);
+          if (parsed && parsed.darkMode) {
+            document.documentElement.setAttribute("data-theme", "dark");
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <main class="privacy-page-wrap">
+    <header class="privacy-header-card">
+      <div class="privacy-back-row">
+        <a href="index.html" class="privacy-back-link">← Terug naar Samen Groeien</a>
+        <span class="privacy-updated-badge">Laatst bijgewerkt: oktober 2026 • Versie 3.7</span>
+      </div>
+      <h1>🛡️ Privacyverklaring, Medische Disclaimer &amp; Voorwaarden</h1>
+      <p>
+        Deze pagina bevat de officiële privacyverklaring (conform de AVG / GDPR en Google Play Data Safety), de medische disclaimer en de gebruiksvoorwaarden voor de web- en Android-applicatie <strong>Samen Groeien — Voeding, Spel &amp; Groei (0–12 jaar)</strong>.
+      </p>
+    </header>
+
+    <section class="privacy-section-card" id="verantwoordelijke">
+      <h2>1. Verwerkingsverantwoordelijke &amp; Contact</h2>
+      <p>
+        <strong>Samen Groeien</strong> wordt ontwikkeld en aangeboden door <strong>bBold</strong>. Voor vragen over deze privacyverklaring, gegevensbescherming of de werking van de applicatie kun je contact opnemen via:
+      </p>
+      <ul>
+        <li><strong>Naam / Ontwikkelaar:</strong> bBold (Brendan Lashley)</li>
+        <li><strong>E-mailadres:</strong> <a href="mailto:brendan@bbold.app">brendan@bbold.app</a></li>
+        <li><strong>Toepassingsgebied:</strong> De webapp en Google Play Store Android-applicatie <em>Samen Groeien</em>.</li>
+      </ul>
+    </section>
+
+    <section class="privacy-section-card" id="privacy-by-design">
+      <h2>2. Privacy by Design: 100% Lokale Gegevensopslag</h2>
+      <div class="privacy-highlight-box">
+        <p style="margin:0;color:var(--text);font-weight:600;">
+          🔒 <strong>Kernbelofte:</strong> Alle kindprofielen, groeimetingen, mijlpalen, allergenen-vinkjes en boodschappenlijstjes die je in <em>Samen Groeien</em> invoert, worden <strong>uitsluitend lokaal op jouw eigen apparaat</strong> (in de <code>localStorage</code> van je browser/toestel) opgeslagen.
+        </p>
+      </div>
+      <p>
+        Wij beschikken niet over een centrale gebruikersdatabase, vereisen geen accountregistratie of inloggegevens, en verkopen of verhandelen nooit gegevens aan derden of advertentienetwerken. De app bevat <strong>geen</strong> tracking-cookies, advertentie-SDK's of gedragsprofilering.
+      </p>
+
+      <table class="privacy-data-table" aria-label="Overzicht gegevensverwerking">
+        <thead>
+          <tr>
+            <th>Gegevenstype</th>
+            <th>Waar wordt dit bewaard?</th>
+            <th>Wordt dit gedeeld met servers/derden?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Kindprofiel</strong> (roepnaam, geboorte-/uitgerekende datum, geslacht, voedingstype)</td>
+            <td>100% lokaal op jouw toestel (<code>localStorage</code>)</td>
+            <td><strong>Nee</strong> — verlaat nooit jouw toestel.</td>
+          </tr>
+          <tr>
+            <td><strong>Groeimetingen</strong> (gewicht in gram, lengte in cm, datum)</td>
+            <td>100% lokaal op jouw toestel (<code>localStorage</code>)</td>
+            <td><strong>Nee</strong> — verlaat nooit jouw toestel.</td>
+          </tr>
+          <tr>
+            <td><strong>Mijlpalen, Allergenen-schema &amp; Weekboodschappenlijst</strong></td>
+            <td>100% lokaal op jouw toestel (<code>localStorage</code>)</td>
+            <td><strong>Nee</strong> — tenzij je zelf op <em>Deel via WhatsApp</em> of <em>Back-up opslaan</em> tikt.</td>
+          </tr>
+          <tr>
+            <td><strong>Vrijwillige Feedback</strong> (categorie, bericht, leeftijdsfase, optioneel e-mailadres)</td>
+            <td>Alleen bij actief klikken op <em>Verstuur feedback</em></td>
+            <td><strong>Ja, uitsluitend op jouw verzoek</strong> via FormSubmit (HTTPS) naar <code>brendan@bbold.app</code> (zonder naam/geboortedatum van het kind).</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="privacy-section-card" id="externe-diensten">
+      <h2>3. Externe Diensten &amp; Subverwerkers</h2>
+      <p>Om de app goed te laten functioneren worden uitsluitend de volgende technische verbindingen gebruikt:</p>
+      <ul>
+        <li>
+          <strong>Vrijwillig Feedbackformulier (FormSubmit.co):</strong> Wanneer je onderaan de app zelf het feedbackformulier invult en op <em>Verstuur feedback</em> klikt, worden je bericht, de gekozen categorie, de actieve leeftijdsfase en (alleen indien je dit zelf invult voor een terugkoppeling) je e-mailadres versleuteld via HTTPS doorgestuurd naar <code>brendan@bbold.app</code>. Er worden hierbij <strong>geen</strong> kindnamen, geboortedata of groeimetingen meegestuurd.
+        </li>
+        <li>
+          <strong>Typografie (Google Fonts):</strong> Bij het eerste bezoek laadt de app de lettertypes <em>Nunito</em> en <em>Plus Jakarta Sans</em> via <code>fonts.googleapis.com</code> en <code>fonts.gstatic.com</code>. Daarna worden deze lettertypes lokaal gecachet door de Service Worker zodat de app ook volledig offline werkt.
+        </li>
+        <li>
+          <strong>Zelf delen via WhatsApp of JSON-back-up:</strong> Wanneer je op <em>Deel via WhatsApp</em> tikt bij een recept of boodschappenlijst, opent je toestel de WhatsApp-applicatie met de door jou geselecteerde tekst. Jij bepaalt zelf of en naar wie je dit bericht verstuurt.
+        </li>
+      </ul>
+    </section>
+
+    <section class="privacy-section-card" id="doelgroep">
+      <h2>4. Doelgroep: Ouders &amp; Verzorgers (18+)</h2>
+      <p>
+        <em>Samen Groeien</em> is een informatief naslagwerk en hulpmiddel dat <strong>uitsluitend is ontworpen voor volwassenen (ouders en verzorgers van 18 jaar en ouder)</strong>. De applicatie is niet bedoeld om zelfstandig door kinderen onder de 16 jaar te worden gebruikt.
+      </p>
+    </section>
+
+    <section class="privacy-section-card" id="rechten-en-wissen">
+      <h2>5. Bewaartermijn, Inzage, Overdraagbaarheid &amp; Gegevens Wissen</h2>
+      <p>
+        Omdat alle gegevens lokaal op je eigen apparaat staan, heb je op elk moment volledige controle over je data (conform artikelen 15, 17 en 20 van de AVG):
+      </p>
+      <ul>
+        <li><strong>Recht op inzage &amp; dataportabiliteit (export):</strong> Via de knop <em>Kindprofiel → 💾 Back-up opslaan</em> in de app kun je op elk moment een volledig, leesbaar <code>.json</code>-bestand van je lokale gegevens opslaan op je eigen toestel.</li>
+        <li><strong>Bewaartermijn:</strong> Lokale gegevens blijven op je toestel bewaard totdat je ze zelf verwijdert of de app/browsergegevens verwijdert.</li>
+        <li><strong>Recht op vergetelheid (direct wissen):</strong> Je kunt al je lokale gegevens op elk gewenst moment met één tik onomkeerbaar wissen in de app (onderaan via <em>Bronnen, Medische Disclaimer &amp; Privacy</em>) of direct met de onderstaande knop:</li>
+      </ul>
+      <div class="privacy-action-row">
+        <button type="button" id="privacyPageDeleteBtn" class="btn-secondary legal-delete-btn">
+          🗑️ Wis nu al mijn lokale gegevens op dit apparaat
+        </button>
+        <span id="privacyPageDeleteStatus" style="font-size:0.84rem;font-weight:700;color:var(--primary);"></span>
+      </div>
+    </section>
+
+    <section class="privacy-section-card" id="medische-disclaimer">
+      <h2>6. Medische Disclaimer (Geen Medisch Hulpmiddel)</h2>
+      <div class="privacy-warning-box">
+        <p style="margin:0;color:var(--text);font-weight:600;">
+          🩺 <strong>Let op:</strong> De inhoud van <em>Samen Groeien</em> is uitsluitend bedoeld voor algemene educatieve en informatieve doeleinden voor ouders en verzorgers. Deze app is <strong>geen medisch hulpmiddel</strong> en vervangt <strong>nooit</strong> het persoonlijk medisch advies, de diagnose of de behandeling van een huisarts, kinderarts, jeugdarts/consultatiebureau (JGZ), gecertificeerd lactatiekundige (IBCLC) of kinderdiëtist.
+        </p>
+      </div>
+      <ul>
+        <li><strong>Spoedgevallen:</strong> Bel bij acute benauwdheid, echt stikken, bewusteloosheid, niet-wegdrukbare rode/paarse vlekjes, een koortsstuip of een ernstige allergische reactie <strong>direct 112</strong> of de huisartsenpost.</li>
+        <li><strong>Individuele afwijkingen:</strong> Elk kind ontwikkelt zich in een eigen tempo. Bij vroeggeboorte (prematuriteit), dysmaturiteit, voedingsallergieën, reflux of groeiachterstand gelden altijd de individuele voorschriften van je behandelend arts of het consultatiebureau.</li>
+        <li><strong>Veiligheid aan tafel:</strong> Laat een baby, dreumes of peuter nooit alleen tijdens het eten en controleer altijd de temperatuur en structuur van voeding.</li>
+      </ul>
+    </section>
+
+    <section class="privacy-section-card" id="wetenschappelijke-bronnen">
+      <h2>7. Wetenschappelijke Bronverantwoording</h2>
+      <p>
+        De richtlijnen voor voeding, hoeveelheden, vitamine-suppletie, mondzorg, slaap, veiligheid en ontwikkeling in <em>Samen Groeien</em> zijn met grote zorg samengesteld op basis van openbare Nederlandse en internationale standaarden:
+      </p>
+      <ul>
+        <li><strong>Voedingscentrum:</strong> <em>Eerste hapjes (4–6 mnd)</em>, <em>Schijf van Vijf voor dreumes, peuter en schoolkind</em>, richtlijnen voor vitamine D (10 mcg t/m 3 jaar) en veilige voedselbereiding.</li>
+        <li><strong>RIVM &amp; Gezondheidsraad:</strong> Richtlijn Vitamine K (150 mcg bij borstvoeding van dag 8 t/m 12 weken), Rijksvaccinatieprogramma en infectiepreventie.</li>
+        <li><strong>NCJ (Nederlands Centrum Jeugdgezondheid):</strong> JGZ-richtlijnen <em>Voeding en eetgedrag</em>, <em>Gezonde slaap en slaapproblemen</em>, <em>Zindelijkheid</em>, <em>Taalontwikkeling</em> en het <em>Van Wiechenonderzoek</em>.</li>
+        <li><strong>NHG-Standaarden (Nederlands Huisartsen Genootschap):</strong> <em>Kinderen met koorts (M19)</em>, <em>Acuut hoesten</em> en <em>Otitis media acuta</em>.</li>
+        <li><strong>NVK &amp; DAVO (Diëtisten Alliantie Voedselovergevoeligheid):</strong> Richtlijn <em>Vroege introductie van hoog-allergene bijvoeding (pinda en kippenei vanaf 4–6 maanden)</em> en wekelijks onderhoud.</li>
+        <li><strong>Ivoren Kruis &amp; AAP / WHO:</strong> Advies <em>Kindertandverzorging / Fluoridepeuterpasta</em>, WHO-groeistandaarden en <em>Safe to Sleep</em>-adviezen.</li>
+      </ul>
+      <p style="font-size:0.8rem;color:var(--text-muted);">
+        <em>Samen Groeien</em> is een onafhankelijk particulier initiatief en is niet formeel gelieerd aan of gesponsord door bovengenoemde instanties.
+      </p>
+    </section>
+
+    <section class="privacy-section-card" id="voorwaarden">
+      <h2>8. Gebruiksvoorwaarden &amp; Intellectueel Eigendom</h2>
+      <p>
+        Alle teksten, illustraties, snijgids-schema's en broncode van <em>Samen Groeien</em> zijn auteursrechtelijk beschermd. Het gebruik van de informatie in de applicatie geschiedt op eigen verantwoordelijkheid van de ouder/verzorger. Bij vragen of opmerkingen over deze voorwaarden kun je contact opnemen via <a href="mailto:brendan@bbold.app">brendan@bbold.app</a>.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var btn = document.getElementById("privacyPageDeleteBtn");
+      var status = document.getElementById("privacyPageDeleteStatus");
+      if (btn) {
+        btn.addEventListener("click", function () {
+          var ok = window.confirm(
+            "Weet je zeker dat je al je lokaal opgeslagen gegevens (kindprofielen, groeimetingen, mijlpalen, allergenen en weeklijstjes) definitief van dit apparaat wilt wissen?"
+          );
+          if (!ok) return;
+          try {
+            localStorage.removeItem("samen_groeien_v2_state");
+            localStorage.removeItem("samen_groeien_feedback_log");
+          } catch (e) {}
+          if (status) {
+            status.textContent = "✓ Alle lokale gegevens zijn gewist van dit apparaat.";
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

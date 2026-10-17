@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=36" />
+  <link rel="stylesheet" href="styles.css?v=37" />
 </head>
 <body>
   <a href="#mainContent" class="skip-link">Direct naar inhoud</a>
@@ -672,9 +672,14 @@
         <p class="footer-subtext">
           Samen Groeien • Liefdevolle voeding, spel &amp; mijlpalen van 0 t/m 12 jaar
         </p>
-        <button type="button" class="footer-legal-link" id="openLegalDialogBtn">
-          🛡️ Medische Disclaimer, Bronnen &amp; Privacy (AVG)
-        </button>
+        <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;justify-content:center;">
+          <button type="button" class="footer-legal-link" id="openLegalDialogBtn">
+            🛡️ Disclaimer, Bronnen &amp; Gegevensbeheer
+          </button>
+          <a href="privacy.html" class="footer-legal-link" style="text-decoration:none;">
+            📄 Volledige Privacyverklaring &amp; Voorwaarden
+          </a>
+        </div>
       </div>
     </footer>
   </main>
@@ -963,13 +968,16 @@
         </section>
       </div>
 
-      <div class="dialog-actions" style="margin-top: 12px; justify-content: flex-end;">
+      <div class="dialog-actions" style="margin-top: 12px; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+        <a href="privacy.html" class="btn-secondary btn-small" style="text-decoration: none;">
+          📄 Volledige Privacyverklaring &amp; Voorwaarden openen
+        </a>
         <button type="button" class="btn-primary" id="confirmLegalDialogBtn">Sluiten</button>
       </div>
     </div>
   </dialog>
 
-  <script src="data.js?v=36"></script>
-  <script src="app.js?v=36"></script>
+  <script src="data.js?v=37"></script>
+  <script src="app.js?v=37"></script>
 </body>
 </html>
