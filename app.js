@@ -49,14 +49,22 @@
       dob: "",
       dueDate: "",
       useAdjusted: true,
+      weightKg: "",
+      feedingType: "",
       customOppasNote: ""
     },
+    activeFamilyDish: "pasta",
     onboardingDismissed: false,
     triedFoods: {},
     favoriteGames: {},
     favoriteRecipes: {},
     weeklyGroceryRecipes: {},
     checkedMilestones: {},
+    milestoneMemories: {},
+    checkedReadiness: {},
+    growthLogs: [],
+    cbQuestions: [],
+    checkedTeeth: {},
     checkedHabits: {},
     allergenExposures: {},
     allergenWeeklyGiven: {},
@@ -107,6 +115,7 @@
       state.unit = "metric";
       if (saved.theme) state.theme = saved.theme;
       if (saved.activeView) state.activeView = saved.activeView;
+      if (saved.activeFamilyDish) state.activeFamilyDish = saved.activeFamilyDish;
       if (saved.profile) state.profile = { ...state.profile, ...saved.profile };
       if (typeof saved.onboardingDismissed === "boolean") state.onboardingDismissed = saved.onboardingDismissed;
       if (saved.triedFoods) state.triedFoods = saved.triedFoods;
@@ -114,6 +123,11 @@
       if (saved.favoriteRecipes) state.favoriteRecipes = saved.favoriteRecipes;
       if (saved.weeklyGroceryRecipes) state.weeklyGroceryRecipes = saved.weeklyGroceryRecipes;
       if (saved.checkedMilestones) state.checkedMilestones = saved.checkedMilestones;
+      if (saved.milestoneMemories) state.milestoneMemories = saved.milestoneMemories;
+      if (saved.checkedReadiness) state.checkedReadiness = saved.checkedReadiness;
+      if (Array.isArray(saved.growthLogs)) state.growthLogs = saved.growthLogs;
+      if (Array.isArray(saved.cbQuestions)) state.cbQuestions = saved.cbQuestions;
+      if (saved.checkedTeeth) state.checkedTeeth = saved.checkedTeeth;
       if (saved.checkedHabits) state.checkedHabits = saved.checkedHabits;
       if (saved.allergenExposures) state.allergenExposures = saved.allergenExposures;
       if (saved.allergenWeeklyGiven) state.allergenWeeklyGiven = saved.allergenWeeklyGiven;
@@ -132,12 +146,19 @@
           dob: state.profile.dob || "",
           dueDate: state.profile.dueDate || "",
           useAdjusted: state.profile.useAdjusted !== false,
+          weightKg: state.profile.weightKg || "",
+          feedingType: state.profile.feedingType || "",
           customOppasNote: state.profile.customOppasNote || "",
           triedFoods: { ...state.triedFoods },
           favoriteGames: { ...state.favoriteGames },
           favoriteRecipes: { ...state.favoriteRecipes },
           weeklyGroceryRecipes: { ...state.weeklyGroceryRecipes },
           checkedMilestones: { ...state.checkedMilestones },
+          milestoneMemories: { ...state.milestoneMemories },
+          checkedReadiness: { ...state.checkedReadiness },
+          growthLogs: [...state.growthLogs],
+          cbQuestions: [...state.cbQuestions],
+          checkedTeeth: { ...state.checkedTeeth },
           checkedHabits: { ...state.checkedHabits },
           allergenExposures: { ...state.allergenExposures },
           allergenWeeklyGiven: { ...state.allergenWeeklyGiven },
@@ -179,6 +200,11 @@
     if (!target.favoriteRecipes) target.favoriteRecipes = {};
     if (!target.weeklyGroceryRecipes) target.weeklyGroceryRecipes = {};
     if (!target.checkedMilestones) target.checkedMilestones = {};
+    if (!target.milestoneMemories) target.milestoneMemories = {};
+    if (!target.checkedReadiness) target.checkedReadiness = {};
+    if (!Array.isArray(target.growthLogs)) target.growthLogs = [];
+    if (!Array.isArray(target.cbQuestions)) target.cbQuestions = [];
+    if (!target.checkedTeeth) target.checkedTeeth = {};
     if (!target.checkedHabits) target.checkedHabits = {};
     if (!target.allergenExposures) target.allergenExposures = {};
     if (!target.allergenWeeklyGiven) target.allergenWeeklyGiven = {};
@@ -1727,6 +1753,15 @@
       .map((a) => formatAvoidFoodItemHtml(a))
       .join("");
 
+    // Feature 1: Persoonlijk Gewicht & Voedingstype Banner + Vitals verrijking
+    renderPersonalWeightBanner(stage, week);
+
+    // Feature 2: "Loopt mijn kindje voor?" Rijpheidscheck (Voeding & Slaap)
+    renderReadinessChecks(stage, week);
+
+    // Feature 3: "Kook 1x voor het hele gezin" Gezinsmaaltijd-Vertaler
+    renderFamilyMealTranslator(stage, week);
+
     // Tab 2: Spelletjes
     renderGames(stage);
 
@@ -1747,6 +1782,716 @@
     renderTimeline(scrollToTimeline);
     syncTimelineDockCompactState();
   }
+
+  // =========================================================================
+  // 6B. FEATURE 1: GEWICHT & VOEDINGSTYPE OP MAAT (150 ML/KG, VIT D/K, PARACETAMOL)
+  // =========================================================================
+  function getPersonalWeightAdvice(week, stage, profileObj) {
+    const active = profileObj || getActiveChild() || state.profile || {};
+    const weightKg = Number(active.weightKg) > 0 ? Number(active.weightKg) : 0;
+    const feedingType = active.feedingType || "";
+    const childName = active.name || "je kindje";
+    const fmtKg = weightKg > 0 ? weightKg.toFixed(weightKg % 1 === 0 ? 0 : 1).replace(".", ",") : "";
+
+    const feedingTypeLabels = {
+      breast: "🤱 Borstvoeding",
+      formula: "🍼 Kunstvoeding (fles)",
+      combo: "🤱🍼 Combinatie (borst + fles)"
+    };
+    const feedingLabel = feedingTypeLabels[feedingType] || "";
+
+    // 1. Melk & Vocht berekening op lichaamsgewicht
+    let milkTitle = "🍼 Melk & Vocht op gewicht";
+    let milkAdviceHtml = "";
+    let milkOppasShort = "";
+    let bigBabyNoteHtml = "";
+
+    if (weightKg > 0) {
+      if (week <= 26) {
+        // 0-6 maanden: NCJ / JGZ richtlijn = 150 ml per kg per 24u (max 1000 ml/dag)
+        const rawDailyMl = Math.round((weightKg * 150) / 10) * 10;
+        const dailyMl = Math.min(1000, Math.max(300, rawDailyMl));
+        let minFeeds = 5;
+        let maxFeeds = 6;
+        if (week <= 4) {
+          minFeeds = 7;
+          maxFeeds = 8;
+        } else if (week <= 12) {
+          minFeeds = 6;
+          maxFeeds = 7;
+        } else if (week <= 20) {
+          minFeeds = 5;
+          maxFeeds = 6;
+        } else {
+          minFeeds = 4;
+          maxFeeds = 5;
+        }
+        const perFeedLow = Math.round(dailyMl / maxFeeds / 5) * 5;
+        const perFeedHigh = Math.round(dailyMl / minFeeds / 5) * 5;
+
+        if (feedingType === "breast") {
+          milkAdviceHtml = `Op verzoek aan de borst. Geef je een afgekolfd flesje? Richtlijn bij <strong>${fmtKg} kg</strong> (150 ml/kg): ca. <strong>${dailyMl} ml per 24u</strong> (ca. <strong>${perFeedLow}–${perFeedHigh} ml</strong> per flesje bij ${minFeeds}–${maxFeeds} voedingen).`;
+          milkOppasShort = `Op ${fmtKg} kg: ca. ${dailyMl} ml/24u (afgekolfd flesje: ca. ${perFeedLow}–${perFeedHigh} ml per keer)`;
+        } else {
+          milkAdviceHtml = `Richtlijn bij <strong>${fmtKg} kg</strong> (150 ml/kg): ca. <strong>${dailyMl} ml per 24u</strong> — dat is ca. <strong>${perFeedLow}–${perFeedHigh} ml per flesje</strong> (bij ${minFeeds}–${maxFeeds} voedingen/dag, max. 1000 ml).`;
+          milkOppasShort = `Op ${fmtKg} kg: ca. ${dailyMl} ml/24u (ca. ${perFeedLow}–${perFeedHigh} ml per fles bij ${minFeeds}–${maxFeeds}×/dag)`;
+        }
+
+        // Vangnet voor flinke baby's die tegen de 1000 ml grens aanlopen vóór 4 maanden
+        if (week <= 16 && (rawDailyMl >= 930 || weightKg >= 6.2)) {
+          bigBabyNoteHtml = `💡 <strong>Flinke groeier (${fmtKg} kg):</strong> Je kindje zit qua gewicht al dicht bij het dagmaximum van <strong>1000 ml kunstvoeding</strong>. Lijkt je baby nog hongerig? Start vóór <strong>4 maanden (17 weken)</strong> nog niet met vaste hapjes (de darmpjes zijn nog niet rijp), maar gebruik een kleiner speentje (maat 0/1), voed horizontaal (15–20 min per fles) of overleg met het CB over voeding voor hongerige baby's.`;
+        }
+      } else if (week <= 36) {
+        milkAdviceHtml = `Bij <strong>${fmtKg} kg</strong> (6–8 mnd): ca. <strong>600–800 ml melk/dag</strong> (3–4 voedingen van 180–200 ml) + opbouw van 2–3 vaste hapjes en oefenslokjes water.`;
+        milkOppasShort = `Op ${fmtKg} kg: ca. 600–800 ml melk/dag (3–4 voedingen) + oefenslokjes water`;
+      } else if (week <= 52) {
+        milkAdviceHtml = `Bij <strong>${fmtKg} kg</strong> (9–12 mnd): ca. <strong>500 ml melk/dag</strong> (2–3 voedingen) naast 3 maaltijden en extra water/lauwe thee uit een beker.`;
+        milkOppasShort = `Op ${fmtKg} kg: ca. 500 ml melk/dag + 3 maaltijden + water`;
+      } else {
+        milkTitle = "💧 Vocht & Zuivel op gewicht";
+        const totalFluidMl = Math.min(1800, Math.max(900, Math.round((1000 + Math.max(0, weightKg - 10) * 50) / 50) * 50));
+        milkAdviceHtml = `Bij <strong>${fmtKg} kg</strong>: totale vochtbehoefte ca. <strong>${totalFluidMl} ml per dag</strong> (waarvan <strong>300 ml zuivel</strong> en de rest water of ongesuikerde thee).`;
+        milkOppasShort = `Op ${fmtKg} kg: ca. ${totalFluidMl} ml vocht/dag (incl. 300 ml zuivel)`;
+      }
+    }
+
+    // 2. Vitamine D & K advies op basis van leeftijd en voedingstype
+    let vitTitle = "☀️ Vitamine D & K op maat";
+    let vitAdviceHtml = "";
+    if (week <= 12) {
+      if (feedingType === "breast") {
+        vitAdviceHtml = `Geef dagelijks <strong>10 mcg Vitamine D</strong> én <strong>150 mcg Vitamine K</strong> (vanaf dag 8 t/m 3 maanden bij borstvoeding).`;
+      } else if (feedingType === "formula") {
+        vitAdviceHtml = `Geef dagelijks <strong>10 mcg Vitamine D</strong>. Extra Vitamine K is <strong>niet nodig</strong> bij ≥ 500 ml kunstvoeding per dag.`;
+      } else if (feedingType === "combo") {
+        vitAdviceHtml = `Geef dagelijks <strong>10 mcg Vitamine D</strong> + <strong>150 mcg Vitamine K</strong> zolang je baby minder dan 500 ml kunstvoeding per dag drinkt (t/m 3 mnd).`;
+      } else {
+        vitAdviceHtml = `Dagelijks <strong>10 mcg Vitamine D</strong> (+ <strong>150 mcg Vitamine K</strong> t/m 3 mnd bij borstvoeding of &lt;500 ml flesvoeding).`;
+      }
+    } else if (week <= 208) {
+      vitAdviceHtml = `Geef dagelijks <strong>10 mcg Vitamine D</strong> (aanbevolen voor álle kinderen t/m de 4e verjaardag, ongeacht borst-, fles- of gezinsvoeding).`;
+    } else {
+      vitAdviceHtml = `Vanaf 4 jaar: <strong>10 mcg Vitamine D</strong> alleen nodig bij een getinte/donkere huid of weinig buitenlicht.`;
+    }
+
+    // 3. Kinderparacetamol richtlijn op lichaamsgewicht (NHG / Nederlands Kinderformularium)
+    let pcmTitle = "🌡️ Paracetamol-richtlijn (SOS)";
+    let pcmAdviceHtml = "";
+    let pcmOppasShort = "";
+    if (weightKg > 0) {
+      if (week < 12 || weightKg < 5.5) {
+        pcmAdviceHtml = `Onder 3 mnd / &lt; 5,5 kg (nu <strong>${fmtKg} kg</strong>): geef paracetamol <strong>alleen na overleg met de huisarts</strong> (richtlijn vanaf 3 kg op artsadvies: <strong>60 mg zetpil</strong>, max. 2–3× per 24u).`;
+        pcmOppasShort = `Baby <3 mnd / ${fmtKg} kg: paracetamol alleen na overleg met huisarts (60 mg zetpil)`;
+      } else if (weightKg < 10) {
+        pcmAdviceHtml = `Bij <strong>${fmtKg} kg</strong> (5,5–10 kg): <strong>120 mg</strong> zetpil of drank, max. <strong>2–3× per 24 uur</strong> (minimaal 8 uur ertussen).`;
+        pcmOppasShort = `Op ${fmtKg} kg: 120 mg zetpil/drank, max 2–3× per 24u (elke 8–12u)`;
+      } else if (weightKg < 15) {
+        pcmAdviceHtml = `Bij <strong>${fmtKg} kg</strong> (10–15 kg): <strong>240 mg</strong> zetpil, drank of kauwtablet, max. <strong>2–3× per 24 uur</strong> (minimaal 8 uur ertussen).`;
+        pcmOppasShort = `Op ${fmtKg} kg: 240 mg zetpil/drank/tablet, max 2–3× per 24u (elke 8–12u)`;
+      } else if (weightKg < 22) {
+        pcmAdviceHtml = `Bij <strong>${fmtKg} kg</strong> (15–22 kg): <strong>240 mg</strong> tablet, drank of zetpil, max. <strong>3–4× per 24 uur</strong> (minimaal 6 uur ertussen).`;
+        pcmOppasShort = `Op ${fmtKg} kg: 240 mg tablet/drank/zetpil, max 3–4× per 24u (elke 6–8u)`;
+      } else if (weightKg < 30) {
+        pcmAdviceHtml = `Bij <strong>${fmtKg} kg</strong> (22–30 kg): <strong>250–360 mg</strong> smelttablet/tablet, max. <strong>3–4× per 24 uur</strong> (minimaal 6 uur ertussen).`;
+        pcmOppasShort = `Op ${fmtKg} kg: 250–360 mg tablet, max 3–4× per 24u (elke 6–8u)`;
+      } else {
+        pcmAdviceHtml = `Bij <strong>${fmtKg} kg</strong> (30+ kg): <strong>375–500 mg</strong> tablet, max. <strong>3–4× per 24 uur</strong> (minimaal 6 uur ertussen).`;
+        pcmOppasShort = `Op ${fmtKg} kg: 375–500 mg tablet, max 3–4× per 24u (elke 6–8u)`;
+      }
+    }
+
+    return {
+      hasCustomization: Boolean(weightKg > 0 || feedingType),
+      weightKg,
+      fmtKg,
+      feedingType,
+      feedingLabel,
+      childName,
+      milkTitle,
+      milkAdviceHtml,
+      milkOppasShort,
+      bigBabyNoteHtml,
+      vitTitle,
+      vitAdviceHtml,
+      pcmTitle,
+      pcmAdviceHtml,
+      pcmOppasShort
+    };
+  }
+
+  function renderPersonalWeightBanner(stage, week) {
+    const bannerEl = document.getElementById("personalWeightBanner");
+    if (!bannerEl) return;
+
+    const info = getPersonalWeightAdvice(week, stage);
+
+    // Verrijk ook direct de bovenste Melk/Drinken kerncijfer-kaart als er een gewicht bekend is in de eerste 6 maanden
+    if (info.weightKg > 0 && info.milkOppasShort && week <= 26) {
+      const vitalMilkEl = document.getElementById("vitalMilkVolume");
+      if (vitalMilkEl) {
+        vitalMilkEl.innerHTML = `<span class="stat-row-key">Op ${escapeHtml(info.fmtKg)} kg:</span> <span class="stat-row-text">${boldNumbersInEscapedHtml(
+          escapeHtml(info.milkOppasShort.replace(/^Op [^:]+:\s*/, ""))
+        )}</span>`;
+      }
+    }
+
+    if (!info.hasCustomization) {
+      // Toon in de eerste 2 jaar een subtiele, uitnodigende tip om gewicht/voedingstype in te vullen
+      if (week <= 104) {
+        bannerEl.classList.remove("hidden");
+        bannerEl.innerHTML = `
+          <div class="personal-weight-banner-top" style="margin-bottom:0;">
+            <span class="personal-weight-title">⚖️ Tip: Bereken exacte fleshoeveelheden (150 ml/kg), vitamine D/K &amp; paracetamol op gewicht</span>
+            <button type="button" class="personal-weight-edit-btn" data-open-weight-modal="1">➕ Gewicht &amp; voeding invullen</button>
+          </div>
+        `;
+        bannerEl.querySelectorAll("[data-open-weight-modal]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const profDialog = document.getElementById("profileDialog");
+            const active = getActiveChild();
+            populateProfileFormForChild(active ? active.id : "");
+            if (profDialog) profDialog.showModal();
+            const wInput = document.getElementById("childWeightInput");
+            if (wInput) wInput.focus();
+          });
+        });
+      } else {
+        bannerEl.classList.add("hidden");
+        bannerEl.innerHTML = "";
+      }
+      return;
+    }
+
+    bannerEl.classList.remove("hidden");
+    const tagParts = [
+      info.weightKg > 0 ? `${info.fmtKg} kg` : "",
+      info.feedingLabel
+    ].filter(Boolean);
+
+    const chips = [];
+    if (info.milkAdviceHtml) {
+      chips.push(`
+        <div class="personal-weight-chip">
+          <span class="personal-weight-chip-label">${info.milkTitle}</span>
+          <div class="personal-weight-chip-val">${info.milkAdviceHtml}</div>
+        </div>
+      `);
+    }
+    if (info.vitAdviceHtml) {
+      chips.push(`
+        <div class="personal-weight-chip">
+          <span class="personal-weight-chip-label">${info.vitTitle}</span>
+          <div class="personal-weight-chip-val">${info.vitAdviceHtml}</div>
+        </div>
+      `);
+    }
+    if (info.pcmAdviceHtml) {
+      chips.push(`
+        <div class="personal-weight-chip">
+          <span class="personal-weight-chip-label">${info.pcmTitle}</span>
+          <div class="personal-weight-chip-val">${info.pcmAdviceHtml}</div>
+        </div>
+      `);
+    }
+
+    bannerEl.innerHTML = `
+      <div class="personal-weight-banner-top">
+        <span class="personal-weight-title">⚖️ Op maat voor ${escapeHtml(info.childName)}${tagParts.length ? ` (${escapeHtml(tagParts.join(" • "))})` : ""}</span>
+        <button type="button" class="personal-weight-edit-btn" data-open-weight-modal="1">✏️ Gewicht / voeding aanpassen</button>
+      </div>
+      <div class="personal-weight-grid">
+        ${chips.join("")}
+      </div>
+      ${
+        info.bigBabyNoteHtml
+          ? `<div class="highlight-note" style="margin-top:0.55rem; margin-bottom:0;">${info.bigBabyNoteHtml}</div>`
+          : ""
+      }
+    `;
+
+    bannerEl.querySelectorAll("[data-open-weight-modal]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const profDialog = document.getElementById("profileDialog");
+        const active = getActiveChild();
+        populateProfileFormForChild(active ? active.id : "");
+        if (profDialog) profDialog.showModal();
+        const wInput = document.getElementById("childWeightInput");
+        if (wInput) wInput.focus();
+      });
+    });
+  }
+
+  // =========================================================================
+  // 6C. FEATURE 2: "LOOPT MIJN KINDJE VOOR?" RIJPHEIDSCHECK (VOEDING & SLAAP)
+  // =========================================================================
+  function getReadinessConfig(stage, week) {
+    // Alleen relevant in de eerste 3 jaar (t/m week 156) waar motorische eet-stappen en dutjes-overgangen snel op elkaar volgen
+    if (week > 156) return null;
+
+    const stageIdx = DATA.stages.findIndex((s) => s.id === stage.id);
+    const nextStage = stageIdx >= 0 && stageIdx < DATA.stages.length - 1 ? DATA.stages[stageIdx + 1] : null;
+    if (!nextStage) return null;
+
+    let foodConfig = null;
+    if (week <= 16) {
+      foodConfig = {
+        keyPrefix: "ready-food-4m",
+        title: "🚀 Klaar voor de eerste oefenhapjes (4 maanden)?",
+        intro: "Sommige baby's zijn er qua mondmotoriek en interesse al vroeg bij. Vink aan welke signalen je al ziet:",
+        safetyNote: "🛡️ Medische ondergrens (JGZ): Start vanwege de darmrijping nooit vóór 4 maanden (Week 17) met vaste hapjes, ook niet bij een flinke of hongerige baby.",
+        targetWeek: 17,
+        targetLabel: "Fase 4–5 mnd (Eerste Oefenhapjes)",
+        signals: [
+          "Houdt het hoofdje en de nek stevig rechtop bij ondersteund zitten op schoot.",
+          "Kijkt het eten letterlijk uit je mond, smakt mee of opent het mondje als er een lepeltje nadert.",
+          "Brengt gericht eigen handjes en speeltjes naar de mond om te onderzoeken."
+        ]
+      };
+    } else if (week <= 23) {
+      foodConfig = {
+        keyPrefix: "ready-food-6m",
+        title: "🚀 Loopt je baby voor op structuur? Check voor 6 maanden (Rapley & Zachte stukjes)",
+        intro: "Gaat gladde puree al supervlot en wil je baby zelf grijpen? Check of je kindje al toe is aan het 6-maandenschema:",
+        safetyNote: "",
+        targetWeek: 24,
+        targetLabel: "Fase 6 mnd (Zachte Stukjes & Rapley)",
+        signals: [
+          "Kan met minimale steun rechtop in de kinderstoel zitten zonder opzij te zakken.",
+          "De tongduwreflex is verdwenen: iets dikkere hapjes worden vlot doorgeslikt.",
+          "Grijpt zelf met het vuistje naar een zacht stronkje groente en brengt dit gericht naar de mond."
+        ]
+      };
+    } else if (week <= 27) {
+      foodConfig = {
+        keyPrefix: "ready-food-7m",
+        title: "🚀 Klaar voor fijne prak, kauwen & een broodkorstje (7–8 mnd)?",
+        intro: "Als de eerste oefenmaaltijden goed gaan, kun je alvast doorstromen naar grovere structuren en brood:",
+        safetyNote: "",
+        targetWeek: 28,
+        targetLabel: "Fase 7–8 mnd (Fijne Prak & Brood)",
+        signals: [
+          "Maakt duidelijke op-en-neer kauwbewegingen met de kaken (ook zonder tandjes).",
+          "Eet al met smaak 1 tot 2 kleine oefenmaaltijden per dag naast de melk.",
+          "Sabbelen en knabbelen op een lichtbruin broodkorstje of zachte vinger-reep gaat ontspannen."
+        ]
+      };
+    } else if (week <= 36) {
+      foodConfig = {
+        keyPrefix: "ready-food-9m",
+        title: "🚀 Klaar voor de pincetgreep & hapklare blokjes (9–11 mnd)?",
+        intro: "Veel baby's ontwikkelen rond 8 maanden al een vlotte fijne motoriek. Check of je baby klaar is voor blokjes:",
+        safetyNote: "",
+        targetWeek: 37,
+        targetLabel: "Fase 9–11 mnd (Pincetgreep & Blokjes)",
+        signals: [
+          "Pakt kleine stukjes eten (zoals een erwtje of broodblokje) op tussen duim en wijsvinger.",
+          "Kauwt grovere stukjes aardappel, groente en brood goed weg zonder snel te kokhalzen.",
+          "Neemt al zelfstandig oefenslokjes water of lauwe thee uit een open beker of rietjesbeker."
+        ]
+      };
+    } else if (week <= 48) {
+      foodConfig = {
+        keyPrefix: "ready-food-12m",
+        title: "🚀 Klaar om met de pot mee te eten (12 maanden-schema)?",
+        intro: "Eet je kindje al drie maaltijden mee en drinkt het steeds minder melk? Check de overstap naar het 1-jaarsritme:",
+        safetyNote: "",
+        targetWeek: 49,
+        targetLabel: "Fase 12 mnd (Met de Pot Mee)",
+        signals: [
+          "Eet 3 hoofdmaaltijden (ontbijt, lunch, warm eten) en 2 gezonde tussendoortjes.",
+          "Wil zelf een lepeltje vasthouden en eet zachte gezinsgerechten (zonder toegevoegd zout) vlot mee.",
+          "Drinkt vlot water of lauwe thee uit een gewone beker bij de maaltijd."
+        ]
+      };
+    } else {
+      foodConfig = {
+        keyPrefix: `ready-food-${stage.id}`,
+        title: `🚀 Loopt je kind voor? Check richting ${nextStage.shortLabel}`,
+        intro: `Elke dreumes en peuter ontwikkelt zich in een eigen tempo. Vink aan wat je kind al laat zien:`,
+        safetyNote: "",
+        targetWeek: nextStage.minWeek,
+        targetLabel: `${nextStage.shortLabel} (${nextStage.title})`,
+        signals: [
+          "Schept zelfstandig met een kinderlepel of prikt al gericht stukjes aan een kindervorkje.",
+          "Drinkt volledig uit een open beker aan tafel zonder tuitfles.",
+          "Helpt al trots mee met kleine taakjes (zoals groente wassen of het eigen bordje aangeven)."
+        ]
+      };
+    }
+
+    let sleepConfig = null;
+    if (week <= 16) {
+      sleepConfig = {
+        keyPrefix: "ready-sleep-4m",
+        title: "🚀 Klaar voor langere wakkertijd (90–120 min) & 3–4 vaste dutjes?",
+        intro: "Begint je baby een duidelijk dag- en nachtritme te krijgen en langer vrolijk wakker te blijven?",
+        targetWeek: 17,
+        targetLabel: "Slaapritme 4–5 maanden",
+        signals: [
+          "Het langste aaneengesloten slaapblok ligt inmiddels duidelijk in de nacht.",
+          "Je baby blijft tussen twee voedingen/slaapjes met gemak 75 tot 90 minuten vrolijk wakker.",
+          "Losse hazenslaapjes overdag bundelen zich tot 3 à 4 herkenbare dutjes."
+        ]
+      };
+    } else if (week <= 23) {
+      sleepConfig = {
+        keyPrefix: "ready-sleep-6m",
+        title: "🚀 Klaar voor de overstap van 4 naar 3 dutjes (6 maanden-ritme)?",
+        intro: "Merk je dat het 4e late middagdutje steeds vaker geweigerd wordt?",
+        targetWeek: 24,
+        targetLabel: "Slaapritme 6 maanden (3 dutjes)",
+        signals: [
+          "Houdt 2 tot 2,5 uur wakkertijd vol zonder oververmoeid te raken.",
+          "Het 4e dutje aan het einde van de middag wordt steeds vaker geweigerd of duurt maar 15 min.",
+          "Ochtend- en middagdutje worden steviger (vaak 1 tot 1,5 uur)."
+        ]
+      };
+    } else if (week <= 36) {
+      sleepConfig = {
+        keyPrefix: "ready-sleep-9m",
+        title: "🚀 Klaar voor de overgang van 3 naar 2 dutjes (2-3-4 ritme)?",
+        intro: "De overgang van 3 naar 2 dutjes vindt meestal plaats tussen 6,5 en 9 maanden. Check de signalen:",
+        targetWeek: 37,
+        targetLabel: "Slaapritme 9–11 maanden (2 dutjes)",
+        signals: [
+          "Je baby kan met gemak 2,5 tot 3,5 uur achter elkaar vrolijk wakker blijven.",
+          "Het 3e namiddagdutje (rond 16:00u) wordt geweigerd of duwt bedtijd naar na 20:00 uur.",
+          "Dit patroon duurt al minstens 1 tot 2 weken achter elkaar."
+        ]
+      };
+    } else if (week <= 65) {
+      sleepConfig = {
+        keyPrefix: "ready-sleep-15m",
+        title: "🚀 Klaar voor de overgang van 2 naar 1 middagdutje?",
+        intro: "Sommige kindjes zijn er al met 12–13 maanden aan toe, anderen pas met 16–18 maanden:",
+        targetWeek: 66,
+        targetLabel: "Slaapritme 14–18 maanden (1 middagdutje)",
+        signals: [
+          "Kan 's ochtends 4 tot 4,5 uur vrolijk wakker blijven tot na de lunch.",
+          "Kletst en speelt tijdens het ochtenddutje in bed, of weigert het middagdutje als er 's ochtends is geslapen.",
+          "Dit patroon duurt al minstens 2 weken (geen tijdelijke 12-maanden slaapregressie)."
+        ]
+      };
+    } else {
+      sleepConfig = {
+        keyPrefix: "ready-sleep-3y",
+        title: "🚀 Klaar om het middagdutje af te bouwen naar een rustmoment?",
+        intro: "Wordt het 's avonds een feestje in bed als je peuter 's middags nog slaapt?",
+        targetWeek: 157,
+        targetLabel: "Slaapritme 3+ jaar (Stiltemoment & Vroege Bedtijd)",
+        signals: [
+          "Valt 's avonds pas na 20:30 uur in slaap op dagen dat er een middagdutje is gedaan.",
+          "Kan de middag goed doorkomen met een rustig boekjes- of luistermoment op de bank.",
+          "Wordt zonder middagdutje niet overprikkeld of huilerig tijdens het avondeten."
+        ]
+      };
+    }
+
+    return { foodConfig, sleepConfig };
+  }
+
+  function renderSingleReadinessBlock(detailsEl, badgeEl, bodyEl, cfg, store) {
+    if (!detailsEl || !badgeEl || !bodyEl) return;
+    if (!cfg) {
+      detailsEl.classList.add("hidden");
+      return;
+    }
+    detailsEl.classList.remove("hidden");
+
+    const sumTitleEl = detailsEl.querySelector("summary span:first-child");
+    if (sumTitleEl) {
+      sumTitleEl.textContent = cfg.title;
+    }
+
+    const checkedCount = cfg.signals.filter((_, idx) => Boolean(store.checkedReadiness[`${cfg.keyPrefix}-${idx}`])).length;
+    const isReady = checkedCount >= 2;
+    badgeEl.textContent = isReady ? `✓ ${checkedCount}/3 — Klaar!` : `${checkedCount}/3 signalen`;
+
+    const signalsHtml = cfg.signals
+      .map((sig, idx) => {
+        const rKey = `${cfg.keyPrefix}-${idx}`;
+        const isChecked = Boolean(store.checkedReadiness[rKey]);
+        return `
+          <label class="readiness-check-item">
+            <input type="checkbox" data-readiness-key="${rKey}" ${isChecked ? "checked" : ""} />
+            <span>${escapeHtml(sig)}</span>
+          </label>
+        `;
+      })
+      .join("");
+
+    bodyEl.innerHTML = `
+      <p class="readiness-intro">${escapeHtml(cfg.intro)}</p>
+      <div class="readiness-checklist">${signalsHtml}</div>
+      ${
+        cfg.safetyNote
+          ? `<div class="highlight-note" style="margin-bottom:0.4rem;">${escapeHtml(cfg.safetyNote)}</div>`
+          : ""
+      }
+      <div class="readiness-result-box">
+        <span class="readiness-result-text">
+          ${
+            isReady
+              ? `🎉 <strong>${checkedCount} van de 3 signalen afgevinkt!</strong> Je kindje laat zien er klaar voor te zijn.`
+              : `💡 Vink minimaal <strong>2 van de 3 signalen</strong> aan om direct door te klikken naar het volgende schema.`
+          }
+        </span>
+        <button type="button" class="readiness-jump-btn" data-readiness-jump="${cfg.targetWeek}">
+          🚀 Bekijk ${escapeHtml(cfg.targetLabel)} →
+        </button>
+      </div>
+    `;
+
+    bodyEl.querySelectorAll("[data-readiness-key]").forEach((chk) => {
+      chk.addEventListener("change", () => {
+        const k = chk.dataset.readinessKey;
+        if (chk.checked) store.checkedReadiness[k] = true;
+        else delete store.checkedReadiness[k];
+        saveState();
+        renderSingleReadinessBlock(detailsEl, badgeEl, bodyEl, cfg, store);
+      });
+    });
+
+    bodyEl.querySelectorAll("[data-readiness-jump]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const targetW = Number(btn.dataset.readinessJump);
+        if (targetW) {
+          setWeek(targetW, true);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      });
+    });
+  }
+
+  function renderReadinessChecks(stage, week) {
+    const store = getActiveStore();
+    const cfgPair = getReadinessConfig(stage, week);
+
+    renderSingleReadinessBlock(
+      document.getElementById("foodReadinessDetails"),
+      document.getElementById("foodReadinessBadge"),
+      document.getElementById("foodReadinessBody"),
+      cfgPair ? cfgPair.foodConfig : null,
+      store
+    );
+
+    renderSingleReadinessBlock(
+      document.getElementById("sleepReadinessDetails"),
+      document.getElementById("sleepReadinessBadge"),
+      document.getElementById("sleepReadinessBody"),
+      cfgPair ? cfgPair.sleepConfig : null,
+      store
+    );
+  }
+
+  // =========================================================================
+  // 6D. FEATURE 3: "KOOK 1X VOOR HET HELE GEZIN" GEZINSMAALTIJD-VERTALER
+  // =========================================================================
+  const FAMILY_MEAL_DISHES = [
+    {
+      id: "pasta",
+      icon: "🍝",
+      label: "Pasta & Saus",
+      panTrick:
+        "Kook de pasta en bak gehakt/kip of linzen met ui, courgette, wortel en gezeefde tomaten (passata) eerst 100% zoutloos met Italiaanse kruiden (oregano/basilicum). Schep de baby-/kinderportie uit de pan vóórdat je zout, kaas of pittige kruiden toevoegt!",
+      adapt0to3m:
+        "Nog 100% melkvoeding: zet je baby gezellig in de newborn-set of wipstoel bij jullie aan tafel voor de geuren en het samenzijn.",
+      adapt4to5m:
+        "Schep 2 eetlepels zachtgekookte courgette/wortel en een beetje zoutloze tomatensaus uit de pan en pureer dit met een scheutje kookvocht tot een gladde oefenhap.",
+      adapt6to8m:
+        "Geef 2 grote ongezouten fusilli of penne om zelf met het vuistje te pakken (Rapley) óf prak wat zachtgekookte pasta met de zoutloze groentesaus en rul gehakt.",
+      adapt9to12m:
+        "Snijd de zachtgekookte pasta en groente in hapklare stukjes (1×1 cm) voor de pincetgreep, gemengd met de zoutloze saus.",
+      adapt1to3y:
+        "Eet lekker met de pot mee (matig zout). Peuter-tip: serveer 'gedeconstrueerd' (los hoopje pasta, los groente en een klein dip-bakje saus) voor extra overzicht en autonomie!",
+      adapt4to12y:
+        "Gewone volkoren gezinsportie. Laat je kind zelf verse basilicum knippen of een lepeltje kaas strooien — en bewaar een handje volkorenpasta voor een snelle pastasalade in de broodtrommel morgen!"
+    },
+    {
+      id: "agv",
+      icon: "🥔",
+      label: "Aardappel, Groente & Vis/Vlees",
+      panTrick:
+        "Kook aardappels/zoete aardappel en groente (bijv. broccoli, bloemkool of sperziebonen) in water zonder zout. Bak zalm, witvis of kipfilet in olijfolie of vloeibare margarine zonder zout en kruid pas op het eigen bord.",
+      adapt0to3m:
+        "Nog 100% melkvoeding. Geniet samen van de rust aan tafel.",
+      adapt4to5m:
+        "Neem een paar roosjes zachtgekookte bloemkool/broccoli of een stukje aardappel uit de pan en pureer glad met een theelepeltje kookvocht of borst-/flesmelk.",
+      adapt6to8m:
+        "Geef een groot zachtgekookt roosje broccoli/bloemkool met steel voor het vuistje + een fijne prak van aardappel en zacht geplukte vis/kip met een theelepeltje olijfolie.",
+      adapt9to12m:
+        "Snijd aardappel, zachte groente en malse vis/kip in hapklare blokjes van 1×1 cm die je baby zelf tussen duim en wijsvinger kan oppakken.",
+      adapt1to3y:
+        "Maak een smeuïge stamppot of serveer aardappelpartjes, groente en vlees/vis naast elkaar met een eigen kinderlepel en vorkje.",
+      adapt4to12y:
+        "Gezinsportie volgens de Schijf van Vijf. Laat je kind helpen met aardappels wassen of de tafel dekken!"
+    },
+    {
+      id: "rice",
+      icon: "🍚",
+      label: "Rijst, Roerbak & Curry",
+      panTrick:
+        "Kook zilvervlies- of witte rijst zoutloos. Wok de groente (paprika, courgette, paksoi, doperwtjes) en kip/tofu eerst met gember, knoflook en milde kerrie/kokosmelk. Schep de kinderportie uit de pan vóórdat ketjap, sojasaus of sambal erin gaat!",
+      adapt0to3m:
+        "Nog 100% melkvoeding.",
+      adapt4to5m:
+        "Pureer wat zachtgestoomde pompoen, wortel of courgette uit de wok met een lepeltje milde kokosmelk of kookvocht tot een gladde hap.",
+      adapt6to8m:
+        "Meng goed gaargekookte, iets plakkerige rijst met fijngesneden zachte wokgroente en kokosmelk zodat je baby het makkelijk van een lepeltje of met de handjes kan eten.",
+      adapt9to12m:
+        "Maak kleine plakkerige rijstballetjes met zachte stukjes groente en kip/tofu of ei-reepjes (zonder ketjap/zout) die je baby zelf kan oppakken.",
+      adapt1to3y:
+        "Milde rijstschotel met groente, kip/ei of kikkererwten. Geef er een lepeltje koele Griekse yoghurt of komkommer-reepjes naast.",
+      adapt4to12y:
+        "Gezinsportie met zilvervliesrijst en kleurrijke wokgroenten. Zet losse bakjes met komkommer, cashewnootjes (vanaf 4 jr) of lente-ui op tafel om zelf te toppen!"
+    },
+    {
+      id: "soup",
+      icon: "🥣",
+      label: "Soep & Brood",
+      panTrick:
+        "Kook de soepgroenten (bijv. pompoen, tomaat, courgette of bloemkool) in water met verse kruiden in plaats van zoute bouillonblokjes. Pureer de soep, schep een kommetje uit voor je baby/peuter en voeg daarna pas bouillonpoeder of zout toe aan de grote pan!",
+      adapt0to3m:
+        "Nog 100% melkvoeding.",
+      adapt4to5m:
+        "De gepureerde, zoutloze groentesoep (iets dikker gelaten) is direct een perfecte, supergladde oefenhap van de lepel!",
+      adapt6to8m:
+        "Doop stukjes lichtbruin brood (zonder harde korst) in de dikke, zoutloze groentesoep of laat je baby sabbelen op een broodkorstje.",
+      adapt9to12m:
+        "Serveer blokjes brood met een dun laagje roomboter/hummus om in de dikke zoutloze soep te dippen.",
+      adapt1to3y:
+        "Een dikke groentesoep in een ondiep kommetje met volkoren broodreepjes ('soldaatjes') om zelf te dippen: gegarandeerd eetplezier zonder strijd!",
+      adapt4to12y:
+        "Kom groentesoep met een volkoren tosti of volkorenbrood met ei/hummus. Ook heerlijk in een kleine thermosbeker mee naar school!"
+    },
+    {
+      id: "oven",
+      icon: "🥘",
+      label: "Ovenschotel & Traybake",
+      panTrick:
+        "Snijd zoete aardappel, pompoen, courgette, paprika en kip/zalm voor de bakplaat (traybake). Besprenkel met olijfolie en milde kruiden (rozemarijn/paprikapoeder), maar strooi géén zout op het hoekje van de bakplaat dat voor je kindje is!",
+      adapt0to3m:
+        "Nog 100% melkvoeding.",
+      adapt4to5m:
+        "Pureer een geroosterd, zacht binnenkantje van zoete aardappel of pompoen met een scheutje water of olijfolie helemaal glad.",
+      adapt6to8m:
+        "Zacht geroosterde vinger-reepjes zoete aardappel, pompoen en courgette van de bakplaat zijn ideaal voor de Rapley-methode (even het hardere velletje verwijderen).",
+      adapt9to12m:
+        "Snijd de zachte geroosterde groenten en zalm/kip in blokjes van 1×1 cm voor de pincetgreep.",
+      adapt1to3y:
+        "Smeuïge ovenschotel of zachte traybake-groenten met een kloddertje yoghurt-dip op het bord.",
+      adapt4to12y:
+        "Laat je kind vóór het bakken een eigen vakje op de bakplaat vullen met favoriete groenten en aardappelpartjes!"
+    },
+    {
+      id: "wraps",
+      icon: "🌮",
+      label: "Wraps & Taco's",
+      panTrick:
+        "Bak gehakt, kipreepjes of zwarte bonen met paprika, tomaat en maïs eerst met milde komijn en paprikapoeder (zonder zoute taco-kruidenmix uit een pakje). Schep de kinderportie uit en voeg daarna chili/zout toe voor de volwassenen.",
+      adapt0to3m:
+        "Nog 100% melkvoeding.",
+      adapt4to5m:
+        "Pureer een paar lepels rijpe avocado of zachtgekookte zoete aardappel/tomaat tot een romig eerste oefenhapje.",
+      adapt6to8m:
+        "Geef reepjes rijpe avocado, zachtgekookte paprika en fijngeprakte zwarte bonen of rul gehakt (zonder zout).",
+      adapt9to12m:
+        "Snijd een zachte volkoren wrap met een dun laagje avocado/zuivelspread in kleine vierkantjes + losse zachte groente- en gehaktstukjes (plet maïs en bonen even plat).",
+      adapt1to3y:
+        "Geef een 'open wrap' of losse vakjes met reepjes volkoren wrap, avocado, tomaat, maïs en mild gehakt/bonen zodat je peuter zelf kan pakken.",
+      adapt4to12y:
+        "Zet alle schaaltjes midden op tafel zodat je kind zelf een eigen volkoren wrap kan bouwen en oprollen!"
+    }
+  ];
+
+  function getFamilyDishAdaptationTextForWeek(dish, w) {
+    if (w <= 16) return dish.adapt0to3m;
+    if (w <= 23) return dish.adapt4to5m;
+    if (w <= 36) return dish.adapt6to8m;
+    if (w <= 52) return dish.adapt9to12m;
+    if (w <= 156) return dish.adapt1to3y;
+    return dish.adapt4to12y;
+  }
+
+  function renderFamilyMealTranslator(stage, week) {
+    const detailsEl = document.getElementById("familyMealTranslatorDetails");
+    const catRowEl = document.getElementById("familyMealCategoryRow");
+    const bodyEl = document.getElementById("familyMealTranslatorBody");
+    const badgeEl = document.getElementById("familyMealTranslatorBadge");
+    if (!detailsEl || !catRowEl || !bodyEl) return;
+
+    if (badgeEl) {
+      badgeEl.textContent =
+        state.children && state.children.length > 1
+          ? `Gezinsmodus (${state.children.length} kinderen)`
+          : stage.shortLabel;
+    }
+
+    const activeDishId = state.activeFamilyDish || "pasta";
+    const activeDish = FAMILY_MEAL_DISHES.find((d) => d.id === activeDishId) || FAMILY_MEAL_DISHES[0];
+
+    catRowEl.innerHTML = FAMILY_MEAL_DISHES.map((d) => {
+      const isAct = d.id === activeDish.id;
+      return `
+        <button type="button" class="filter-chip ${isAct ? "active" : ""}" data-family-dish="${d.id}">
+          ${d.icon} ${escapeHtml(d.label)}
+        </button>
+      `;
+    }).join("");
+
+    catRowEl.querySelectorAll("[data-family-dish]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.activeFamilyDish = btn.dataset.familyDish;
+        saveState();
+        renderFamilyMealTranslator(stage, week);
+      });
+    });
+
+    const stageAdaptText = getFamilyDishAdaptationTextForWeek(activeDish, week);
+
+    // Multi-kind Gezinsmodus: toon voor élk opgeslagen kind naast elkaar hoe je vanuit dezelfde pan opschept!
+    let multiChildHtml = "";
+    if (state.children && state.children.length >= 2) {
+      const childCards = state.children
+        .map((ch) => {
+          const calc = calculateAgeForProfile(ch);
+          const chWeek = calc ? calc.activeTargetWeek : week;
+          const chStage = getStageForWeek(chWeek);
+          const chAdapt = getFamilyDishAdaptationTextForWeek(activeDish, chWeek);
+          return `
+            <div class="family-meal-adapt-card">
+              <div class="family-meal-adapt-header">
+                <span class="family-meal-child-name">👶 ${escapeHtml(ch.name || "Kind")}</span>
+                <span class="pill-small">${escapeHtml(calc ? calc.shortAge : chStage.shortLabel)}</span>
+              </div>
+              <p class="family-meal-adapt-text">${escapeHtml(chAdapt)}</p>
+            </div>
+          `;
+        })
+        .join("");
+
+      multiChildHtml = `
+        <div class="family-meal-children-grid" style="margin-top:0.55rem;">
+          ${childCards}
+        </div>
+      `;
+    }
+
+    bodyEl.innerHTML = `
+      <div class="family-meal-pan-tip">
+        🍳 <strong>De 30-seconden Pan-Splitsing (${escapeHtml(activeDish.label)}):</strong> ${escapeHtml(activeDish.panTrick)}
+      </div>
+      <div class="family-meal-adapt-card">
+        <div class="family-meal-adapt-header">
+          <span class="family-meal-child-name">${stage.heroEmoji} Zo serveer je dit in fase ${escapeHtml(stage.shortLabel)} (${escapeHtml(stage.ageRangeLabel)})</span>
+          <span class="pill-small pill-ok">1× Koken</span>
+        </div>
+        <p class="family-meal-adapt-text">${escapeHtml(stageAdaptText)}</p>
+      </div>
+      ${multiChildHtml}
+    `;
+  }
+
 
   // =========================================================================
   // 7. SPELLETJES RENDEREN (6 PER FASE / 90 TOTAAL, MET BEWAARDE FAVORIETEN)
@@ -1985,28 +2730,107 @@
     updateMilestonesProgress();
 
     const msEl = document.getElementById("milestonesChecklist");
-    msEl.innerHTML = stage.milestones
-      .map((ms, i) => {
-        const key = `${stage.id}-ms-${i}`;
-        const checked = Boolean(store.checkedMilestones[key]);
-        return `
-        <label class="check-card">
-          <input type="checkbox" data-ms-key="${key}" ${checked ? "checked" : ""} />
-          <span>${ms}</span>
-        </label>
-      `;
-      })
-      .join("");
+    const todayIso = new Date().toISOString().slice(0, 10);
 
-    msEl.querySelectorAll("input").forEach((chk) => {
-      chk.addEventListener("change", () => {
-        const k = chk.dataset.msKey;
-        if (chk.checked) store.checkedMilestones[k] = true;
-        else delete store.checkedMilestones[k];
-        saveState();
-        updateMilestonesProgress();
+    const renderMilestonesList = () => {
+      if (!msEl) return;
+      msEl.innerHTML = stage.milestones
+        .map((ms, i) => {
+          const key = `${stage.id}-ms-${i}`;
+          const checked = Boolean(store.checkedMilestones[key]);
+          const mem = (store.milestoneMemories && store.milestoneMemories[key]) || { date: todayIso, note: "" };
+          return `
+          <div class="check-card check-card-wrap">
+            <label class="check-card-main" style="cursor:pointer;">
+              <input type="checkbox" data-ms-key="${key}" ${checked ? "checked" : ""} />
+              <span>${escapeHtml(ms)}</span>
+            </label>
+            ${
+              checked
+                ? `
+              <div class="ms-memory-row">
+                <input type="date" class="ms-date-input" data-ms-date="${key}" value="${escapeHtml(mem.date || todayIso)}" aria-label="Datum van mijlpaal" title="Datum waarop deze mijlpaal is bereikt" />
+                <input type="text" class="ms-note-input" data-ms-note="${key}" maxlength="100" placeholder="Herinnering (bijv. 'Bij oma op het kleed!')" value="${escapeHtml(mem.note || "")}" aria-label="Persoonlijke herinnering bij mijlpaal" />
+                <button type="button" class="ms-share-btn" data-ms-share="${key}" data-ms-title="${escapeHtml(ms)}" title="Deel dit mijlpaalkaartje via WhatsApp">💬 Deel</button>
+              </div>
+            `
+                : ""
+            }
+          </div>
+        `;
+        })
+        .join("");
+
+      msEl.querySelectorAll("[data-ms-key]").forEach((chk) => {
+        chk.addEventListener("change", () => {
+          const k = chk.dataset.msKey;
+          if (!store.milestoneMemories) store.milestoneMemories = {};
+          if (chk.checked) {
+            store.checkedMilestones[k] = true;
+            if (!store.milestoneMemories[k]) {
+              store.milestoneMemories[k] = { date: todayIso, note: "" };
+            }
+          } else {
+            delete store.checkedMilestones[k];
+          }
+          saveState();
+          updateMilestonesProgress();
+          renderMilestonesList();
+        });
       });
-    });
+
+      msEl.querySelectorAll("[data-ms-date]").forEach((dateIn) => {
+        dateIn.addEventListener("change", () => {
+          const k = dateIn.dataset.msDate;
+          if (!store.milestoneMemories) store.milestoneMemories = {};
+          if (!store.milestoneMemories[k]) store.milestoneMemories[k] = { date: todayIso, note: "" };
+          store.milestoneMemories[k].date = dateIn.value;
+          saveState();
+        });
+      });
+
+      msEl.querySelectorAll("[data-ms-note]").forEach((noteIn) => {
+        noteIn.addEventListener("input", () => {
+          const k = noteIn.dataset.msNote;
+          if (!store.milestoneMemories) store.milestoneMemories = {};
+          if (!store.milestoneMemories[k]) store.milestoneMemories[k] = { date: todayIso, note: "" };
+          store.milestoneMemories[k].note = noteIn.value;
+          saveState();
+        });
+      });
+
+      msEl.querySelectorAll("[data-ms-share]").forEach((shareBtn) => {
+        shareBtn.addEventListener("click", () => {
+          const k = shareBtn.dataset.msShare;
+          const msText = shareBtn.dataset.msTitle || "Nieuwe mijlpaal!";
+          const mem = (store.milestoneMemories && store.milestoneMemories[k]) || { date: todayIso, note: "" };
+          const activeChild = getActiveChild();
+          const childName = activeChild ? activeChild.name : state.profile.name || "Ons kindje";
+          const rawDate = mem.date || todayIso;
+          const [yy, mm, dd] = rawDate.split("-");
+          const nlDate = dd && mm && yy ? `${dd}-${mm}-${yy}` : rawDate;
+
+          const cardLines = [
+            `🏆 *Mijlpaal van ${childName}!* ✨`,
+            `📅 *Datum:* ${nlDate} (${stage.shortLabel})`,
+            ``,
+            `🌟 *${msText}*`,
+            mem.note && mem.note.trim() ? `💛 _"${mem.note.trim()}"_` : null,
+            ``,
+            `_Vastgelegd in Samen Groeien_ 🌱`
+          ].filter(Boolean);
+
+          openWhatsAppShare(cardLines.join("\n"), "auto");
+          const origLabel = shareBtn.textContent;
+          shareBtn.textContent = "✓ Gedeeld!";
+          setTimeout(() => {
+            shareBtn.textContent = origLabel;
+          }, 1800);
+        });
+      });
+    };
+
+    renderMilestonesList();
   }
 
   function getNapWindowString(week) {
@@ -4132,6 +4956,25 @@
         .map((s) => `<li>${formatLeadOnlyHtml(s)}</li>`)
         .join("");
 
+      const weightInfo = getPersonalWeightAdvice(week, stage);
+      let personalPcmBoxHtml = "";
+      if (card.id === "sos-fever" || card.id === "sos-teeth-cold") {
+        if (weightInfo.weightKg > 0 && weightInfo.pcmAdviceHtml) {
+          personalPcmBoxHtml = `
+            <div class="highlight-note" style="margin-top:0.5rem;">
+              <strong>⚖️ Dosering op maat voor ${escapeHtml(weightInfo.childName)} (${escapeHtml(weightInfo.fmtKg)} kg):</strong> ${weightInfo.pcmAdviceHtml}
+            </div>
+          `;
+        } else {
+          personalPcmBoxHtml = `
+            <div class="highlight-note" style="margin-top:0.5rem; display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap;">
+              <span>⚖️ <strong>Paracetamol op gewicht:</strong> Vul het gewicht van je kindje in voor de juiste zetpil-/drankdosering.</span>
+              <button type="button" class="personal-weight-edit-btn" data-open-sos-weight="1">➕ Gewicht invullen</button>
+            </div>
+          `;
+        }
+      }
+
       let alertBoxHtml = "";
       if (card.id === "sos-fever") {
         let feverAlertBullets = "";
@@ -4193,6 +5036,7 @@
         <div class="sos-action-box">
           <span class="sos-block-label">✅ Wat kun je nu direct doen (${escapeHtml(shortAgeTag)})?</span>
           <ul class="sos-bullet-list">${actionBullets}</ul>
+          ${personalPcmBoxHtml}
         </div>
         ${alertBoxHtml}
       `;
@@ -4220,6 +5064,17 @@
       })
       .join("");
 
+    sosContainer.querySelectorAll("[data-open-sos-weight]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const profDialog = document.getElementById("profileDialog");
+        const active = getActiveChild();
+        populateProfileFormForChild(active ? active.id : "");
+        if (profDialog) profDialog.showModal();
+        const wInput = document.getElementById("childWeightInput");
+        if (wInput) wInput.focus();
+      });
+    });
+
     // Exclusieve Accordion (Single-Open UI/UX Patroon): er kan maximaal 1 SOS-onderwerp tegelijk geopend zijn
     const allSosDetails = Array.from(sosContainer.querySelectorAll(".sos-details"));
     allSosDetails.forEach((det) => {
@@ -4244,7 +5099,360 @@
         }
       });
     });
+
+    // Feature 5: Consultatiebureau / Schoolarts Groei-logboek & Vragenlijstje
+    renderCbPrepAndGrowth(stage, week);
+
+    // Feature 6: Interactief Tandjes- & Wisselgebit-Kaartje
+    renderTeethTracker(stage, week);
   }
+
+  // =========================================================================
+  // 10B. FEATURE 5: CONSULTATIEBUREAU / SCHOOLARTS GROEI-LOGBOEK & VRAGENLIJSTJE
+  // =========================================================================
+  function getDefaultCbQuestionSuggestions(week) {
+    if (week <= 12) {
+      return [
+        "Drinkt mijn baby voldoende voor zijn/haar gewicht en groeicurve?",
+        "Hebben jullie tips tegen darmkrampjes of onrust in de avond?"
+      ];
+    }
+    if (week <= 26) {
+      return [
+        "Hoe combineren we de eerste oefenhapjes met het huidige flessenschema?",
+        "Wanneer bouwen we de late avondvoeding rustig af?"
+      ];
+    }
+    if (week <= 52) {
+      return [
+        "Hoeveel opvolgmelk heeft mijn baby nu nog nodig naast de 3 maaltijden?",
+        "Hebben jullie tips voor de overgang van 3 naar 2 dutjes?"
+      ];
+    }
+    if (week <= 208) {
+      return [
+        "Hoe ga ik ontspannen om met 'zelf doen'-driftbuien of kieskeurig eten aan tafel?",
+        "Hoe verloopt de spraak- en taalontwikkeling voor deze leeftijd?"
+      ];
+    }
+    return [
+      "Hoe ondersteunen we een gezonde schermtijd- en slaapbalans na school?",
+      "Zijn er aandachtspunten voor de ogentest, gehoortest of het wisselgebit?"
+    ];
+  }
+
+  function renderCbPrepAndGrowth(stage, week) {
+    const store = getActiveStore();
+    const titleEl = document.getElementById("cbPrepTitle");
+    const badgeEl = document.getElementById("cbPrepBadge");
+    const dateInput = document.getElementById("growthDateInput");
+    const growthListEl = document.getElementById("growthLogList");
+    const cbqListEl = document.getElementById("cbQuestionsList");
+    if (!growthListEl || !cbqListEl) return;
+
+    const isSchoolAge = week > 208;
+    if (titleEl) {
+      titleEl.textContent = isSchoolAge
+        ? "🏫 Schoolarts (JGZ) Groei-logboek & Vragenlijstje"
+        : "🏥 Consultatiebureau Groei-logboek & Vragenlijstje";
+    }
+
+    if (dateInput && !dateInput.value) {
+      dateInput.value = new Date().toISOString().slice(0, 10);
+    }
+
+    const logs = Array.isArray(store.growthLogs) ? store.growthLogs : [];
+    const questions = Array.isArray(store.cbQuestions) ? store.cbQuestions : [];
+    const openQuestionsCount = questions.filter((q) => !q.done).length;
+
+    if (badgeEl) {
+      if (logs.length === 0 && questions.length === 0) {
+        badgeEl.textContent = "Logboek & Vragen";
+      } else {
+        badgeEl.textContent = `${logs.length} ${logs.length === 1 ? "meting" : "metingen"} • ${openQuestionsCount} ${
+          openQuestionsCount === 1 ? "open vraag" : "open vragen"
+        }`;
+      }
+    }
+
+    // Sorteer metingen chronologisch (oud -> nieuw) om delta's te berekenen, en toon daarna nieuwste bovenaan
+    const sortedAsc = [...logs].sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
+    const deltaMap = {};
+    for (let i = 0; i < sortedAsc.length; i++) {
+      const cur = sortedAsc[i];
+      const prev = i > 0 ? sortedAsc[i - 1] : null;
+      if (prev) {
+        const dParts = [];
+        if (cur.weightKg > 0 && prev.weightKg > 0) {
+          const diffG = Math.round((cur.weightKg - prev.weightKg) * 1000);
+          if (diffG !== 0) {
+            const sign = diffG > 0 ? "+" : "";
+            dParts.push(
+              Math.abs(diffG) < 1000
+                ? `${sign}${diffG} g`
+                : `${sign}${(diffG / 1000).toFixed(1).replace(".", ",")} kg`
+            );
+          }
+        }
+        if (cur.lengthCm > 0 && prev.lengthCm > 0) {
+          const diffCm = Math.round((cur.lengthCm - prev.lengthCm) * 10) / 10;
+          if (diffCm !== 0) {
+            const sign = diffCm > 0 ? "+" : "";
+            dParts.push(`${sign}${String(diffCm).replace(".", ",")} cm`);
+          }
+        }
+        if (dParts.length > 0) {
+          deltaMap[cur.id] = dParts.join(" • ");
+        }
+      }
+    }
+
+    const sortedDesc = [...sortedAsc].reverse();
+    if (sortedDesc.length === 0) {
+      growthListEl.innerHTML = `<p class="subtle-hint" style="margin:0.2rem 0 0;">Nog geen metingen opgeslagen. Vul hierboven gewicht (kg) en/of lengte (cm) in—het nieuwste gewicht werkt direct je fles- en paracetamol-advies bij!</p>`;
+    } else {
+      growthListEl.innerHTML = sortedDesc
+        .map((entry, idx) => {
+          const [yy, mm, dd] = String(entry.date || "").split("-");
+          const nlDate = dd && mm && yy ? `${dd}-${mm}-${yy}` : entry.date || "Vandaag";
+          const wStr = entry.weightKg > 0 ? `${Number(entry.weightKg).toFixed(2).replace(/\.?0+$/, "").replace(".", ",")} kg` : "";
+          const lStr = entry.lengthCm > 0 ? `${Number(entry.lengthCm).toFixed(1).replace(/\.0$/, "").replace(".", ",")} cm` : "";
+          const metricsStr = [wStr, lStr].filter(Boolean).join(" • ");
+          const deltaStr = deltaMap[entry.id] || (idx === sortedDesc.length - 1 ? "Eerste meting" : "");
+          return `
+            <div class="growth-log-item">
+              <span class="growth-log-date">📅 ${escapeHtml(nlDate)}</span>
+              <span class="growth-log-metrics">${escapeHtml(metricsStr)}</span>
+              ${deltaStr ? `<span class="growth-log-delta">${escapeHtml(deltaStr)}</span>` : ""}
+              <button type="button" class="growth-del-btn" data-del-growth="${entry.id}" title="Meting verwijderen" aria-label="Meting verwijderen">✕</button>
+            </div>
+          `;
+        })
+        .join("");
+
+      growthListEl.querySelectorAll("[data-del-growth]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const gid = btn.dataset.delGrowth;
+          store.growthLogs = (store.growthLogs || []).filter((g) => g.id !== gid);
+          // Synchroniseer het laatst overgebleven gewicht met het actieve kindprofiel
+          const remainingAsc = [...store.growthLogs].sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
+          const latestWithWeight = [...remainingAsc].reverse().find((g) => g.weightKg > 0);
+          const activeChild = getActiveChild();
+          if (latestWithWeight) {
+            if (activeChild) activeChild.weightKg = latestWithWeight.weightKg;
+            state.profile.weightKg = latestWithWeight.weightKg;
+          }
+          saveState();
+          renderAll(false);
+        });
+      });
+    }
+
+    // Vragenlijstje voor CB / Schoolarts
+    const suggestions = getDefaultCbQuestionSuggestions(week);
+    if (questions.length === 0) {
+      cbqListEl.innerHTML = `
+        <p class="subtle-hint" style="margin:0.15rem 0 0.35rem;">Nog geen vragen genoteerd. Tik op een veelgestelde vraag voor deze fase of typ je eigen vraag hierboven:</p>
+        <div class="filter-chip-row" style="margin-bottom:0.2rem;">
+          ${suggestions
+            .map(
+              (sug) =>
+                `<button type="button" class="filter-chip" data-quick-cbq="${escapeHtml(sug)}">➕ ${escapeHtml(sug)}</button>`
+            )
+            .join("")}
+        </div>
+      `;
+      cbqListEl.querySelectorAll("[data-quick-cbq]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const qText = btn.dataset.quickCbq;
+          if (!qText) return;
+          if (!Array.isArray(store.cbQuestions)) store.cbQuestions = [];
+          store.cbQuestions.push({ id: "cbq-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6), text: qText, done: false });
+          saveState();
+          renderCbPrepAndGrowth(stage, week);
+        });
+      });
+    } else {
+      cbqListEl.innerHTML = questions
+        .map((q) => {
+          return `
+            <div class="cb-question-item ${q.done ? "is-done" : ""}">
+              <input type="checkbox" data-toggle-cbq="${q.id}" ${q.done ? "checked" : ""} aria-label="Vraag besproken" />
+              <span>${escapeHtml(q.text)}</span>
+              <button type="button" class="growth-del-btn" data-del-cbq="${q.id}" title="Vraag verwijderen" aria-label="Vraag verwijderen">✕</button>
+            </div>
+          `;
+        })
+        .join("");
+
+      cbqListEl.querySelectorAll("[data-toggle-cbq]").forEach((chk) => {
+        chk.addEventListener("change", () => {
+          const qid = chk.dataset.toggleCbq;
+          const item = (store.cbQuestions || []).find((q) => q.id === qid);
+          if (item) {
+            item.done = chk.checked;
+            saveState();
+            renderCbPrepAndGrowth(stage, week);
+          }
+        });
+      });
+
+      cbqListEl.querySelectorAll("[data-del-cbq]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const qid = btn.dataset.delCbq;
+          store.cbQuestions = (store.cbQuestions || []).filter((q) => q.id !== qid);
+          saveState();
+          renderCbPrepAndGrowth(stage, week);
+        });
+      });
+    }
+  }
+
+  // =========================================================================
+  // 10C. FEATURE 6: INTERACTIEF TANDJES- & WISSELGEBIT-KAARTJE
+  // =========================================================================
+  const PRIMARY_TEETH_CATALOG = {
+    upper: [
+      { id: "u-m2-r", short: "K2", name: "2e Melkkies rechtsboven", ageErupt: "23–31 mnd", ageShed: "10–12 jr", minW: 96, maxW: 135, shedMinW: 480, shedMaxW: 624, isMolar: true },
+      { id: "u-m1-r", short: "K1", name: "1e Melkkies rechtsboven", ageErupt: "13–19 mnd", ageShed: "9–11 jr", minW: 54, maxW: 84, shedMinW: 450, shedMaxW: 572, isMolar: true },
+      { id: "u-c-r", short: "H", name: "Hoektand rechtsboven", ageErupt: "16–22 mnd", ageShed: "10–12 jr", minW: 68, maxW: 96, shedMinW: 500, shedMaxW: 624, isMolar: false },
+      { id: "u-i2-r", short: "S2", name: "Zij-snijtand rechtsboven", ageErupt: "9–13 mnd", ageShed: "7–8 jr", minW: 37, maxW: 58, shedMinW: 350, shedMaxW: 440, isMolar: false },
+      { id: "u-i1-r", short: "S1", name: "Middelste snijtand rechtsboven", ageErupt: "8–12 mnd", ageShed: "6–7 jr", minW: 32, maxW: 52, shedMinW: 295, shedMaxW: 380, isMolar: false },
+      { id: "u-i1-l", short: "S1", name: "Middelste snijtand linksboven", ageErupt: "8–12 mnd", ageShed: "6–7 jr", minW: 32, maxW: 52, shedMinW: 295, shedMaxW: 380, isMolar: false },
+      { id: "u-i2-l", short: "S2", name: "Zij-snijtand linksboven", ageErupt: "9–13 mnd", ageShed: "7–8 jr", minW: 37, maxW: 58, shedMinW: 350, shedMaxW: 440, isMolar: false },
+      { id: "u-c-l", short: "H", name: "Hoektand linksboven", ageErupt: "16–22 mnd", ageShed: "10–12 jr", minW: 68, maxW: 96, shedMinW: 500, shedMaxW: 624, isMolar: false },
+      { id: "u-m1-l", short: "K1", name: "1e Melkkies linksboven", ageErupt: "13–19 mnd", ageShed: "9–11 jr", minW: 54, maxW: 84, shedMinW: 450, shedMaxW: 572, isMolar: true },
+      { id: "u-m2-l", short: "K2", name: "2e Melkkies linksboven", ageErupt: "23–31 mnd", ageShed: "10–12 jr", minW: 96, maxW: 135, shedMinW: 480, shedMaxW: 624, isMolar: true }
+    ],
+    lower: [
+      { id: "l-m2-r", short: "K2", name: "2e Melkkies rechtsonder", ageErupt: "20–30 mnd", ageShed: "10–12 jr", minW: 86, maxW: 130, shedMinW: 480, shedMaxW: 624, isMolar: true },
+      { id: "l-m1-r", short: "K1", name: "1e Melkkies rechtsonder", ageErupt: "14–18 mnd", ageShed: "9–11 jr", minW: 58, maxW: 80, shedMinW: 450, shedMaxW: 572, isMolar: true },
+      { id: "l-c-r", short: "H", name: "Hoektand rechtsonder", ageErupt: "17–23 mnd", ageShed: "9–12 jr", minW: 72, maxW: 100, shedMinW: 450, shedMaxW: 600, isMolar: false },
+      { id: "l-i2-r", short: "S2", name: "Zij-snijtand rechtsonder", ageErupt: "10–16 mnd", ageShed: "7–8 jr", minW: 42, maxW: 70, shedMinW: 340, shedMaxW: 430, isMolar: false },
+      { id: "l-i1-r", short: "S1", name: "Middelste snijtand rechtsonder", ageErupt: "6–10 mnd", ageShed: "6–7 jr", minW: 22, maxW: 44, shedMinW: 280, shedMaxW: 370, isMolar: false },
+      { id: "l-i1-l", short: "S1", name: "Middelste snijtand linksonder", ageErupt: "6–10 mnd", ageShed: "6–7 jr", minW: 22, maxW: 44, shedMinW: 280, shedMaxW: 370, isMolar: false },
+      { id: "l-i2-l", short: "S2", name: "Zij-snijtand linksonder", ageErupt: "10–16 mnd", ageShed: "7–8 jr", minW: 42, maxW: 70, shedMinW: 340, shedMaxW: 430, isMolar: false },
+      { id: "l-c-l", short: "H", name: "Hoektand linksonder", ageErupt: "17–23 mnd", ageShed: "9–12 jr", minW: 72, maxW: 100, shedMinW: 450, shedMaxW: 600, isMolar: false },
+      { id: "l-m1-l", short: "K1", name: "1e Melkkies linksonder", ageErupt: "14–18 mnd", ageShed: "9–11 jr", minW: 58, maxW: 80, shedMinW: 450, shedMaxW: 572, isMolar: true },
+      { id: "l-m2-l", short: "K2", name: "2e Melkkies linksonder", ageErupt: "20–30 mnd", ageShed: "10–12 jr", minW: 86, maxW: 130, shedMinW: 480, shedMaxW: 624, isMolar: true }
+    ]
+  };
+
+  let lastClickedToothInfo = "";
+
+  function renderTeethTracker(stage, week) {
+    const container = document.getElementById("teethTrackerContainer");
+    const titleEl = document.getElementById("teethTrackerTitle");
+    const badgeEl = document.getElementById("teethTrackerBadge");
+    if (!container) return;
+
+    const store = getActiveStore();
+    if (!store.checkedTeeth) store.checkedTeeth = {};
+
+    const isSheddingMode = week > 208;
+    if (titleEl) {
+      titleEl.textContent = isSheddingMode
+        ? "🦷 Interactief Wisselgebit-Kaartje (6–12 jaar)"
+        : "🦷 Interactief Tandjes-Kaartje (Melkgebit 20 tandjes)";
+    }
+
+    const allTeeth = [...PRIMARY_TEETH_CATALOG.upper, ...PRIMARY_TEETH_CATALOG.lower];
+    const checkedCount = allTeeth.filter((t) => Boolean(store.checkedTeeth[t.id])).length;
+    if (badgeEl) {
+      badgeEl.textContent = isSheddingMode
+        ? `${checkedCount} / 20 afgevinkt`
+        : `${checkedCount} / 20 doorgekomen`;
+    }
+
+    const isExpectedInCurrentWeek = (t) => {
+      if (isSheddingMode) {
+        return week >= t.shedMinW && week <= t.shedMaxW;
+      }
+      return week >= t.minW && week <= t.maxW;
+    };
+
+    const renderToothRowHtml = (list) =>
+      list
+        .map((t) => {
+          const isErupted = Boolean(store.checkedTeeth[t.id]);
+          const isExpected = !isErupted && isExpectedInCurrentWeek(t);
+          const ageLabel = isSheddingMode ? t.ageShed : t.ageErupt;
+          return `
+            <button
+              type="button"
+              class="tooth-btn ${t.isMolar ? "is-molar" : ""} ${isErupted ? "is-erupted" : ""} ${
+                isExpected ? "is-expected-now" : ""
+              }"
+              data-tooth-id="${t.id}"
+              title="${escapeHtml(t.name)} (${escapeHtml(ageLabel)})"
+            >
+              <span class="tooth-icon">${isErupted ? "🦷" : "○"}</span>
+              <span class="tooth-code">${escapeHtml(t.short)}</span>
+              <span class="tooth-age">${escapeHtml(ageLabel.replace(" mnd", "m").replace(" jr", "j"))}</span>
+            </button>
+          `;
+        })
+        .join("");
+
+    const expectedNowList = allTeeth.filter((t) => isExpectedInCurrentWeek(t));
+    const expectedSummary =
+      expectedNowList.length > 0
+        ? `🌟 <strong>Verwacht rond deze leeftijd (${escapeHtml(stage.shortLabel)}):</strong> ${escapeHtml(
+            expectedNowList[0].name.replace(/ (rechts|links)(boven|onder)/, "")
+          )} (${escapeHtml(isSheddingMode ? expectedNowList[0].ageShed : expectedNowList[0].ageErupt)}).`
+        : isSheddingMode
+          ? `💡 <strong>Tip (6-jaarskiezen):</strong> Rond 5,5–6 jaar breken helemaal achter de laatste melkkiezen 4 nieuwe blijvende kiezen door (zonder dat er eerst een melkkies uitvalt). Zet de borstel daar dwars op!`
+          : week < 22
+            ? `💡 <strong>Goed om te weten:</strong> De eerste twee onderste snijtandjes (S1) komen gemiddeld tussen <strong>6 en 10 maanden</strong> door, maar kwijlen en op handjes sabbelen begint vaak al rond 3–4 maanden.`
+            : `💡 <strong>Compleet melkgebit:</strong> Rond 2,5 tot 3 jaar zijn alle 20 melktandjes en -kiezen doorgekomen. Poets 2× per dag met fluoridetandpasta!`;
+
+    container.innerHTML = `
+      <div class="teeth-jaw-box">
+        <span class="teeth-jaw-label">👄 Bovenkaak (10 ${isSheddingMode ? "tanden/kiezen" : "melktandjes"})</span>
+        <div class="teeth-arch-row">
+          ${renderToothRowHtml(PRIMARY_TEETH_CATALOG.upper)}
+        </div>
+      </div>
+      <div class="teeth-jaw-box">
+        <span class="teeth-jaw-label">👅 Onderkaak (10 ${isSheddingMode ? "tanden/kiezen" : "melktandjes"})</span>
+        <div class="teeth-arch-row">
+          ${renderToothRowHtml(PRIMARY_TEETH_CATALOG.lower)}
+        </div>
+      </div>
+      <div class="teeth-legend-row">
+        <span><span class="teeth-legend-dot is-erupted"></span>Afgevinkt (${checkedCount}/20)</span>
+        <span><span class="teeth-legend-dot is-expected"></span>Nu aan de beurt in ${escapeHtml(stage.shortLabel)}</span>
+        <span>Tik op een tandje om hem aan of uit te vinken</span>
+      </div>
+      <div class="teeth-selected-info">
+        ${lastClickedToothInfo || expectedSummary}
+      </div>
+    `;
+
+    container.querySelectorAll("[data-tooth-id]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const tid = btn.dataset.toothId;
+        const toothObj = allTeeth.find((t) => t.id === tid);
+        if (!toothObj) return;
+
+        const todayStr = new Date().toLocaleDateString("nl-NL");
+        if (store.checkedTeeth[tid]) {
+          delete store.checkedTeeth[tid];
+          lastClickedToothInfo = `○ <strong>${escapeHtml(toothObj.name)}</strong> weer uitgevinkt (gemiddeld: ${escapeHtml(
+            isSheddingMode ? toothObj.ageShed : toothObj.ageErupt
+          )}).`;
+        } else {
+          store.checkedTeeth[tid] = todayStr;
+          lastClickedToothInfo = `🦷 <strong>Hoera! ${escapeHtml(toothObj.name)}</strong> afgevinkt op ${escapeHtml(
+            todayStr
+          )} (gemiddeld: ${escapeHtml(isSheddingMode ? `wisselt ${toothObj.ageShed}` : `komt door met ${toothObj.ageErupt}`)}).`;
+        }
+        saveState();
+        renderTeethTracker(stage, week);
+      });
+    });
+  }
+
 
   // =========================================================================
   // 11. MULTI-KIND PROFIELEN & WISSELAAR
@@ -4496,11 +5704,21 @@
 
   function populateProfileFormForChild(childId) {
     const ch = state.children.find((c) => c.id === childId);
+    const fallbackProf = !ch && state.children.length === 0 ? state.profile : null;
+    const src = ch || fallbackProf;
     document.getElementById("editingChildIdInput").value = ch ? ch.id : "";
-    document.getElementById("childNameInput").value = ch ? ch.name || "" : "";
-    document.getElementById("childDobInput").value = ch ? ch.dob || "" : "";
-    document.getElementById("childDueDateInput").value = ch ? ch.dueDate || "" : "";
-    document.getElementById("useAdjustedAgeCheckbox").checked = ch ? ch.useAdjusted !== false : true;
+    document.getElementById("childNameInput").value = src ? src.name || "" : "";
+    document.getElementById("childDobInput").value = src ? src.dob || "" : "";
+    document.getElementById("childDueDateInput").value = src ? src.dueDate || "" : "";
+    document.getElementById("useAdjustedAgeCheckbox").checked = src ? src.useAdjusted !== false : true;
+    const weightIn = document.getElementById("childWeightInput");
+    const feedIn = document.getElementById("childFeedingTypeInput");
+    if (weightIn) {
+      weightIn.value = src && Number(src.weightKg) > 0 ? String(src.weightKg) : "";
+    }
+    if (feedIn) {
+      feedIn.value = src && src.feedingType ? src.feedingType : "";
+    }
     const clearBtn = document.getElementById("clearProfileBtn");
     if (clearBtn) {
       const hasLegacyProfile = Boolean(state.profile && (state.profile.name || state.profile.dob));
@@ -4515,6 +5733,8 @@
     const dob = document.getElementById("childDobInput").value;
     const due = document.getElementById("childDueDateInput").value;
     const useAdj = document.getElementById("useAdjustedAgeCheckbox").checked;
+    const weightVal = parseFloat(document.getElementById("childWeightInput")?.value || "");
+    const feedVal = document.getElementById("childFeedingTypeInput")?.value || "";
     const adjRow = document.getElementById("adjustedAgeToggleRow");
     const box = document.getElementById("profilePreviewBox");
 
@@ -4536,15 +5756,25 @@
     }
 
     const stg = getStageForWeek(calc.activeTargetWeek);
+    const weightInfo = getPersonalWeightAdvice(calc.activeTargetWeek, stg, {
+      name,
+      weightKg: !isNaN(weightVal) && weightVal > 0 ? weightVal : "",
+      feedingType: feedVal
+    });
+    const extraCustomLine =
+      weightInfo.milkOppasShort
+        ? `<br/><span style="font-size:0.82rem; color:var(--text-secondary);">⚖️ ${escapeHtml(weightInfo.milkOppasShort)}</span>`
+        : "";
+
     if (calc.isExpecting) {
-      box.innerHTML = `<strong>🤰 ${escapeHtml(name)} wordt verwacht over ${calc.daysUntilDue} ${calc.daysUntilDue === 1 ? "dag" : "dagen"}!</strong><br/>De app staat voor jullie klaar op <strong>Week 1 (${escapeHtml(stg.title)})</strong>.`;
+      box.innerHTML = `<strong>🤰 ${escapeHtml(name)} wordt verwacht over ${calc.daysUntilDue} ${calc.daysUntilDue === 1 ? "dag" : "dagen"}!</strong><br/>De app staat voor jullie klaar op <strong>Week 1 (${escapeHtml(stg.title)})</strong>.${extraCustomLine}`;
     } else if (calc.isPreemie && calc.chronoWeek <= 104) {
       const modeLabel = useAdj
         ? `Week ${calc.adjustedWeek} (gecorrigeerd • kalenderweek ${calc.chronoWeek})`
         : `Week ${calc.chronoWeek} (kalenderleeftijd • gecorrigeerd week ${calc.adjustedWeek})`;
-      box.innerHTML = `<strong>🎉 ${escapeHtml(name)} zit nu in ${modeLabel}!</strong><br/>Fase: ${escapeHtml(stg.title)}`;
+      box.innerHTML = `<strong>🎉 ${escapeHtml(name)} zit nu in ${modeLabel}!</strong><br/>Fase: ${escapeHtml(stg.title)}${extraCustomLine}`;
     } else {
-      box.innerHTML = `<strong>🎉 ${escapeHtml(name)} zit nu in Week ${calc.activeTargetWeek}!</strong><br/>Fase: ${escapeHtml(stg.title)}`;
+      box.innerHTML = `<strong>🎉 ${escapeHtml(name)} zit nu in Week ${calc.activeTargetWeek}!</strong><br/>Fase: ${escapeHtml(stg.title)}${extraCustomLine}`;
     }
   }
 
@@ -4560,7 +5790,10 @@
     const store = getActiveStore();
     const customNote = document.getElementById("oppasCustomNote").value.trim();
 
-    const milkVol = stage.nutrition.milkVolumeMetric;
+    const weightInfo = getPersonalWeightAdvice(week, stage);
+    const milkVol = weightInfo.milkOppasShort
+      ? `${weightInfo.milkOppasShort}`
+      : `${stage.nutrition.milkVolumeMetric} (${stage.nutrition.feedsPerDay})`;
     const solidPortion = stage.nutrition.portionGuideMetric;
     const cutInfo = getCutVisualData(stage.cutType, stage);
     const napStr = getNapWindowString(week);
@@ -4598,13 +5831,14 @@
     const avoidHeader = week > 208 ? "⚠️ *Aandachtspunt:*" : "🚫 *Niet geven:*";
 
     const lines = [
-      `👵 *Oppas- & Oma-Kaartje voor ${childName}*`,
+      `👵 *Oppas- & Oma-Kaartje voor ${childName}*${weightInfo.fmtKg ? ` (${weightInfo.fmtKg} kg)` : ""}`,
       `📅 *Leeftijd:* ${exactAge} (${stage.shortLabel})`,
       ``,
-      `${drinkHeader} ${milkVol} (${stage.nutrition.feedsPerDay})`,
+      `${drinkHeader} ${milkVol}`,
       `${solidHeader} ${solidPortion} (${stage.nutrition.solidsPerDay})`,
       `${cutHeader} ${cutInfo.title}`,
       `${avoidHeader} ${stage.nutrition.avoidFoods[0] || "Honing (<1jr) en hele noten/druiven"}`,
+      weightInfo.pcmOppasShort ? `🌡️ *Bij koorts/pijn (paracetamol):* ${weightInfo.pcmOppasShort}` : null,
       ``,
       `🌙 *Slaap & Ritme:* ${stage.sleep.wakeWindow} • ${stage.sleep.naps}`,
       napStr ? `⏰ *Richtlijn vandaag:* ${napStr}` : null,
@@ -5060,9 +6294,19 @@
       document.getElementById("childNameInput").focus();
     });
 
-    ["childNameInput", "childDobInput", "childDueDateInput", "useAdjustedAgeCheckbox"].forEach((id) => {
-      document.getElementById(id).addEventListener("input", updateProfilePreview);
-      document.getElementById(id).addEventListener("change", updateProfilePreview);
+    [
+      "childNameInput",
+      "childDobInput",
+      "childDueDateInput",
+      "useAdjustedAgeCheckbox",
+      "childWeightInput",
+      "childFeedingTypeInput"
+    ].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", updateProfilePreview);
+        el.addEventListener("change", updateProfilePreview);
+      }
     });
 
     document.getElementById("closeProfileDialogBtn").addEventListener("click", () => profDialog.close());
@@ -5075,6 +6319,9 @@
       const dob = document.getElementById("childDobInput").value;
       const dueDate = document.getElementById("childDueDateInput").value;
       const useAdjusted = document.getElementById("useAdjustedAgeCheckbox").checked;
+      const rawWeight = parseFloat(document.getElementById("childWeightInput")?.value || "");
+      const weightKg = !isNaN(rawWeight) && rawWeight >= 1.5 && rawWeight <= 65 ? Math.round(rawWeight * 100) / 100 : "";
+      const feedingType = document.getElementById("childFeedingTypeInput")?.value || "";
 
       let targetChild = state.children.find((c) => c.id === editingId);
       if (targetChild) {
@@ -5082,6 +6329,8 @@
         targetChild.dob = dob;
         targetChild.dueDate = dueDate;
         targetChild.useAdjusted = useAdjusted;
+        targetChild.weightKg = weightKg;
+        targetChild.feedingType = feedingType;
       } else {
         const newId = "child-" + Date.now();
         targetChild = {
@@ -5090,16 +6339,38 @@
           dob,
           dueDate,
           useAdjusted,
+          weightKg,
+          feedingType,
           customOppasNote: "",
           triedFoods: state.children.length === 0 ? { ...state.triedFoods } : {},
           favoriteGames: state.children.length === 0 ? { ...state.favoriteGames } : {},
           favoriteRecipes: state.children.length === 0 ? { ...state.favoriteRecipes } : {},
           checkedMilestones: state.children.length === 0 ? { ...state.checkedMilestones } : {},
+          milestoneMemories: state.children.length === 0 ? { ...state.milestoneMemories } : {},
+          checkedReadiness: state.children.length === 0 ? { ...state.checkedReadiness } : {},
+          growthLogs: state.children.length === 0 ? [...(state.growthLogs || [])] : [],
+          cbQuestions: state.children.length === 0 ? [...(state.cbQuestions || [])] : [],
+          checkedTeeth: state.children.length === 0 ? { ...state.checkedTeeth } : {},
           checkedHabits: state.children.length === 0 ? { ...state.checkedHabits } : {},
           allergenExposures: state.children.length === 0 ? { ...state.allergenExposures } : {},
           foodPracticeCounts: state.children.length === 0 ? { ...state.foodPracticeCounts } : {}
         };
         state.children.push(targetChild);
+      }
+
+      // Als er een gewicht is ingevuld en dit nog niet in het CB Groei-logboek stond, voeg het automatisch toe op vandaag
+      if (weightKg > 0) {
+        if (!Array.isArray(targetChild.growthLogs)) targetChild.growthLogs = [];
+        const todayIso = new Date().toISOString().slice(0, 10);
+        const alreadyLoggedSame = targetChild.growthLogs.some((g) => Number(g.weightKg) === Number(weightKg));
+        if (!alreadyLoggedSame) {
+          targetChild.growthLogs.push({
+            id: "g-" + Date.now(),
+            date: todayIso,
+            weightKg: Number(weightKg),
+            lengthCm: 0
+          });
+        }
       }
 
       state.activeChildId = targetChild.id;
@@ -5108,6 +6379,8 @@
         dob: targetChild.dob,
         dueDate: targetChild.dueDate,
         useAdjusted: targetChild.useAdjusted,
+        weightKg: targetChild.weightKg || "",
+        feedingType: targetChild.feedingType || "",
         customOppasNote: targetChild.customOppasNote || ""
       };
 
@@ -5135,6 +6408,8 @@
           dob: nextActive.dob,
           dueDate: nextActive.dueDate,
           useAdjusted: nextActive.useAdjusted,
+          weightKg: nextActive.weightKg || "",
+          feedingType: nextActive.feedingType || "",
           customOppasNote: nextActive.customOppasNote || ""
         };
         const calc = calculateAgeForProfile(nextActive);
@@ -5143,7 +6418,7 @@
           syncEpochToWeek(state.currentWeek);
         }
       } else {
-        state.profile = { name: "", dob: "", dueDate: "", useAdjusted: true, customOppasNote: "" };
+        state.profile = { name: "", dob: "", dueDate: "", useAdjusted: true, weightKg: "", feedingType: "", customOppasNote: "" };
       }
       saveState();
       profDialog.close();
@@ -5492,6 +6767,74 @@
       });
     }
 
+    // 4. Consultatiebureau / Schoolarts Groei-logboek & Vragenlijstje acties
+    const addGrowthBtn = document.getElementById("addGrowthEntryBtn");
+    if (addGrowthBtn) {
+      addGrowthBtn.addEventListener("click", () => {
+        const store = getActiveStore();
+        const dateIn = document.getElementById("growthDateInput");
+        const weightIn = document.getElementById("growthWeightInput");
+        const lengthIn = document.getElementById("growthLengthInput");
+        const rawW = parseFloat(weightIn ? weightIn.value : "");
+        const rawL = parseFloat(lengthIn ? lengthIn.value : "");
+        const validW = !isNaN(rawW) && rawW >= 1.5 && rawW <= 65 ? Math.round(rawW * 100) / 100 : 0;
+        const validL = !isNaN(rawL) && rawL >= 35 && rawL <= 185 ? Math.round(rawL * 10) / 10 : 0;
+        if (validW === 0 && validL === 0) return;
+
+        const entryDate = (dateIn && dateIn.value) || new Date().toISOString().slice(0, 10);
+        if (!Array.isArray(store.growthLogs)) store.growthLogs = [];
+        store.growthLogs.push({
+          id: "g-" + Date.now(),
+          date: entryDate,
+          weightKg: validW,
+          lengthCm: validL
+        });
+
+        // Synchroniseer het nieuwst ingevoerde gewicht direct met het actieve kindprofiel (voor 150 ml/kg & paracetamol!)
+        const sortedAsc = [...store.growthLogs].sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
+        const latestWithWeight = [...sortedAsc].reverse().find((g) => g.weightKg > 0);
+        if (latestWithWeight) {
+          const activeChild = getActiveChild();
+          if (activeChild) activeChild.weightKg = latestWithWeight.weightKg;
+          state.profile.weightKg = latestWithWeight.weightKg;
+        }
+
+        if (weightIn) weightIn.value = "";
+        if (lengthIn) lengthIn.value = "";
+        saveState();
+        renderAll(false);
+      });
+    }
+
+    const addCbqBtn = document.getElementById("addCbQuestionBtn");
+    const cbqInput = document.getElementById("cbQuestionInput");
+    const handleAddCbQuestion = () => {
+      if (!cbqInput) return;
+      const txt = cbqInput.value.trim();
+      if (!txt) return;
+      const store = getActiveStore();
+      if (!Array.isArray(store.cbQuestions)) store.cbQuestions = [];
+      store.cbQuestions.push({
+        id: "cbq-" + Date.now(),
+        text: txt,
+        done: false
+      });
+      cbqInput.value = "";
+      saveState();
+      renderCbPrepAndGrowth(getStageForWeek(state.currentWeek), state.currentWeek);
+    };
+    if (addCbqBtn) {
+      addCbqBtn.addEventListener("click", handleAddCbQuestion);
+    }
+    if (cbqInput) {
+      cbqInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          handleAddCbQuestion();
+        }
+      });
+    }
+
     // 3. Medische Disclaimer, Bronnen & Privacy (AVG / Play Store Data Deletion) Dialoog
     const legalDialog = document.getElementById("legalDialog");
     const openLegalBtn = document.getElementById("openLegalDialogBtn");
@@ -5524,13 +6867,18 @@
         } catch (_) {}
         state.children = [];
         state.activeChildId = null;
-        state.profile = { name: "", dob: "", dueDate: "", useAdjusted: true, customOppasNote: "" };
+        state.profile = { name: "", dob: "", dueDate: "", useAdjusted: true, weightKg: "", feedingType: "", customOppasNote: "" };
         state.onboardingDismissed = false;
         state.triedFoods = {};
         state.favoriteGames = {};
         state.favoriteRecipes = {};
         state.weeklyGroceryRecipes = {};
         state.checkedMilestones = {};
+        state.milestoneMemories = {};
+        state.checkedReadiness = {};
+        state.growthLogs = [];
+        state.cbQuestions = [];
+        state.checkedTeeth = {};
         state.checkedHabits = {};
         state.allergenExposures = {};
         state.allergenWeeklyGiven = {};

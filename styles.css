@@ -4354,5 +4354,456 @@ p, li {
   }
 }
 
+/* ==========================================================================
+   6 NIEUWE MOEDER-FEATURES: GEWICHT OP MAAT, RIJPHEIDSCHECK, GEZINSMAALTIJD,
+   MIJLPAAL-HERINNERING, CB-VOORBEREIDING & INTERACTIEF TANDJES-KAARTJE
+   ========================================================================== */
+
+/* 1. Persoonlijk advies op gewicht & voedingstype in Hero */
+.personal-weight-banner {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--primary-soft);
+  border: 1px solid rgba(43, 122, 105, 0.24);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.personal-weight-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: var(--fs-sm);
+  color: var(--text);
+  line-height: 1.45;
+  min-width: 0;
+  flex: 1;
+}
+
+.personal-weight-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-weight: 700;
+  color: var(--primary);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.personal-weight-edit-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--primary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, transform 0.12s ease;
+}
+
+.personal-weight-edit-btn:hover {
+  border-color: var(--primary);
+}
+
+/* 2. Rijpheidscheck ('Loopt mijn kindje voor?') */
+.readiness-body {
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sleep-readiness-details {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  overflow: hidden;
+}
+
+.sleep-readiness-details > summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.sleep-readiness-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.readiness-signals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.readiness-unlocked-box {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--primary-soft);
+  border: 1px solid rgba(43, 122, 105, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.readiness-unlocked-text {
+  font-size: var(--fs-sm);
+  color: var(--text);
+  line-height: 1.45;
+  flex: 1;
+  min-width: 200px;
+}
+
+/* 3. 'Kook 1× voor het hele gezin' Gezinsmaaltijd-Vertaler */
+.family-meal-body {
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.family-meal-result {
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.family-meal-step {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.family-meal-step-label {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--primary);
+  margin-bottom: 3px;
+}
+
+.family-meal-multi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.family-meal-child-card {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--primary-soft);
+  border: 1px solid rgba(43, 122, 105, 0.22);
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+}
+
+/* 4. Mijlpalen met Datum, Herinnering & WhatsApp-deelknop */
+.check-card-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 11px 13px;
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.check-card-wrap.is-checked {
+  background: var(--primary-soft);
+  border-color: rgba(43, 122, 105, 0.32);
+}
+
+.check-card-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: var(--fs-body);
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.check-card-main input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--primary);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.ms-memory-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(43, 122, 105, 0.25);
+}
+
+.ms-date-input {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  max-width: 132px;
+}
+
+.ms-note-input {
+  flex: 1;
+  min-width: 140px;
+  padding: 4px 9px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+}
+
+.ms-share-btn {
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(43, 122, 105, 0.3);
+  background: var(--surface);
+  color: var(--primary);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ms-share-btn:hover {
+  border-color: var(--primary);
+}
+
+/* 5. CB-voorbereiding: Groei-logboek & Vragenlijstje */
+.cb-prep-body {
+  padding: 12px 16px 16px;
+}
+
+.cb-prep-box {
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cb-prep-box h4 {
+  margin: 0;
+  font-size: var(--fs-card-title);
+  color: var(--text);
+}
+
+.growth-form-row,
+.cb-question-form-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.form-input-sm {
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  min-width: 0;
+}
+
+#growthDateInput {
+  width: 130px;
+}
+
+#growthWeightInput,
+#growthLengthInput {
+  width: 112px;
+  flex: 1;
+}
+
+#cbQuestionInput {
+  flex: 1;
+  min-width: 160px;
+}
+
+.growth-log-list,
+.cb-questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 210px;
+  overflow-y: auto;
+}
+
+.growth-log-item,
+.cb-question-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: var(--fs-sm);
+}
+
+.cb-question-item.is-done {
+  opacity: 0.65;
+  text-decoration: line-through;
+}
+
+.cb-q-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+}
+
+.mini-del-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.mini-del-btn:hover {
+  color: var(--warn-text);
+  background: var(--warn-soft);
+}
+
+/* 6. Interactief Tandjes- & Wisselgebit-Kaartje */
+.teeth-tracker-body {
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.jaw-grid-wrap {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 12px;
+}
+
+.jaw-box {
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jaw-box-title {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.teeth-arch-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.tooth-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 7px 4px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+  transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.tooth-btn:hover {
+  border-color: var(--primary);
+}
+
+.tooth-btn.is-expected-now {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.tooth-btn.is-erupted {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+.tooth-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.tooth-name {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.15;
+}
+
+.tooth-age {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  line-height: 1.1;
+}
+
+
 
 

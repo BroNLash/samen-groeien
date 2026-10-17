@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=42" />
+  <link rel="stylesheet" href="styles.css?v=43" />
 </head>
 <body>
   <a href="#mainContent" class="skip-link">Direct naar inhoud</a>
@@ -232,6 +232,9 @@
         </div>
       </div>
 
+      <!-- Persoonlijk advies op gewicht & voedingstype (Feature 1) -->
+      <div class="personal-weight-banner hidden" id="personalWeightBanner" role="region" aria-label="Persoonlijk advies op gewicht en voedingstype"></div>
+
       <!-- Week-spotlight (Sprongetje / Groeispurt / Week-focus) -->
       <div class="spotlight-box" id="weeklySpotlightBanner">
         <div class="spotlight-header">
@@ -280,6 +283,15 @@
           <span class="mini-pill" id="foodHeaderStagePill">6–7 mnd</span>
         </div>
       </div>
+
+      <!-- Feature 2: Interactieve Rijpheidscheck ('Loopt mijn kindje voor?') -->
+      <details class="minimal-details readiness-check-details" id="foodReadinessDetails">
+        <summary>
+          <span class="summary-title" id="foodReadinessTitle">🚀 Loopt je kind voor? Check de signalen voor de volgende stap</span>
+          <span class="summary-badge" id="foodReadinessBadge">0 / 3 signalen</span>
+        </summary>
+        <div class="readiness-body" id="foodReadinessBody"></div>
+      </details>
 
       <!-- Dynamische voedingskaarten afgestemd op leeftijd -->
       <div class="two-col-grid">
@@ -346,6 +358,21 @@
         </div>
         <div class="simple-list" id="bestFoodsList"></div>
       </div>
+
+      <!-- Feature 3: 'Kook 1× voor het hele gezin' Gezinsmaaltijd-Vertaler -->
+      <details class="minimal-details family-meal-details" id="familyMealTranslatorDetails">
+        <summary>
+          <span class="summary-title" id="familyMealSummaryTitle">👨‍👩‍👧 Kook 1× voor het hele gezin ("Wat eten jullie vanavond?")</span>
+          <span class="summary-badge" id="familyMealStagePill">30-sec aanpassing</span>
+        </summary>
+        <div class="family-meal-body">
+          <p class="subtle-hint" id="familyMealSubtitle">
+            Kies wat jullie vanavond eten en zie direct hoe je (vóór het toevoegen van zout of pittige kruiden) in 30 seconden een veilige portie voor jouw kind(eren) maakt:
+          </p>
+          <div class="filter-row family-meal-chips" id="familyMealChipsRow" role="group" aria-label="Kies jullie gezinsmaaltijd"></div>
+          <div class="family-meal-result" id="familyMealResultBox"></div>
+        </div>
+      </details>
 
       <!-- 5-Minuten Fase-Recepten + 1-Tik WhatsApp Boodschappenlijst -->
       <div class="minimal-card" id="stageRecipesCard">
@@ -449,6 +476,14 @@
               <span id="napCalcResult" class="nap-result-text"></span>
             </div>
           </div>
+
+          <details class="sleep-readiness-details" id="sleepReadinessDetails">
+            <summary>
+              <span id="sleepReadinessTitle">🚀 Klaar voor de volgende slaap-stap?</span>
+              <span class="mini-pill" id="sleepReadinessBadge">0 / 3</span>
+            </summary>
+            <div class="readiness-body" id="sleepReadinessBody"></div>
+          </details>
         </article>
 
         <!-- Tips voor Mama -->
@@ -467,7 +502,7 @@
         <div class="card-head-between">
           <div>
             <h3 id="milestonesCardTitle">🏆 Mijlpalen in deze fase</h3>
-            <p class="subtle-hint">Vink aan wat je kind al laat zien (elk kind groeit in zijn eigen tempo!):</p>
+            <p class="subtle-hint">Vink aan wat je kind al laat zien — leg direct de datum en een herinnering vast of deel een mijlpaalkaartje via WhatsApp:</p>
           </div>
           <span class="mini-pill" id="milestonesProgressPill">0 / 4 afgevinkt</span>
         </div>
@@ -614,6 +649,54 @@
         <div class="cb-three-grid" id="healthCbGrid"></div>
       </article>
 
+      <!-- Feature 5: Consultatiebureau (CB) / Schoolarts Vragenlijstje & Groei-logboek -->
+      <details class="minimal-details cb-prep-details" id="cbPrepDetails" open>
+        <summary>
+          <span class="summary-title" id="cbPrepSummaryTitle">📋 Mijn CB-voorbereiding: Groei-logboek &amp; Vragenlijstje</span>
+          <span class="summary-badge" id="cbPrepSummaryBadge">0 metingen • 0 vragen</span>
+        </summary>
+        <div class="cb-prep-body">
+          <div class="two-col-grid">
+            <div class="cb-prep-box">
+              <div class="card-head-between">
+                <h4>⚖️ Groei-logboek (Gewicht &amp; Lengte)</h4>
+                <span class="mini-pill" id="latestGrowthPill">Nog geen meting</span>
+              </div>
+              <p class="subtle-hint">Het laatst ingevulde gewicht werkt direct je fles-, vocht- en paracetamol-advies bij.</p>
+              <div class="growth-form-row">
+                <input type="date" id="growthDateInput" class="form-input-sm" aria-label="Datum van meting" />
+                <input type="number" id="growthWeightInput" class="form-input-sm" step="0.05" min="1.0" max="75" placeholder="Gewicht (kg)" aria-label="Gewicht in kilogram" />
+                <input type="number" id="growthLengthInput" class="form-input-sm" step="0.5" min="35" max="185" placeholder="Lengte (cm)" aria-label="Lengte in centimeter" />
+                <button type="button" class="btn-primary btn-small" id="addGrowthEntryBtn">+ Log</button>
+              </div>
+              <div class="growth-log-list" id="growthLogList"></div>
+            </div>
+
+            <div class="cb-prep-box">
+              <div class="card-head-between">
+                <h4 id="cbQuestionsBoxTitle">❓ Vragen voor het volgende bezoek</h4>
+                <span class="mini-pill" id="cbQuestionsCountPill">0 open</span>
+              </div>
+              <p class="subtle-hint">Noteer tussendoor vragen zodat je ze in de spreekkamer direct bij de hand hebt.</p>
+              <div class="cb-question-form-row">
+                <input type="text" id="cbQuestionInput" class="form-input-sm" placeholder="Bijv. Spuugt nog na de fles / rode plekjes..." maxlength="140" aria-label="Nieuwe vraag voor het consultatiebureau of de jeugdarts" />
+                <button type="button" class="btn-primary btn-small" id="addCbQuestionBtn">+ Vraag</button>
+              </div>
+              <div class="cb-questions-list" id="cbQuestionsList"></div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- Feature 6: Interactief Tandjes- & Wisselgebit-Kaartje -->
+      <details class="minimal-details teeth-tracker-details" id="teethTrackerDetails">
+        <summary>
+          <span class="summary-title" id="teethTrackerSummaryTitle">🦷 Interactief Tandjes- &amp; Wisselgebit-kaartje</span>
+          <span class="summary-badge" id="teethTrackerBadge">0 / 20 door</span>
+        </summary>
+        <div class="teeth-tracker-body" id="teethTrackerContainer"></div>
+      </details>
+
       <!-- SOS Eerste Hulp bij Lastige Momenten (afgestemd op huidige leeftijd) -->
       <article class="minimal-card">
         <div class="card-head-between">
@@ -696,7 +779,7 @@
       </div>
 
       <p class="subtle-hint">
-        Voeg één of meerdere kinderen toe. Elk kind heeft zijn eigen leeftijd, afgevinkte hapjes, allergenen en mijlpalen.
+        Voeg één of meerdere kinderen toe. Elk kind heeft zijn eigen leeftijd, gewicht, afgevinkte hapjes, allergenen en mijlpalen.
       </p>
 
       <!-- Lijst met bestaande kinderen + knop voor nieuw kind -->
@@ -720,6 +803,22 @@
         <div class="form-field">
           <label for="childDueDateInput">Uitgerekende datum <small>(bij vroeggeboorte)</small></label>
           <input type="date" id="childDueDateInput" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label for="childWeightInput">Huidig gewicht in kg <small>(optioneel, voor ml &amp; dosering)</small></label>
+          <input type="number" id="childWeightInput" step="0.05" min="1.0" max="75" placeholder="Bijv. 6.4" />
+        </div>
+        <div class="form-field">
+          <label for="childFeedingTypeInput">Melkvoeding (0–1 jr) <small>(voor Vitamine D/K)</small></label>
+          <select id="childFeedingTypeInput" class="form-select">
+            <option value="">Beide tonen (Borst &amp; Fles)</option>
+            <option value="breast">🤱 Borstvoeding</option>
+            <option value="formula">🍼 Kunstvoeding (Fles)</option>
+            <option value="combo">🤱+🍼 Combinatie (Borst &amp; Fles)</option>
+          </select>
         </div>
       </div>
 
@@ -949,7 +1048,7 @@
         <section class="legal-section">
           <h3>🔒 3. Privacyverklaring &amp; Lokale Opslag (AVG / Play Store Data Safety)</h3>
           <p>
-            <strong>Jouw gezinsgegevens zijn 100% privé:</strong> Namen, geboortedatums, afgevinkte hapjes, allergenen, mijlpalen en bewaarde recepten worden <strong>uitsluitend lokaal op jouw eigen toestel</strong> opgeslagen (via <code>localStorage</code> van je browser/telefoon).
+            <strong>Jouw gezinsgegevens zijn 100% privé:</strong> Namen, geboortedatums, gewicht/groeimetingen, voedingstype, afgevinkte hapjes, allergenen, mijlpalen (met herinneringen), tandjes en CB-vragen worden <strong>uitsluitend lokaal op jouw eigen toestel</strong> opgeslagen (via <code>localStorage</code> van je browser/telefoon).
           </p>
           <ul class="clean-bullets legal-sources-list">
             <li>Er worden <strong>geen kindprofielen of gezondheidsgegevens</strong> naar externe servers verstuurd.</li>
@@ -978,7 +1077,7 @@
     </div>
   </dialog>
 
-  <script src="data.js?v=42"></script>
-  <script src="app.js?v=42"></script>
+  <script src="data.js?v=43"></script>
+  <script src="app.js?v=43"></script>
 </body>
 </html>
