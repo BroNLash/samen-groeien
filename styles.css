@@ -5561,3 +5561,256 @@ p, li {
   border-color: rgba(43, 122, 105, 0.45);
   box-shadow: 0 6px 20px rgba(43, 122, 105, 0.09);
 }
+
+/* =========================================================================
+   IN-PLACE PERSONALISATIE & SEMANTISCHE SECTIE-KLEURCODERING (WAYFINDING)
+   ========================================================================= */
+
+/* 1. In-Place Personalisatie binnen de Melkvoeding-kerncijferkaart */
+.stat-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.stat-personal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px dashed color-mix(in srgb, var(--primary) 45%, var(--border));
+  background: var(--surface);
+  color: var(--primary);
+  cursor: pointer;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.stat-personal-btn.has-weight {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+  background: var(--primary-soft);
+}
+
+.stat-personal-btn:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.big-baby-inline-note {
+  font-size: var(--fs-body);
+  line-height: 1.48;
+  color: var(--text);
+}
+
+.personalized-dosing-strip {
+  display: none !important;
+}
+
+/* 2. Compacte Fase-Statusbalk voor Hero op Tab 2 t/m 5 (Directe focus op actieve sectie) */
+.hero-collapse-toggle {
+  margin-left: auto;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 3px 10px;
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--primary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.hero-collapse-toggle:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+.hero-collapsible-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hero-card.is-collapsed-for-tab {
+  padding: 11px 14px;
+  gap: 0;
+  background: var(--surface);
+}
+
+.hero-card.is-collapsed-for-tab .hero-collapsible-body,
+.hero-card.is-collapsed-for-tab .hero-summary {
+  display: none !important;
+}
+
+.hero-card.is-collapsed-for-tab .hero-top {
+  align-items: center;
+}
+
+.hero-card.is-collapsed-for-tab .hero-emoji {
+  width: 38px;
+  height: 38px;
+  font-size: 1.45rem;
+}
+
+.hero-card.is-collapsed-for-tab .hero-title {
+  font-size: var(--fs-card-title);
+}
+
+/* 3. Semantisch 5-Pijler Kleurensysteem (Wayfinding per Sectie: 60-30-10 Best Practice) */
+:root {
+  /* Sectie 1: Voeding — Saliegroen */
+  --pillar-food: #2b7a69;
+  --pillar-food-soft: #e6f3f0;
+  /* Sectie 2: Spel — Warm Amber / Terracotta-Goud */
+  --pillar-games: #c2651a;
+  --pillar-games-soft: #fdf1e4;
+  /* Sectie 3: Slaap & Groei — Kalmerend Nachtblauw / Indigo */
+  --pillar-tips: #3f528c;
+  --pillar-tips-soft: #eaeefa;
+  /* Sectie 4: Eet-Check — Helder Oceaanblauw / Teal */
+  --pillar-lookup: #196b85;
+  --pillar-lookup-soft: #e6f3f8;
+  /* Sectie 5: SOS & CB — Warm Koraalrood */
+  --pillar-sos: #b8362c;
+  --pillar-sos-soft: #fdedec;
+}
+
+html[data-theme="dark"] {
+  --pillar-food: #4cc2a9;
+  --pillar-food-soft: rgba(76, 194, 169, 0.15);
+  --pillar-games: #f59e0b;
+  --pillar-games-soft: rgba(245, 158, 11, 0.16);
+  --pillar-tips: #818cf8;
+  --pillar-tips-soft: rgba(129, 140, 248, 0.16);
+  --pillar-lookup: #38bdf8;
+  --pillar-lookup-soft: rgba(56, 189, 248, 0.16);
+  --pillar-sos: #f87171;
+  --pillar-sos-soft: rgba(248, 113, 113, 0.16);
+}
+
+/* Koppel elke .tab-panel aan zijn eigen sectiekleur zodat alle badges, knoppen en koppen binnen die sectie harmonieus meekleuren */
+#panelFood {
+  --primary: var(--pillar-food);
+  --primary-soft: var(--pillar-food-soft);
+}
+
+#panelGames {
+  --primary: var(--pillar-games);
+  --primary-soft: var(--pillar-games-soft);
+}
+
+#panelTips {
+  --primary: var(--pillar-tips);
+  --primary-soft: var(--pillar-tips-soft);
+}
+
+#panelLookup {
+  --primary: var(--pillar-lookup);
+  --primary-soft: var(--pillar-lookup-soft);
+}
+
+#panelSos {
+  --primary: var(--pillar-sos);
+  --primary-soft: var(--pillar-sos-soft);
+}
+
+/* Onderste / Bovenste Navigatiebalk (.pillar-nav): Actieve tab kleurt direct in de eigen sectiekleur */
+.pillar-nav .nav-tab[data-view="food"].active {
+  background: var(--pillar-food);
+  color: #fff;
+}
+
+.pillar-nav .nav-tab[data-view="games"].active {
+  background: var(--pillar-games);
+  color: #fff;
+}
+
+.pillar-nav .nav-tab[data-view="tips"].active {
+  background: var(--pillar-tips);
+  color: #fff;
+}
+
+.pillar-nav .nav-tab[data-view="lookup"].active {
+  background: var(--pillar-lookup);
+  color: #fff;
+}
+
+.pillar-nav .nav-tab[data-view="sos"].active {
+  background: var(--pillar-sos);
+  color: #fff;
+}
+
+body[data-active-view="food"] .pillar-nav {
+  border-top-color: color-mix(in srgb, var(--pillar-food) 42%, var(--border));
+}
+body[data-active-view="games"] .pillar-nav {
+  border-top-color: color-mix(in srgb, var(--pillar-games) 42%, var(--border));
+}
+body[data-active-view="tips"] .pillar-nav {
+  border-top-color: color-mix(in srgb, var(--pillar-tips) 42%, var(--border));
+}
+body[data-active-view="lookup"] .pillar-nav {
+  border-top-color: color-mix(in srgb, var(--pillar-lookup) 42%, var(--border));
+}
+body[data-active-view="sos"] .pillar-nav {
+  border-top-color: color-mix(in srgb, var(--pillar-sos) 42%, var(--border));
+}
+
+/* Duidelijke Sectie-Banner (.section-header-card) bovenaan élke van de 5 secties */
+.section-header-card {
+  position: relative;
+  border-left: 5px solid var(--primary);
+  background: linear-gradient(135deg, var(--primary-soft) 0%, var(--surface) 75%);
+  border-color: color-mix(in srgb, var(--primary) 28%, var(--border));
+  border-left-color: var(--primary);
+  box-shadow: 0 3px 14px color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.section-eyebrow-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--primary);
+  margin-bottom: 3px;
+}
+
+/* Paracetamol op maat balk bovenaan de SOS-sectie */
+.sos-personal-pcm-bar {
+  margin-top: 6px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border));
+}
+
+.sos-pcm-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sos-pcm-bar-text {
+  font-size: var(--fs-body);
+  line-height: 1.45;
+  color: var(--text);
+  flex: 1;
+  min-width: 200px;
+}
+

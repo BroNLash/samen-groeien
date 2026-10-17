@@ -1863,95 +1863,119 @@
     const feedingType = active.feedingType || "";
     const childName = active.name || "je kindje";
     const fmtKg = weightKg > 0 ? weightKg.toFixed(weightKg % 1 === 0 ? 0 : 1).replace(".", ",") : "";
+    const activeStage = stage || getStageForWeek(week);
 
     const feedingTypeLabels = {
       breast: "🤱 Borstvoeding",
       formula: "🍼 Kunstvoeding (fles)",
       combo: "🤱🍼 Combinatie (borst + fles)"
     };
+    const feedingShortLabels = {
+      breast: "Borstvoeding (op verzoek)",
+      formula: "Kunstvoeding (fles)",
+      combo: "Combinatie (borst + fles)"
+    };
     const feedingLabel = feedingTypeLabels[feedingType] || "";
+    const feedingShortLabel = feedingShortLabels[feedingType] || "";
 
-    // 1. Melk & Vocht berekening op lichaamsgewicht
+    // Haal het exacte aantal voedingen uit de huidige fase zodat er nooit tegenstrijdigheid ontstaat
+    let minFeeds = 5;
+    let maxFeeds = 6;
+    const feedsStr = String(activeStage?.nutrition?.feedsPerDay || "");
+    const rangeMatch = feedsStr.match(/(\d+)\s*(?:tot|à|–|-)\s*(\d+)/i);
+    if (rangeMatch) {
+      minFeeds = Math.max(1, Number(rangeMatch[1]));
+      maxFeeds = Math.max(minFeeds, Number(rangeMatch[2]));
+    } else if (week <= 4) {
+      minFeeds = 7;
+      maxFeeds = 8;
+    } else if (week <= 12) {
+      minFeeds = 6;
+      maxFeeds = 7;
+    } else if (week <= 23) {
+      minFeeds = 5;
+      maxFeeds = 6;
+    } else {
+      minFeeds = 4;
+      maxFeeds = 5;
+    }
+
+    // 1. Melk & Vocht berekening op lichaamsgewicht (alleen 150 ml/kg in de melkfase 0–5 mnd; vanaf 6 mnd geldt het faseschema)
     let milkTitle = "🍼 Melk & Vocht op gewicht";
     let milkAdviceHtml = "";
+    let milkInlineMetricHtml = "";
     let milkOppasShort = "";
     let bigBabyNoteHtml = "";
+    let fluidShortHtml = "";
 
     if (weightKg > 0) {
-      if (week <= 26) {
-        // 0-6 maanden: NCJ / JGZ richtlijn = 150 ml per kg per 24u (max 1000 ml/dag)
+      if (week <= 23) {
+        // 0–5 maanden: NCJ / JGZ richtlijn = 150 ml per kg per 24u (max 1000 ml/dag)
         const rawDailyMl = Math.round((weightKg * 150) / 10) * 10;
         const dailyMl = Math.min(1000, Math.max(300, rawDailyMl));
-        let minFeeds = 5;
-        let maxFeeds = 6;
-        if (week <= 4) {
-          minFeeds = 7;
-          maxFeeds = 8;
-        } else if (week <= 12) {
-          minFeeds = 6;
-          maxFeeds = 7;
-        } else if (week <= 20) {
-          minFeeds = 5;
-          maxFeeds = 6;
-        } else {
-          minFeeds = 4;
-          maxFeeds = 5;
-        }
         const perFeedLow = Math.round(dailyMl / maxFeeds / 5) * 5;
         const perFeedHigh = Math.round(dailyMl / minFeeds / 5) * 5;
 
         if (feedingType === "breast") {
-          milkAdviceHtml = `Op verzoek aan de borst. Geef je een afgekolfd flesje? Richtlijn bij <strong>${fmtKg} kg</strong> (150 ml/kg): ca. <strong>${dailyMl} ml per 24u</strong> (ca. <strong>${perFeedLow}–${perFeedHigh} ml</strong> per flesje bij ${minFeeds}–${maxFeeds} voedingen).`;
-          milkOppasShort = `Op ${fmtKg} kg: ca. ${dailyMl} ml/24u (afgekolfd flesje: ca. ${perFeedLow}–${perFeedHigh} ml per keer)`;
+          milkInlineMetricHtml = `Op verzoek aan de borst (afgekolfd flesje bij <strong class="num-bold">${fmtKg} kg</strong>: <strong class="num-bold">${perFeedLow}–${perFeedHigh} ml</strong> per keer, ~<strong class="num-bold">${dailyMl} ml/dag</strong>)`;
+          milkOppasShort = `Op ${fmtKg} kg: borstvoeding op verzoek (afgekolfd flesje: ca. ${perFeedLow}–${perFeedHigh} ml per keer, ~${dailyMl} ml/24u)`;
         } else {
-          milkAdviceHtml = `Richtlijn bij <strong>${fmtKg} kg</strong> (150 ml/kg): ca. <strong>${dailyMl} ml per 24u</strong> — dat is ca. <strong>${perFeedLow}–${perFeedHigh} ml per flesje</strong> (bij ${minFeeds}–${maxFeeds} voedingen/dag, max. 1000 ml).`;
-          milkOppasShort = `Op ${fmtKg} kg: ca. ${dailyMl} ml/24u (ca. ${perFeedLow}–${perFeedHigh} ml per fles bij ${minFeeds}–${maxFeeds}×/dag)`;
+          milkInlineMetricHtml = `<strong class="num-bold">${perFeedLow}–${perFeedHigh} ml</strong> per flesje (~<strong class="num-bold">${dailyMl} ml/dag</strong> op <strong class="num-bold">${fmtKg} kg</strong>, 150 ml/kg)`;
+          milkOppasShort = `Op ${fmtKg} kg: ca. ${perFeedLow}–${perFeedHigh} ml per flesje (~${dailyMl} ml/24u bij ${minFeeds}–${maxFeeds} voedingen)`;
         }
+        milkAdviceHtml = milkInlineMetricHtml;
 
         // Vangnet voor flinke baby's die tegen de 1000 ml grens aanlopen vóór 4 maanden
         if (week <= 16 && (rawDailyMl >= 930 || weightKg >= 6.2)) {
-          bigBabyNoteHtml = `💡 <strong>Flinke groeier (${fmtKg} kg):</strong> Je kindje zit qua gewicht al dicht bij het dagmaximum van <strong>1000 ml kunstvoeding</strong>. Lijkt je baby nog hongerig? Start vóór <strong>4 maanden (17 weken)</strong> nog niet met vaste hapjes (de darmpjes zijn nog niet rijp), maar gebruik een kleiner speentje (maat 0/1), voed horizontaal (15–20 min per fles) of overleg met het CB over voeding voor hongerige baby's.`;
+          bigBabyNoteHtml = `💡 <strong>Flinke groeier (${fmtKg} kg):</strong> Je baby zit qua gewicht al dicht bij het dagmaximum van <strong>1000 ml kunstvoeding</strong>. Start vóór <strong>4 maanden (17 weken)</strong> nog niet met vaste hapjes (de darmpjes zijn nog niet rijp), maar gebruik een kleiner speentje (maat 0/1) of voed horizontaal (15–20 min per fles).`;
         }
-      } else if (week <= 36) {
-        milkAdviceHtml = `Bij <strong>${fmtKg} kg</strong> (6–8 mnd): ca. <strong>600–800 ml melk/dag</strong> (3–4 voedingen van 180–200 ml) + opbouw van 2–3 vaste hapjes en oefenslokjes water.`;
-        milkOppasShort = `Op ${fmtKg} kg: ca. 600–800 ml melk/dag (3–4 voedingen) + oefenslokjes water`;
       } else if (week <= 52) {
-        milkAdviceHtml = `Bij <strong>${fmtKg} kg</strong> (9–12 mnd): ca. <strong>500 ml melk/dag</strong> (2–3 voedingen) naast 3 maaltijden en extra water/lauwe thee uit een beker.`;
-        milkOppasShort = `Op ${fmtKg} kg: ca. 500 ml melk/dag + 3 maaltijden + water`;
+        // Vanaf 6 maanden bouwt melk af naarmate vaste maaltijden toenemen: gebruik altijd exact de fase-richtlijn zodat er geen tegenstrijdigheid is
+        const stageMilk = activeStage?.nutrition?.milkVolumeMetric || "600–800 ml/dag";
+        const stageFeeds = activeStage?.nutrition?.feedsPerDay || "";
+        milkOppasShort = `${stageMilk} (${stageFeeds})`;
       } else {
         milkTitle = "💧 Vocht & Zuivel op gewicht";
         const totalFluidMl = Math.min(1800, Math.max(900, Math.round((1000 + Math.max(0, weightKg - 10) * 50) / 50) * 50));
-        milkAdviceHtml = `Bij <strong>${fmtKg} kg</strong>: totale vochtbehoefte ca. <strong>${totalFluidMl} ml per dag</strong> (waarvan <strong>300 ml zuivel</strong> en de rest water of ongesuikerde thee).`;
+        fluidShortHtml = `Vochtbehoefte bij <strong class="num-bold">${fmtKg} kg</strong>: ~<strong class="num-bold">${totalFluidMl} ml/dag</strong> (incl. 300 ml zuivel)`;
+        milkAdviceHtml = fluidShortHtml;
         milkOppasShort = `Op ${fmtKg} kg: ca. ${totalFluidMl} ml vocht/dag (incl. 300 ml zuivel)`;
       }
     }
 
-    // 2. Vitamine D & K advies op basis van leeftijd en voedingstype
+    // 2. Vitamine D & K advies op basis van leeftijd en voedingstype (compact & scanbaar)
     let vitTitle = "☀️ Vitamine D & K op maat";
     let vitAdviceHtml = "";
+    let vitShortHtml = "";
     if (week <= 12) {
       if (feedingType === "breast") {
-        vitAdviceHtml = `Geef dagelijks <strong>10 mcg Vitamine D</strong> én <strong>150 mcg Vitamine K</strong> (vanaf dag 8 t/m 3 maanden bij borstvoeding).`;
+        vitShortHtml = `☀️ <strong class="num-bold">10 mcg</strong> Vit D + <strong class="num-bold">150 mcg</strong> Vit K/dag`;
+        vitAdviceHtml = `Geef dagelijks <strong>10 mcg Vitamine D</strong> én <strong>150 mcg Vitamine K</strong> (t/m 3 mnd bij borstvoeding).`;
       } else if (feedingType === "formula") {
-        vitAdviceHtml = `Geef dagelijks <strong>10 mcg Vitamine D</strong>. Extra Vitamine K is <strong>niet nodig</strong> bij ≥ 500 ml kunstvoeding per dag.`;
+        vitShortHtml = `☀️ <strong class="num-bold">10 mcg</strong> Vit D/dag (geen extra Vit K nodig bij ≥500 ml flesvoeding)`;
+        vitAdviceHtml = `Geef dagelijks <strong>10 mcg Vitamine D</strong> (extra Vit K is niet nodig bij ≥ 500 ml kunstvoeding/dag).`;
       } else if (feedingType === "combo") {
-        vitAdviceHtml = `Geef dagelijks <strong>10 mcg Vitamine D</strong> + <strong>150 mcg Vitamine K</strong> zolang je baby minder dan 500 ml kunstvoeding per dag drinkt (t/m 3 mnd).`;
+        vitShortHtml = `☀️ <strong class="num-bold">10 mcg</strong> Vit D (+ <strong class="num-bold">150 mcg</strong> Vit K bij &lt;500 ml flesvoeding/dag)`;
+        vitAdviceHtml = `Geef dagelijks <strong>10 mcg Vitamine D</strong> (+ <strong>150 mcg Vitamine K</strong> bij &lt;500 ml kunstvoeding/dag t/m 3 mnd).`;
       } else {
-        vitAdviceHtml = `Dagelijks <strong>10 mcg Vitamine D</strong> (+ <strong>150 mcg Vitamine K</strong> t/m 3 mnd bij borstvoeding of &lt;500 ml flesvoeding).`;
+        vitShortHtml = `☀️ <strong class="num-bold">10 mcg</strong> Vit D/dag (+ <strong class="num-bold">150 mcg</strong> Vit K bij borstvoeding t/m 3 mnd)`;
+        vitAdviceHtml = `Dagelijks <strong>10 mcg Vitamine D</strong> (+ <strong>150 mcg Vitamine K</strong> t/m 3 mnd bij borstvoeding).`;
       }
     } else if (week <= 208) {
-      vitAdviceHtml = `Geef dagelijks <strong>10 mcg Vitamine D</strong> (aanbevolen voor álle kinderen t/m de 4e verjaardag, ongeacht borst-, fles- of gezinsvoeding).`;
+      vitShortHtml = `☀️ <strong class="num-bold">10 mcg</strong> Vitamine D/dag (t/m 4 jaar)`;
+      vitAdviceHtml = `Geef dagelijks <strong>10 mcg Vitamine D</strong> (aanbevolen voor alle kinderen t/m 4 jaar).`;
     } else {
-      vitAdviceHtml = `Vanaf 4 jaar: <strong>10 mcg Vitamine D</strong> alleen nodig bij een getinte/donkere huid of weinig buitenlicht.`;
+      vitShortHtml = `☀️ Vitamine D alleen bij getinte huid of weinig buitenlicht`;
+      vitAdviceHtml = `Vanaf 4 jaar: <strong>10 mcg Vitamine D</strong> bij een getinte huid of weinig buitenlicht.`;
     }
 
-    // 3. Kinderparacetamol richtlijn op lichaamsgewicht (NHG / Nederlands Kinderformularium)
+    // 3. Kinderparacetamol richtlijn op lichaamsgewicht (NHG / Nederlands Kinderformularium — voor SOS & Oppas-kaartje)
     let pcmTitle = "🌡️ Paracetamol-richtlijn (SOS)";
     let pcmAdviceHtml = "";
     let pcmOppasShort = "";
     if (weightKg > 0) {
       if (week < 12 || weightKg < 5.5) {
-        pcmAdviceHtml = `Onder 3 mnd / &lt; 5,5 kg (nu <strong>${fmtKg} kg</strong>): geef paracetamol <strong>alleen na overleg met de huisarts</strong> (richtlijn vanaf 3 kg op artsadvies: <strong>60 mg zetpil</strong>, max. 2–3× per 24u).`;
+        pcmAdviceHtml = `Onder 3 mnd / &lt; 5,5 kg (nu <strong>${fmtKg} kg</strong>): paracetamol <strong>alleen na overleg met de huisarts</strong> (richtlijn vanaf 3 kg op artsadvies: <strong>60 mg zetpil</strong>, max. 2–3× per 24u).`;
         pcmOppasShort = `Baby <3 mnd / ${fmtKg} kg: paracetamol alleen na overleg met huisarts (60 mg zetpil)`;
       } else if (weightKg < 10) {
         pcmAdviceHtml = `Bij <strong>${fmtKg} kg</strong> (5,5–10 kg): <strong>120 mg</strong> zetpil of drank, max. <strong>2–3× per 24 uur</strong> (minimaal 8 uur ertussen).`;
@@ -1977,119 +2001,116 @@
       fmtKg,
       feedingType,
       feedingLabel,
+      feedingShortLabel,
       childName,
       milkTitle,
       milkAdviceHtml,
+      milkInlineMetricHtml,
+      fluidShortHtml,
       milkOppasShort,
       bigBabyNoteHtml,
       vitTitle,
       vitAdviceHtml,
+      vitShortHtml,
       pcmTitle,
       pcmAdviceHtml,
       pcmOppasShort
     };
   }
 
+  function openWeightModalEditor() {
+    const profDialog = document.getElementById("profileDialog");
+    const active = getActiveChild();
+    populateProfileFormForChild(active ? active.id : "");
+    if (profDialog) profDialog.showModal();
+    const wInput = document.getElementById("childWeightInput");
+    if (wInput) wInput.focus();
+  }
+
   function renderPersonalWeightBanner(stage, week) {
-    const bannerEl = document.getElementById("personalWeightBanner");
-    if (!bannerEl) return;
-
     const info = getPersonalWeightAdvice(week, stage);
+    const vitalMilkEl = document.getElementById("vitalMilkVolume");
+    const vitalMilkPersonalRowEl = document.getElementById("vitalMilkPersonalRow");
+    const vitalMilkPersonalBtnEl = document.getElementById("vitalMilkPersonalBtn");
+    const bannerEl = document.getElementById("personalWeightBanner");
+    const sosPcmBarEl = document.getElementById("sosPersonalPcmBar");
 
-    // Verrijk ook direct de bovenste Melk/Drinken kerncijfer-kaart als er een gewicht bekend is in de eerste 6 maanden
-    if (info.weightKg > 0 && info.milkOppasShort && week <= 26) {
-      const vitalMilkEl = document.getElementById("vitalMilkVolume");
-      if (vitalMilkEl) {
-        vitalMilkEl.innerHTML = `<span class="stat-row-key">Op ${escapeHtml(info.fmtKg)} kg:</span> <span class="stat-row-text">${boldNumbersInEscapedHtml(
-          escapeHtml(info.milkOppasShort.replace(/^Op [^:]+:\s*/, ""))
-        )}</span>`;
+    // 1. Knopje rechtsboven in de Melkvoeding-kaart om direct gewicht/voedingstype in te stellen of te wijzigen
+    if (vitalMilkPersonalBtnEl) {
+      if (info.weightKg > 0) {
+        vitalMilkPersonalBtnEl.innerHTML = `⚖️ ${escapeHtml(info.fmtKg)} kg ✏️`;
+        vitalMilkPersonalBtnEl.classList.add("has-weight");
+      } else if (info.feedingType) {
+        vitalMilkPersonalBtnEl.innerHTML = `⚖️ + Gewicht`;
+        vitalMilkPersonalBtnEl.classList.remove("has-weight");
+      } else {
+        vitalMilkPersonalBtnEl.innerHTML = `⚖️ Op maat`;
+        vitalMilkPersonalBtnEl.classList.remove("has-weight");
+      }
+      vitalMilkPersonalBtnEl.onclick = openWeightModalEditor;
+    }
+
+    // 2. In-place verrijking van de Melkvoeding-kaart (GEEN los dubbel tekstblok meer eronder!)
+    if (info.weightKg > 0 && info.milkInlineMetricHtml && week <= 23 && vitalMilkEl) {
+      vitalMilkEl.innerHTML = `<span class="stat-row-key">Hoeveelheid (${escapeHtml(info.fmtKg)} kg):</span> <span class="stat-row-text">${info.milkInlineMetricHtml}</span>`;
+    }
+
+    if (vitalMilkPersonalRowEl) {
+      const rowParts = [];
+      if (week > 52 && info.fluidShortHtml) {
+        rowParts.push(info.fluidShortHtml);
+      } else if (info.feedingShortLabel && week <= 52) {
+        rowParts.push(escapeHtml(info.feedingShortLabel));
+      }
+      if (info.vitShortHtml) {
+        rowParts.push(info.vitShortHtml);
+      }
+
+      if (rowParts.length > 0) {
+        const keyLabel = info.hasCustomization
+          ? `Op maat (${escapeHtml(info.childName)}${info.fmtKg && week > 23 && week <= 52 ? ` • ${escapeHtml(info.fmtKg)} kg` : ""}):`
+          : `Vitamine-advies:`;
+        vitalMilkPersonalRowEl.classList.remove("hidden");
+        vitalMilkPersonalRowEl.innerHTML = `<span class="stat-row-key">${keyLabel}</span> <span class="stat-row-text">${rowParts.join(" • ")}</span>`;
+      } else {
+        vitalMilkPersonalRowEl.classList.add("hidden");
+        vitalMilkPersonalRowEl.innerHTML = "";
       }
     }
 
-    if (!info.hasCustomization) {
-      // Toon in de eerste 2 jaar een subtiele, uitnodigende tip om gewicht/voedingstype in te vullen
-      if (week <= 104) {
+    // 3. Toon #personalWeightBanner ALLEEN als er een medische 'flinke groeier (<4 mnd bij 1000ml grens)' tip is
+    if (bannerEl) {
+      if (info.bigBabyNoteHtml) {
         bannerEl.classList.remove("hidden");
-        bannerEl.innerHTML = `
-          <div class="personal-weight-banner-top" style="margin-bottom:0;">
-            <span class="personal-weight-title">⚖️ Tip: Bereken exacte fleshoeveelheden (150 ml/kg), vitamine D/K &amp; paracetamol op gewicht</span>
-            <button type="button" class="personal-weight-edit-btn" data-open-weight-modal="1">➕ Gewicht &amp; voeding invullen</button>
-          </div>
-        `;
-        bannerEl.querySelectorAll("[data-open-weight-modal]").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            const profDialog = document.getElementById("profileDialog");
-            const active = getActiveChild();
-            populateProfileFormForChild(active ? active.id : "");
-            if (profDialog) profDialog.showModal();
-            const wInput = document.getElementById("childWeightInput");
-            if (wInput) wInput.focus();
-          });
-        });
+        bannerEl.innerHTML = `<div class="big-baby-inline-note">${info.bigBabyNoteHtml}</div>`;
       } else {
         bannerEl.classList.add("hidden");
         bannerEl.innerHTML = "";
       }
-      return;
     }
 
-    bannerEl.classList.remove("hidden");
-    const tagParts = [
-      info.weightKg > 0 ? `${info.fmtKg} kg` : "",
-      info.feedingLabel
-    ].filter(Boolean);
-
-    const chips = [];
-    if (info.milkAdviceHtml) {
-      chips.push(`
-        <div class="personal-weight-chip">
-          <span class="personal-weight-chip-label">${info.milkTitle}</span>
-          <div class="personal-weight-chip-val">${info.milkAdviceHtml}</div>
-        </div>
-      `);
-    }
-    if (info.vitAdviceHtml) {
-      chips.push(`
-        <div class="personal-weight-chip">
-          <span class="personal-weight-chip-label">${info.vitTitle}</span>
-          <div class="personal-weight-chip-val">${info.vitAdviceHtml}</div>
-        </div>
-      `);
-    }
-    if (info.pcmAdviceHtml) {
-      chips.push(`
-        <div class="personal-weight-chip">
-          <span class="personal-weight-chip-label">${info.pcmTitle}</span>
-          <div class="personal-weight-chip-val">${info.pcmAdviceHtml}</div>
-        </div>
-      `);
-    }
-
-    bannerEl.innerHTML = `
-      <div class="personal-weight-banner-top">
-        <span class="personal-weight-title">⚖️ Op maat voor ${escapeHtml(info.childName)}${tagParts.length ? ` (${escapeHtml(tagParts.join(" • "))})` : ""}</span>
-        <button type="button" class="personal-weight-edit-btn" data-open-weight-modal="1">✏️ Gewicht / voeding aanpassen</button>
-      </div>
-      <div class="personal-weight-grid">
-        ${chips.join("")}
-      </div>
-      ${
-        info.bigBabyNoteHtml
-          ? `<div class="highlight-note" style="margin-top:0.55rem; margin-bottom:0;">${info.bigBabyNoteHtml}</div>`
-          : ""
+    // 4. Toon Paracetamol-richtlijn op gewicht uitsluitend op de SOS-tab (waar een ouder hem nodig heeft!)
+    if (sosPcmBarEl) {
+      sosPcmBarEl.classList.remove("hidden");
+      if (info.weightKg > 0 && info.pcmAdviceHtml) {
+        sosPcmBarEl.innerHTML = `
+          <div class="sos-pcm-bar-inner">
+            <span class="sos-pcm-bar-text">🌡️ <strong>Paracetamol op maat voor ${escapeHtml(info.childName)}:</strong> ${info.pcmAdviceHtml}</span>
+            <button type="button" class="stat-personal-btn has-weight" data-edit-sos-weight="1">✏️ ${escapeHtml(info.fmtKg)} kg</button>
+          </div>
+        `;
+      } else {
+        sosPcmBarEl.innerHTML = `
+          <div class="sos-pcm-bar-inner">
+            <span class="sos-pcm-bar-text">🌡️ <strong>Paracetamol-dosering op gewicht:</strong> Vul het gewicht van je kind in om hier direct de juiste zetpil-/drankdosering te zien.</span>
+            <button type="button" class="stat-personal-btn" data-edit-sos-weight="1">➕ Gewicht invullen</button>
+          </div>
+        `;
       }
-    `;
-
-    bannerEl.querySelectorAll("[data-open-weight-modal]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const profDialog = document.getElementById("profileDialog");
-        const active = getActiveChild();
-        populateProfileFormForChild(active ? active.id : "");
-        if (profDialog) profDialog.showModal();
-        const wInput = document.getElementById("childWeightInput");
-        if (wInput) wInput.focus();
+      sosPcmBarEl.querySelectorAll("[data-edit-sos-weight]").forEach((btn) => {
+        btn.addEventListener("click", openWeightModalEditor);
       });
-    });
+    }
   }
 
   // =========================================================================
@@ -2759,11 +2780,15 @@
   // =========================================================================
   function renderTipsAndSleep(stage, week, spotlight) {
     const store = getActiveStore();
+    const tipsHeaderStagePillEl = document.getElementById("tipsHeaderStagePill");
+    const tipsHeaderTitleEl = document.getElementById("tipsHeaderTitle");
     const sleepStagePillEl = document.getElementById("sleepStagePill");
     const momTipsStagePillEl = document.getElementById("momTipsStagePill");
     const momTipsCardTitleEl = document.getElementById("momTipsCardTitle");
     const milestonesCardTitleEl = document.getElementById("milestonesCardTitle");
 
+    if (tipsHeaderStagePillEl) tipsHeaderStagePillEl.textContent = stage.shortLabel;
+    if (tipsHeaderTitleEl) tipsHeaderTitleEl.textContent = `Slaapritme, Tips & Mijlpalen (${stage.shortLabel})`;
     if (sleepStagePillEl) sleepStagePillEl.textContent = stage.shortLabel;
     if (momTipsStagePillEl) momTipsStagePillEl.textContent = stage.shortLabel;
     if (momTipsCardTitleEl) momTipsCardTitleEl.textContent = `💛 Tips voor mama (${stage.shortLabel})`;
@@ -5223,6 +5248,8 @@
   // 10. TAB 5: SOS "EERSTE HULP" & CONSULTATIEBUREAU / RVP / TANDJES
   // =========================================================================
   function renderSosAndCb(stage, week) {
+    const sosHeaderStagePillEl = document.getElementById("sosHeaderStagePill");
+    const sosHeaderTitleEl = document.getElementById("sosHeaderTitle");
     const cbTitleEl = document.getElementById("cbCardTitle");
     const cbLabel = document.getElementById("cbStageLabel");
     const cbSub = document.getElementById("cbAgeSubtitle");
@@ -5233,6 +5260,12 @@
     if (!cbGrid || !sosContainer) return;
 
     const isSchoolAge = week > 208;
+    if (sosHeaderStagePillEl) sosHeaderStagePillEl.textContent = stage.shortLabel;
+    if (sosHeaderTitleEl) {
+      sosHeaderTitleEl.textContent = isSchoolAge
+        ? `SOS Eerste Hulp & Schoolarts (${stage.shortLabel})`
+        : `SOS Eerste Hulp & Consultatiebureau (${stage.shortLabel})`;
+    }
     if (cbTitleEl) {
       cbTitleEl.textContent = isSchoolAge
         ? "🏫 Schoolarts (JGZ), Vaccinaties & Gebit"
@@ -6676,10 +6709,36 @@
     return VALID_VIEWS.includes(mapped) ? mapped : "food";
   }
 
+  let heroManuallyExpandedOnOtherTab = false;
+
+  function syncHeroCompactForView(safeView) {
+    const heroEl = document.getElementById("stageHero");
+    const toggleBtn = document.getElementById("toggleHeroOverviewBtn");
+    if (!heroEl || !toggleBtn) return;
+
+    if (safeView === "food") {
+      heroEl.classList.remove("is-collapsed-for-tab");
+      toggleBtn.classList.add("hidden");
+      toggleBtn.setAttribute("aria-expanded", "true");
+    } else {
+      toggleBtn.classList.remove("hidden");
+      const isCollapsed = !heroManuallyExpandedOnOtherTab;
+      heroEl.classList.toggle("is-collapsed-for-tab", isCollapsed);
+      toggleBtn.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
+      toggleBtn.textContent = isCollapsed ? "Fase-overzicht ▾" : "Inklappen ▴";
+    }
+  }
+
   function setView(view, autoScroll = false, fromPopState = false) {
     const safeView = normalizeViewName(view);
     const isSameView = state.activeView === safeView;
     state.activeView = safeView;
+    if (!isSameView) {
+      heroManuallyExpandedOnOtherTab = false;
+    }
+    document.body.setAttribute("data-active-view", safeView);
+    syncHeroCompactForView(safeView);
+
     document.querySelectorAll(".nav-tab").forEach((t) => {
       const isAct = t.dataset.view === safeView;
       t.classList.toggle("active", isAct);
@@ -6746,6 +6805,15 @@
     document.querySelectorAll(".nav-tab").forEach((tab) => {
       tab.addEventListener("click", () => setView(tab.dataset.view, true));
     });
+
+    // Hero overzicht in-/uitklappen op niet-Voeding tabs
+    const toggleHeroBtn = document.getElementById("toggleHeroOverviewBtn");
+    if (toggleHeroBtn) {
+      toggleHeroBtn.addEventListener("click", () => {
+        heroManuallyExpandedOnOtherTab = !heroManuallyExpandedOnOtherTab;
+        syncHeroCompactForView(state.activeView);
+      });
+    }
 
     // Nachtmodus wissel
     document.getElementById("themeToggleBtn").addEventListener("click", () => {

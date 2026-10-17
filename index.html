@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=47" />
+  <link rel="stylesheet" href="styles.css?v=48" />
 </head>
 <body>
   <a href="#mainContent" class="skip-link">Direct naar inhoud</a>
@@ -198,50 +198,59 @@
           <div class="hero-badges">
             <span class="badge badge-age" id="heroExactAgePill">Week 24 • ~6 maanden</span>
             <span class="badge badge-phase" id="heroPhasePill">Fase 5/15</span>
+            <button type="button" class="hero-collapse-toggle hidden" id="toggleHeroOverviewBtn" aria-expanded="false">
+              Fase-overzicht ▾
+            </button>
           </div>
           <h2 class="hero-title" id="heroTitle">Start Vaste Maaltijden &amp; Rapley</h2>
           <p class="hero-summary" id="heroSummary"></p>
         </div>
       </div>
 
-      <!-- 3 Kerncijfers van deze fase direct onder de samenvatting -->
-      <div class="quick-stats">
-        <div class="stat-item">
-          <div class="stat-head">
-            <span class="stat-label" id="vitalMilkLabel">🍼 Melkvoeding</span>
-            <span class="stat-phase-tag" id="vitalMilkPhaseTag">6–7 mnd</span>
+      <div class="hero-collapsible-body" id="heroCollapsibleBody">
+        <!-- 3 Kerncijfers van deze fase direct onder de samenvatting -->
+        <div class="quick-stats">
+          <div class="stat-item">
+            <div class="stat-head">
+              <span class="stat-label" id="vitalMilkLabel">🍼 Melkvoeding</span>
+              <div class="stat-head-actions">
+                <button type="button" class="stat-personal-btn" id="vitalMilkPersonalBtn" title="Gewicht of voedingstype aanpassen">⚖️ + Gewicht</button>
+                <span class="stat-phase-tag" id="vitalMilkPhaseTag">6–7 mnd</span>
+              </div>
+            </div>
+            <div class="stat-val" id="vitalMilkVolume"></div>
+            <div class="stat-sub" id="vitalMilkStatus"></div>
+            <div class="stat-sub hidden" id="vitalMilkPersonalRow"></div>
           </div>
-          <div class="stat-val" id="vitalMilkVolume"></div>
-          <div class="stat-sub" id="vitalMilkStatus"></div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-head">
-            <span class="stat-label" id="vitalSolidLabel">🥣 Hapjes &amp; Portie</span>
-            <span class="stat-phase-tag" id="vitalSolidPhaseTag">6–7 mnd</span>
+          <div class="stat-item">
+            <div class="stat-head">
+              <span class="stat-label" id="vitalSolidLabel">🥣 Hapjes &amp; Portie</span>
+              <span class="stat-phase-tag" id="vitalSolidPhaseTag">6–7 mnd</span>
+            </div>
+            <div class="stat-val" id="vitalSolidPortion"></div>
+            <div class="stat-sub" id="vitalSolidFreq"></div>
           </div>
-          <div class="stat-val" id="vitalSolidPortion"></div>
-          <div class="stat-sub" id="vitalSolidFreq"></div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-head">
-            <span class="stat-label" id="vitalSleepLabel">🌙 Wakkertijd &amp; Slaap</span>
-            <span class="stat-phase-tag" id="vitalSleepPhaseTag">6–7 mnd</span>
+          <div class="stat-item">
+            <div class="stat-head">
+              <span class="stat-label" id="vitalSleepLabel">🌙 Wakkertijd &amp; Slaap</span>
+              <span class="stat-phase-tag" id="vitalSleepPhaseTag">6–7 mnd</span>
+            </div>
+            <div class="stat-val" id="vitalWakeWindow"></div>
+            <div class="stat-sub" id="vitalSleepTotal"></div>
           </div>
-          <div class="stat-val" id="vitalWakeWindow"></div>
-          <div class="stat-sub" id="vitalSleepTotal"></div>
         </div>
-      </div>
 
-      <!-- Persoonlijk advies op gewicht & voedingstype (Feature 1) -->
-      <div class="personal-weight-banner hidden" id="personalWeightBanner" role="region" aria-label="Persoonlijk advies op gewicht en voedingstype"></div>
+        <!-- Optionele waarschuwingsnotitie alleen voor jonge flinke groeiers (<4mnd bij 1000ml grens) -->
+        <div class="personal-weight-banner hidden" id="personalWeightBanner" role="region" aria-label="Persoonlijk advies op gewicht"></div>
 
-      <!-- Week-spotlight (Sprongetje / Groeispurt / Week-focus) -->
-      <div class="spotlight-box" id="weeklySpotlightBanner">
-        <div class="spotlight-header">
-          <span class="spotlight-tag" id="spotlightBadge">🥑 Week 24</span>
-          <strong class="spotlight-title" id="spotlightHeadline"></strong>
+        <!-- Week-spotlight (Sprongetje / Groeispurt / Week-focus) -->
+        <div class="spotlight-box" id="weeklySpotlightBanner">
+          <div class="spotlight-header">
+            <span class="spotlight-tag" id="spotlightBadge">🥑 Week 24</span>
+            <strong class="spotlight-title" id="spotlightHeadline"></strong>
+          </div>
+          <p class="spotlight-desc" id="spotlightSummary"></p>
         </div>
-        <p class="spotlight-desc" id="spotlightSummary"></p>
       </div>
     </section>
 
@@ -257,7 +266,7 @@
       </button>
       <button type="button" role="tab" aria-selected="false" class="nav-tab" data-view="tips">
         <span class="nav-icon" aria-hidden="true">🌙</span>
-        <span class="nav-text">Slaap &amp; Tips</span>
+        <span class="nav-text">Slaap &amp; Groei</span>
       </button>
       <button type="button" role="tab" aria-selected="false" class="nav-tab" data-view="lookup">
         <span class="nav-icon" aria-hidden="true">🔍</span>
@@ -277,7 +286,8 @@
       <div class="minimal-card section-header-card" id="foodSectionHeaderCard">
         <div class="card-head-between">
           <div>
-            <h3 id="foodHeaderTitle"><span>🥑 Voeding &amp; Eetontwikkeling</span></h3>
+            <span class="section-eyebrow-pill">🥑 Sectie 1 • Voeding &amp; Dagritme</span>
+            <h3 id="foodHeaderTitle"><span>Voeding &amp; Eetontwikkeling</span></h3>
             <p class="subtle-hint" id="foodHeaderSubtitle">Fase-adviezen, dagritme, veilige snijgids en 5-minuten recepten.</p>
           </div>
           <span class="mini-pill" id="foodHeaderStagePill">6–7 mnd</span>
@@ -293,7 +303,7 @@
         <div class="readiness-body" id="foodReadinessBody"></div>
       </details>
 
-      <!-- Dynamische voedingskaarten afgestemd op leeftijd -->
+      <!-- Dynamische voedingskaarten afgestemd op leeftijd (Rustige, uniforme Voeding-stijl) -->
       <div class="two-col-grid">
         <article class="minimal-card card-tint-green" id="pureePathCard">
           <div class="card-head-between">
@@ -304,7 +314,7 @@
           <div class="structured-card-body" id="pureePathText"></div>
         </article>
 
-        <article class="minimal-card card-tint-orange" id="blwPathCard">
+        <article class="minimal-card card-tint-green" id="blwPathCard">
           <div class="card-head-between">
             <h3 id="blwCardTitle">🥑 Zelf Eten (Rapley / Stukjes)</h3>
             <span class="mini-pill" id="blwStagePill">6–7 mnd</span>
@@ -425,10 +435,11 @@
     <!-- TAB 2: LEERSPELLETJES & ACTIVITEITEN                                -->
     <!-- =================================================================== -->
     <section class="tab-panel hidden" id="panelGames" data-pillar="games">
-      <div class="minimal-card games-header-card">
+      <div class="minimal-card section-header-card games-header-card" id="gamesSectionHeaderCard">
         <div class="card-head-between">
           <div>
-            <h3><span id="gamesHeaderTitle">🎲 Leerspelletjes &amp; Activiteiten</span> <small class="tab-counter" id="gameCountBadge">6</small></h3>
+            <span class="section-eyebrow-pill">🎲 Sectie 2 • Spel &amp; Ontwikkeling</span>
+            <h3><span id="gamesHeaderTitle">Leerspelletjes &amp; Activiteiten</span> <small class="tab-counter" id="gameCountBadge">6</small></h3>
             <p class="subtle-hint" id="gamesHeaderSubtitle">Spelenderwijs ontwikkelen, afgestemd op deze leeftijd en jouw energieniveau.</p>
           </div>
           <button type="button" class="chip" id="toggleAllStagesGamesBtn" title="Wissel tussen spelletjes voor deze fase en alle 90 spelletjes">
@@ -460,8 +471,19 @@
     <!-- TAB 3: SLAAP, WAKKERTIJD, TIPS VOOR MAMA & MIJLPALEN                -->
     <!-- =================================================================== -->
     <section class="tab-panel hidden" id="panelTips" data-pillar="tips">
+      <div class="minimal-card section-header-card" id="tipsSectionHeaderCard">
+        <div class="card-head-between">
+          <div>
+            <span class="section-eyebrow-pill">🌙 Sectie 3 • Slaap, Tips &amp; Groei</span>
+            <h3 id="tipsHeaderTitle"><span>Slaapritme, Tips &amp; Mijlpalen</span></h3>
+            <p class="subtle-hint" id="tipsHeaderSubtitle">Wakkertijden, dutjes-rekenhulp, tips voor mama, mijlpalen én het interactieve gebitsmodel.</p>
+          </div>
+          <span class="mini-pill" id="tipsHeaderStagePill">6–7 mnd</span>
+        </div>
+      </div>
+
       <div class="two-col-grid">
-        <!-- Slaap & Wakkertijd / Bedtijd Rekenhulp (als eerste, passend bij tab '🌙 Slaap & Tips') -->
+        <!-- Slaap & Wakkertijd / Bedtijd Rekenhulp (als eerste, passend bij tab '🌙 Slaap & Groei') -->
         <article class="minimal-card">
           <div class="card-head-between">
             <h3 id="sleepCardTitle">🌙 Slaap &amp; Wakkertijd</h3>
@@ -524,10 +546,11 @@
     <!-- =================================================================== -->
     <section class="tab-panel hidden" id="panelLookup" data-pillar="lookup">
       <!-- Zoekbalk + Categorieën & Status-filters in een consistente header-kaart -->
-      <div class="minimal-card search-header-card">
+      <div class="minimal-card section-header-card search-header-card" id="lookupSectionHeaderCard">
         <div class="card-head-between">
           <div>
-            <h3 id="lookupHeaderTitle">🔍 Eet- &amp; Snijgids ("Mag mijn kind dit eten?")</h3>
+            <span class="section-eyebrow-pill">🔍 Sectie 4 • Eet- &amp; Snijgids</span>
+            <h3 id="lookupHeaderTitle"><span>Eet-Check ("Mag mijn kind dit eten?")</span></h3>
             <p class="subtle-hint" id="lookupSubtitleHint">Bekijk per leeftijd de veilige snijvorm en vink bij wat je kind al heeft geproefd.</p>
           </div>
           <span class="mini-pill" id="lookupStageCountPill">6–7 mnd</span>
@@ -646,6 +669,18 @@
     <!-- TAB 5: SOS "EERSTE HULP" & CONSULTATIEBUREAU / RVP / TANDJES        -->
     <!-- =================================================================== -->
     <section class="tab-panel hidden" id="panelSos" data-pillar="sos">
+      <div class="minimal-card section-header-card" id="sosSectionHeaderCard">
+        <div class="card-head-between">
+          <div>
+            <span class="section-eyebrow-pill">🆘 Sectie 5 • Eerste Hulp &amp; Consultatiebureau</span>
+            <h3 id="sosHeaderTitle"><span>SOS Eerste Hulp &amp; Gezondheid</span></h3>
+            <p class="subtle-hint" id="sosHeaderSubtitle">Directe hulp bij koorts, krampjes of verslikken, paracetamol-dosering op gewicht en CB-voorbereiding.</p>
+          </div>
+          <span class="mini-pill" id="sosHeaderStagePill">6–7 mnd</span>
+        </div>
+        <div class="sos-personal-pcm-bar hidden" id="sosPersonalPcmBar"></div>
+      </div>
+
       <!-- Consultatiebureau, Vaccinaties (RVP) & Tandjes in deze fase -->
       <article class="minimal-card">
         <div class="card-head-between">
@@ -1086,7 +1121,7 @@
     </div>
   </dialog>
 
-  <script src="data.js?v=47"></script>
-  <script src="app.js?v=47"></script>
+  <script src="data.js?v=48"></script>
+  <script src="app.js?v=48"></script>
 </body>
 </html>
