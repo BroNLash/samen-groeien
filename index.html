@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=40" />
+  <link rel="stylesheet" href="styles.css?v=41" />
 </head>
 <body>
   <a href="#mainContent" class="skip-link">Direct naar inhoud</a>
@@ -672,14 +672,15 @@
         <p class="footer-subtext">
           Samen Groeien • Liefdevolle voeding, spel &amp; mijlpalen van 0 t/m 12 jaar
         </p>
-        <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;justify-content:center;">
+        <nav class="footer-legal-nav" aria-label="Juridische informatie en bronnen">
           <button type="button" class="footer-legal-link" id="openLegalDialogBtn">
-            🛡️ Disclaimer, Bronnen &amp; Gegevensbeheer
+            Disclaimer &amp; Bronnen
           </button>
-          <a href="privacy.html" class="footer-legal-link" style="text-decoration:none;">
-            📄 Volledige Privacyverklaring &amp; Voorwaarden
+          <span class="footer-legal-sep" aria-hidden="true">•</span>
+          <a href="privacy.html" class="footer-legal-link">
+            Privacy &amp; Voorwaarden
           </a>
-        </div>
+        </nav>
       </div>
     </footer>
   </main>
@@ -977,7 +978,7 @@
     </div>
   </dialog>
 
-  <script src="data.js?v=40"></script>
-  <script src="app.js?v=40"></script>
+  <script src="data.js?v=41"></script>
+  <script src="app.js?v=41"></script>
 </body>
 </html>

@@ -4223,27 +4223,51 @@ p, li {
 
 .footer-meta-row {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 4px;
   margin-top: 2px;
 }
 
+.footer-legal-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.footer-legal-sep {
+  color: var(--text-muted);
+  opacity: 0.55;
+  font-size: var(--fs-xs);
+  user-select: none;
+}
+
 .footer-legal-link {
+  display: inline-flex;
+  align-items: center;
   background: none;
   border: none;
-  padding: 2px 6px;
+  padding: 4px 6px;
+  margin: 0;
   font-family: inherit;
   font-size: var(--fs-xs);
+  line-height: 1.4;
   font-weight: 600;
   color: var(--primary);
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration-color: rgba(43, 122, 105, 0.4);
+  text-underline-offset: 3px;
   cursor: pointer;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease, opacity 0.15s ease;
 }
 
-.footer-legal-link:hover {
+.footer-legal-link:hover,
+.footer-legal-link:focus-visible {
+  color: var(--primary);
+  text-decoration-color: var(--primary);
   opacity: 0.85;
 }
 
