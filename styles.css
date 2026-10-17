@@ -89,6 +89,8 @@ summary:focus-visible {
 html,
 body {
   overflow-anchor: none;
+  background: var(--bg);
+  color: var(--text);
 }
 
 body {

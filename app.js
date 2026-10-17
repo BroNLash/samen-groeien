@@ -315,7 +315,8 @@
    */
   function renderStructuredBulletsOrText(rawText) {
     const sentences = String(rawText || "")
-      .split(/(?<=[.!?])\s+/)
+      .replace(/([.!?])\s+/g, "$1\n")
+      .split("\n")
       .map((s) => s.trim())
       .filter(Boolean);
 
@@ -2533,7 +2534,8 @@
 
     const formatCbBoxHtml = (rawStr) => {
       const parts = String(rawStr || "")
-        .split(/\s*•\s*|\s*(?<=[.!?])\s+/)
+        .replace(/([.!?])\s+/g, "$1\n")
+        .split(/\s*•\s*|\n+/)
         .map((s) => s.trim())
         .filter(Boolean);
       if (parts.length <= 1) {
@@ -2579,7 +2581,8 @@
 
     const splitIntoSentences = (txt) =>
       String(txt || "")
-        .split(/(?<=[.!?])\s+/)
+        .replace(/([.!?])\s+/g, "$1\n")
+        .split("\n")
         .map((s) => s.trim())
         .filter(Boolean);
 
