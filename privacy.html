@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=39" />
+  <link rel="stylesheet" href="styles.css?v=40" />
   <style>
     .privacy-page-wrap {
       max-width: 820px;
@@ -189,7 +189,7 @@
       </p>
       <ul>
         <li><strong>Naam / Ontwikkelaar:</strong> bBold (Brendan Lashley)</li>
-        <li><strong>E-mailadres:</strong> <a href="mailto:brendan@bbold.app">brendan@bbold.app</a></li>
+        <li><strong>E-mailadres:</strong> <a href="mailto:support@bbold.app">support@bbold.app</a></li>
         <li><strong>Toepassingsgebied:</strong> De webapp en Google Play Store Android-applicatie <em>Samen Groeien</em>.</li>
       </ul>
     </section>
@@ -232,7 +232,7 @@
           <tr>
             <td><strong>Vrijwillige Feedback</strong> (categorie, bericht, leeftijdsfase, optioneel e-mailadres)</td>
             <td>Alleen bij actief klikken op <em>Verstuur feedback</em></td>
-            <td><strong>Ja, uitsluitend op jouw verzoek</strong> via FormSubmit (HTTPS) naar <code>brendan@bbold.app</code> (zonder naam/geboortedatum van het kind).</td>
+            <td><strong>Ja, uitsluitend op jouw verzoek</strong> via FormSubmit (HTTPS) naar <code>support@bbold.app</code> (zonder naam/geboortedatum van het kind).</td>
           </tr>
         </tbody>
       </table>
@@ -243,7 +243,7 @@
       <p>Om de app goed te laten functioneren worden uitsluitend de volgende technische verbindingen gebruikt:</p>
       <ul>
         <li>
-          <strong>Vrijwillig Feedbackformulier (FormSubmit.co):</strong> Wanneer je onderaan de app zelf het feedbackformulier invult en op <em>Verstuur feedback</em> klikt, worden je bericht, de gekozen categorie, de actieve leeftijdsfase en (alleen indien je dit zelf invult voor een terugkoppeling) je e-mailadres versleuteld via HTTPS doorgestuurd naar <code>brendan@bbold.app</code>. Er worden hierbij <strong>geen</strong> kindnamen, geboortedata of groeimetingen meegestuurd.
+          <strong>Vrijwillig Feedbackformulier (FormSubmit.co):</strong> Wanneer je onderaan de app zelf het feedbackformulier invult en op <em>Verstuur feedback</em> klikt, worden je bericht, de gekozen categorie, de actieve leeftijdsfase en (alleen indien je dit zelf invult voor een terugkoppeling) je e-mailadres versleuteld via HTTPS doorgestuurd naar <code>support@bbold.app</code>. Er worden hierbij <strong>geen</strong> kindnamen, geboortedata of groeimetingen meegestuurd.
         </li>
         <li>
           <strong>Typografie (Google Fonts):</strong> Bij het eerste bezoek laadt de app de lettertypes <em>Nunito</em> en <em>Plus Jakarta Sans</em> via <code>fonts.googleapis.com</code> en <code>fonts.gstatic.com</code>. Daarna worden deze lettertypes lokaal gecachet door de Service Worker zodat de app ook volledig offline werkt.
@@ -314,7 +314,7 @@
     <section class="privacy-section-card" id="voorwaarden">
       <h2>8. Gebruiksvoorwaarden &amp; Intellectueel Eigendom</h2>
       <p>
-        Alle teksten, illustraties, snijgids-schema's en broncode van <em>Samen Groeien</em> zijn auteursrechtelijk beschermd. Het gebruik van de informatie in de applicatie geschiedt op eigen verantwoordelijkheid van de ouder/verzorger. Bij vragen of opmerkingen over deze voorwaarden kun je contact opnemen via <a href="mailto:brendan@bbold.app">brendan@bbold.app</a>.
+        Alle teksten, illustraties, snijgids-schema's en broncode van <em>Samen Groeien</em> zijn auteursrechtelijk beschermd. Het gebruik van de informatie in de applicatie geschiedt op eigen verantwoordelijkheid van de ouder/verzorger. Bij vragen of opmerkingen over deze voorwaarden kun je contact opnemen via <a href="mailto:support@bbold.app">support@bbold.app</a>.
       </p>
     </section>
   </main>
@@ -330,6 +330,8 @@
           );
           if (!ok) return;
           try {
+            localStorage.removeItem("samen_groeien_nl_v1");
+            localStorage.removeItem("samen_groeien_feedback_v1");
             localStorage.removeItem("samen_groeien_v2_state");
             localStorage.removeItem("samen_groeien_feedback_log");
           } catch (e) {}

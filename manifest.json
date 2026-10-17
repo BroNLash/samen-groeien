@@ -92,17 +92,17 @@
       "icons": [{ "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
-      "name": "Spel & Slaapritme",
-      "short_name": "Spel & Slaap",
-      "description": "Leerspelletjes, wakkertijden en slaapschema's op maat",
-      "url": "./index.html?tab=play",
+      "name": "Leerspelletjes & Activiteiten",
+      "short_name": "Spelletjes",
+      "description": "Ontwikkelingsgerichte spelletjes per fase en energieniveau",
+      "url": "./index.html?tab=games",
       "icons": [{ "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
-      "name": "Groei & Mijlpalen",
-      "short_name": "Mijlpalen",
-      "description": "Van Wiechen mijlpalen afvinken en groeicurve bijhouden",
-      "url": "./index.html?tab=milestones",
+      "name": "Slaap, Tips & Mijlpalen",
+      "short_name": "Slaap & Tips",
+      "description": "Wakkertijden, slaapschema's, tips voor mama en mijlpalen",
+      "url": "./index.html?tab=tips",
       "icons": [{ "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]

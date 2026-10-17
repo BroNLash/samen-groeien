@@ -4660,10 +4660,19 @@
     return Math.max(compactHeight, 70) + extraPadding;
   }
 
-  const VALID_VIEWS = ["food", "lookup", "play", "milestones", "sos"];
+  const VALID_VIEWS = ["food", "games", "tips", "lookup", "sos"];
+  const VIEW_ALIASES = {
+    play: "games",
+    milestones: "tips"
+  };
+
+  function normalizeViewName(view) {
+    const mapped = VIEW_ALIASES[view] || view;
+    return VALID_VIEWS.includes(mapped) ? mapped : "food";
+  }
 
   function setView(view, autoScroll = false, fromPopState = false) {
-    const safeView = VALID_VIEWS.includes(view) ? view : "food";
+    const safeView = normalizeViewName(view);
     const isSameView = state.activeView === safeView;
     state.activeView = safeView;
     document.querySelectorAll(".nav-tab").forEach((t) => {
@@ -4685,12 +4694,6 @@
       } catch (_) {}
     }
 
-    if (isSameView && autoScroll) {
-      // Als de ouder al op dit tabblad staat en er nogmaals op tikt: vloeiend terug naar boven scrollen (native app best practice)
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-
     if (autoScroll && activePanel) {
       // Zet de sticky dock direct in compacte stand zodat het layout-model stabiel is en niet verspringt tijdens het scrollen
       const dock = document.getElementById("timelineDock");
@@ -4706,7 +4709,13 @@
           const currentY = window.scrollY || window.pageYOffset || 0;
           const targetY = Math.max(0, Math.round(panelRect.top + currentY - offset));
 
-          // Vloeiend naar het actieve paneel scrollen als er een waarneembare verschuiving is (> 3px)
+          // Als de ouder op hetzelfde tabblad tikt terwijl hij al precies bij de sectiekop staat: scroll terug naar de Hero bovenaan.
+          // Staat de ouder nog boven het paneel (bijv. op de Hero-kaart bij 'Voeding') of juist ver eronder, scroll dan naar de sectiekop!
+          if (isSameView && Math.abs(currentY - targetY) <= 60 && currentY > 40) {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            return;
+          }
+
           if (Math.abs(currentY - targetY) > 3) {
             window.scrollTo({
               top: targetY,
@@ -5373,11 +5382,11 @@
           feedbackStatusMsg.style.color = "var(--text-muted)";
         }
 
-        // FormSubmit AJAX naar brendan@bbold.app (AVG-veilig: geen kindnaam meegestuurd)
+        // FormSubmit AJAX naar support@bbold.app (AVG-veilig: geen kindnaam meegestuurd)
         const payload = {
           naam: "Ouder (Samen Groeien)",
           email: emailVal || "anoniem@bbold.app",
-          _replyto: emailVal || "brendan@bbold.app",
+          _replyto: emailVal || "support@bbold.app",
           _subject: `Samen Groeien Feedback [${typeLabel}] - ${sectionVal}`,
           type_feedback: typeLabel,
           onderdeel: sectionVal,
@@ -5387,7 +5396,7 @@
         };
 
         try {
-          await fetch("https://formsubmit.co/ajax/brendan@bbold.app", {
+          await fetch("https://formsubmit.co/ajax/support@bbold.app", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -5635,13 +5644,13 @@
     window.setView = setView;
     window.state = state;
 
-    // Ondersteun Android App-Shortcuts (?tab=lookup, ?tab=sos, ?tab=milestones, ?tab=play)
-    let initialView = state.activeView || "food";
+    // Ondersteun Android App-Shortcuts (?tab=lookup, ?tab=sos, ?tab=games, ?tab=tips)
+    let initialView = normalizeViewName(state.activeView || "food");
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const tabParam = urlParams.get("tab");
-      if (tabParam && VALID_VIEWS.includes(tabParam)) {
-        initialView = tabParam;
+      if (tabParam) {
+        initialView = normalizeViewName(tabParam);
       }
       if (window.history && typeof window.history.replaceState === "function") {
         window.history.replaceState({ sgView: "food" }, "");
@@ -5657,7 +5666,7 @@
         openDialog.close();
         return;
       }
-      const targetView = event.state && VALID_VIEWS.includes(event.state.sgView) ? event.state.sgView : "food";
+      const targetView = event.state && event.state.sgView ? normalizeViewName(event.state.sgView) : "food";
       setView(targetView, false, true);
     });
 
