@@ -3106,8 +3106,8 @@ window.GROWING_DATA = {
       prep4to5m: "Oefenhapje (4–5 mnd): Prak een stukje zachte rijpe avocado met een vork en eventueel een paar druppels borst-/kunstvoeding of water tot een fluweelzachte puree.",
       prep6to8m: "Puree: Fijnprakken met een vork. Rapley: Snijd een rijpe avocado in vingerlange repen (rol evt. door fijngemalen havermout tegen het wegglijden).",
       prep9to12m: "Kleine zachte blokjes (1x1 cm) of geprakt op een stukje brood.",
-      prep1to3y: "In blokjes, plakjes of als guacamole-dip.",
-      prep4to12y: "Op volkoren toast, in salades of wraps."
+      prep1to3y: "In hapklare blokjes om met een vorkje te prikken, in plakjes op volkorenbrood of als guacamole-dip.",
+      prep4to12y: "Op volkoren toast, in een lunchwrap voor de schooltrommel of in blokjes door een salade of pokébowl."
     },
     {
       id: "fd-banana",
@@ -3118,9 +3118,9 @@ window.GROWING_DATA = {
       nutrients: "Kalium, vitamine B6, snelle energie",
       prep4to5m: "Oefenhapje (4–5 mnd): Prak een stukje goed rijpe banaan helemaal glad met een vork (voeg evt. een theelepeltje lauw water of melk toe).",
       prep6to8m: "Puree: Geprakt. Rapley: Halveer de banaan en snijd 2 cm schil weg zodat de onderkant een handvat vormt, óf duw met je vinger in de lengte in 3 natuurlijke repen.",
-      prep9to12m: "Halve maandjes of kleine blokjes.",
-      prep1to3y: "Plakjes of zelf afhappen van een gepelde banaan.",
-      prep4to12y: "Los uit het vuistje of door de havermout."
+      prep9to12m: "Halve maantjes of kleine blokjes (1x1 cm).",
+      prep1to3y: "Plakjes om zelf met een vorkje te prikken of zelf afhappen van een gepelde banaan.",
+      prep4to12y: "Hele banaan mee voor het 10-uurtje op school of vóór het sporten, in plakjes op volkorenbrood of door de havermout."
     },
     {
       id: "fd-broccoli",
@@ -3132,8 +3132,8 @@ window.GROWING_DATA = {
       prep4to5m: "Oefenhapje (4–5 mnd): Stoom broccoli- of bloemkoolroosjes goed gaar en pureer met een scheutje kookvocht en een druppel olijfolie tot een gladde puree.",
       prep6to8m: "Puree: Zacht stomen en pureren. Rapley: Stoom grote roosjes zacht; het steeltje is het perfecte handvat!",
       prep9to12m: "Kleine zachtgekookte roosjes om met de pincetgreep te pakken.",
-      prep1to3y: "Gestoomde of geroosterde 'dino-boompjes'.",
-      prep4to12y: "Gestoomd of geroosterd uit de oven."
+      prep1to3y: "Gestoomde of in de oven geroosterde 'dino-boompjes' om zelf met een vorkje te prikken.",
+      prep4to12y: "Knapperig gestoomd, gewokt of geroosterd uit de oven bij het avondeten of in een pastaschotel."
     },
     {
       id: "fd-carrot",
@@ -3145,8 +3145,8 @@ window.GROWING_DATA = {
       prep4to5m: "Oefenhapje (4–5 mnd): Kook of stoom blokjes wortel, pompoen of zoete aardappel boterzacht en pureer helemaal glad met wat kookvocht.",
       prep6to8m: "Puree: Zacht koken en pureren. Rapley: Snijd wortel ALTIJD in de lengte in repen (geen ronde schijfjes!) en kook zacht tot je het makkelijk kunt pletten.",
       prep9to12m: "Zachtgekookte blokjes of halve schijfjes.",
-      prep1to3y: "Gekookte wortel of fijn geraspte rauwe wortel (geen harde rauwe stukken onder 4 jaar).",
-      prep4to12y: "Knapperige rauwe snackworteltjes of gekookt."
+      prep1to3y: "Gekookte/geroosterde wortel of fijn geraspte rauwe wortel (nog géén harde rauwe stukken wortel onder 4 jaar).",
+      prep4to12y: "Knapperige rauwe snackworteltjes voor het 10-uurtje op school, in een ovenschotel of geroosterd uit de oven."
     },
     {
       id: "fd-cucumber",
@@ -3158,8 +3158,8 @@ window.GROWING_DATA = {
       prep4to5m: "Oefenhapje (4–5 mnd): Stoom geschilde courgette zacht en pureer glad. Rauwe komkommer en paprika zijn op deze leeftijd nog te hard.",
       prep6to8m: "Courgette/paprika: Zacht stomen in vingerlange repen (verwijder velletjes). Komkommer: Schil en geef alleen het zachte zaadlijsten-middenstuk in lange repen.",
       prep9to12m: "Dunne halve plakjes geschilde komkommer of zacht gestoofde blokjes paprika en courgette.",
-      prep1to3y: "Komkommerstaafjes en dunne reepjes rauwe rode/gele paprika (lekker met hummus).",
-      prep4to12y: "Rauwkostreepjes in de schooltrommel of als snack om 17:00 uur."
+      prep1to3y: "Komkommerstaafjes en dunne reepjes rauwe rode/gele paprika (lekker om te dippen in hummus).",
+      prep4to12y: "Knapperige rauwkostreepjes in de schooltrommel of op het 16:00-uur bijtankplankje na school."
     },
     {
       id: "fd-egg",
@@ -3171,8 +3171,8 @@ window.GROWING_DATA = {
       prep4to5m: "Oefenhapje (4–5 mnd): Kook het ei hard (10 min) en prak of pureer 1/4 tot 1/2 ei helemaal glad door een warm groente- of aardappelhapje (vroege introductie!).",
       prep6to8m: "Puree: Hardgekookt ei prakken door groente. Rapley (6m+): Goed doorbakken platte omelet in reepjes van 2 vingers breed.",
       prep9to12m: "Stukjes roerei of partjes hardgekookt ei (geen rauw/zachtgekookt eigeel onder 1 jaar).",
-      prep1to3y: "Gekookt, roerei of omelet.",
-      prep4to12y: "Alle bereidingen."
+      prep1to3y: "Gekookt ei in partjes, roerei of groente-omelet bij de lunch.",
+      prep4to12y: "Gekookt ei in de schooltrommel, roerei, omelet of gepocheerd ei op volkoren toast."
     },
     {
       id: "fd-peanutbutter",
@@ -3184,8 +3184,8 @@ window.GROWING_DATA = {
       prep4to5m: "Oefenhapje (4–5 mnd): Geef NOOIT een losse lik van een lepel! Roer 1/2 tot 1 theelepel gladde 100% pindakaas (zonder zout/stukjes) los door een warm glad groente- of fruithapje.",
       prep6to8m: "Geef NOOIT een dikke klodder pindakaas van een lepel (plakt in de keel). Roer gladde 100% pindakaas los met warm water/fruit óf smeer flinterdun op brood.",
       prep9to12m: "Dun gesmeerd op lichtbruin brood of door de pap.",
-      prep1to3y: "Dun op volkorenbrood of crackers (nog geen pindakaas met stukjes noot).",
-      prep4to12y: "Op brood, als appeldip én vanaf 4 jaar een klein handje hele ongezouten noten."
+      prep1to3y: "Op volkorenbrood of crackers (kies gladde 100% pasta zonder stukjes noot onder 4 jaar).",
+      prep4to12y: "Op volkorenbrood, als dip bij appelpartjes én vanaf 4–5 jaar een klein handje (15–25 g) ongezouten noten."
     },
     {
       id: "fd-blueberry",
@@ -3197,8 +3197,8 @@ window.GROWING_DATA = {
       prep4to5m: "Wacht tot 6 maanden met rauwe bessen (of pureer ze volledig glad zonder velletjes door een fruithapje).",
       prep6to8m: "Blauwe bessen ALTIJD platdrukken tussen duim en wijsvinger! Aardbeien geprakt of hele grote rijpe aardbeien om op te sabbelen.",
       prep9to12m: "Geplette blauwe bessen en aardbeien in kwartjes.",
-      prep1to3y: "Halveer of plet grote stevige blauwe bessen t/m 3 jaar.",
-      prep4to12y: "Los uit de hand of door de yoghurt."
+      prep1to3y: "Halveer of plet grote stevige blauwe bessen t/m 3 jaar; aardbeien gehalveerd of heel.",
+      prep4to12y: "Heel in het fruitbakje voor school, los uit de hand of door een schaaltje yoghurt/kwark."
     },
     {
       id: "fd-grapes",
@@ -3210,8 +3210,8 @@ window.GROWING_DATA = {
       prep4to5m: "Nog niet geschikt voor 4–5 maanden vanwege de stugge velletjes en ronde vorm.",
       prep6to8m: "Snijd ALTIJD in de lengte in 4 smalle kwartjes! Hele druiven en tomaatjes hebben precies de maat van de luchtpijp.",
       prep9to12m: "In de lengte in vieren gesneden.",
-      prep1to3y: "Blijf druiven en cherrytomaatjes in de lengte in vieren of halveren tot minstens 4–5 jaar!",
-      prep4to12y: "Gehalveerd (4 jaar) of rustig zittend heel (vanaf 5 jaar)."
+      prep1to3y: "Blijf druiven en cherrytomaatjes ALTIJD in de lengte in vieren of halveren tot minstens 4–5 jaar!",
+      prep4to12y: "Bij 4 jaar nog halveren; vanaf 5 jaar heel in de schooltrommel, mits je kind rustig zittend eet (nooit tijdens het rennen)."
     },
     {
       id: "fd-apple",
@@ -3223,8 +3223,8 @@ window.GROWING_DATA = {
       prep4to5m: "Oefenhapje (4–5 mnd): Schil en kook/stoom appel of peer helemaal zacht en pureer glad. Geef géén rauwe harde appel.",
       prep6to8m: "Rauwe harde appel geeft hoog verslikkingsgevaar! Stoom appelpartjes zacht (of gebruik rijpe zachte peer) óf rasp rauwe appel fijn.",
       prep9to12m: "Zacht gestoofde blokjes appel, geraspte appel of flinterdunne schijfjes.",
-      prep1to3y: "Flinterdunne partjes zonder harde schil of zachte peer.",
-      prep4to12y: "Appelpartjes met schil of een hele appel."
+      prep1to3y: "Flinterdunne partjes zonder harde schil of rijpe zachte peer.",
+      prep4to12y: "Knapperige appelpartjes met schil in de schooltrommel of een hele appel/peer uit de hand."
     },
     {
       id: "fd-meat-fish",
@@ -3236,8 +3236,8 @@ window.GROWING_DATA = {
       prep4to5m: "Start bij 4–5 maanden eerst met groente, fruit, ei en pindakaas; vanaf 6 maanden zijn vlees, vis en peulvruchten dagelijks nodig voor ijzer.",
       prep6to8m: "Puree: Meegepureerd met groente. Rapley: Zachte grote vlokken zalm (check op graatjes!), mals gestoofde reepjes kip/rund of zachte linzen.",
       prep9to12m: "Fijngesneden mals vlees, gehaktballetje (zonder zout), visvlokken of geplette bonen.",
-      prep1to3y: "Mee-eten met de gezinsmaaltijd (geen rauw vlees zoals tartaar of filet americain).",
-      prep4to12y: "Alle gezonde bereidingen."
+      prep1to3y: "Mee-eten met de gezinsmaaltijd (vermijd t/m 3 jaar nog wel rauw vlees zoals filet americain en rauwe vis).",
+      prep4to12y: "Volwaardige portie (75–100 g) vis, peulvruchten, kip of vlees bij de warme maaltijd voor groei en concentratie."
     },
     {
       id: "fd-bread-oats",
@@ -3249,8 +3249,8 @@ window.GROWING_DATA = {
       prep4to5m: "Wacht met brood tot 6–7 maanden; een theelepeltje fijne baby-granenpap door melk of fruit mag wel om aan gluten te wennen.",
       prep6to8m: "Start rond 6–7 maanden met een lichtbruin broodkorstje om op te sabbelen of fijne havermoutpap.",
       prep9to12m: "Blokjes lichtbruin/volkoren brood met zachte margarine en 100% pindakaas of ei.",
-      prep1to3y: "2 tot 3 volkoren boterhammen per dag.",
-      prep4to12y: "3 tot 6 volkoren boterhammen per dag afhankelijk van de leeftijd."
+      prep1to3y: "2 tot 3 volkoren boterhammen per dag met zachte halvarine en gezond beleg, of een schaaltje havermout.",
+      prep4to12y: "3 tot 6 volkoren boterhammen per dag (afhankelijk van leeftijd en groeispurt) voor stabiele energie op school."
     },
     {
       id: "fd-pasta-rice",
@@ -3262,8 +3262,8 @@ window.GROWING_DATA = {
       prep4to5m: "Vanaf 6 maanden als onderdeel van de warme maaltijd.",
       prep6to8m: "Puree: Gekookte rijst of pasta meepureren met groente. Rapley: Grote zachtgekookte volkoren fusilli of penne (makkelijk vast te pakken).",
       prep9to12m: "Zachtgekookte pasta-stukjes, zilvervliesrijst of couscous gemengd met groente of avocado zodat het plakt.",
-      prep1to3y: "2–3 eetlepels volkoren pasta, couscous of zilvervliesrijst bij de avondmaaltijd.",
-      prep4to12y: "Volkoren varianten als energiebron voor school en sport."
+      prep1to3y: "2–4 eetlepels volkoren pasta, couscous of zilvervliesrijst bij de avondmaaltijd.",
+      prep4to12y: "Volkoren pasta, zilvervliesrijst of volkoren couscous als stevige energiebron voor school, groei en sport."
     },
     {
       id: "fd-cheese",
@@ -3275,8 +3275,8 @@ window.GROWING_DATA = {
       prep4to5m: "Wacht tot minstens 6 maanden (nieren zijn nog gevoelig voor zout en eiwit).",
       prep6to8m: "Kies zoutarme hüttenkäse, ricotta of lichte zuivelspread dun op brood. Gewone harde kaas bevat nog te veel zout.",
       prep9to12m: "Hüttenkäse, zuivelspread light of 20+/30+ Milner/jonge kaas met minder zout (max. 15 g per dag, geen rauwmelkse kaas).",
-      prep1to3y: "Op brood of door een gerecht (kies bij voorkeur minder zoute 30+ kaas en vermijd rauwmelkse kaas).",
-      prep4to12y: "Plakje 30+ kaas op volkorenbrood of hüttenkäse."
+      prep1to3y: "Op volkorenbrood of door een gerecht (kies bij voorkeur minder zoute 30+ kaas en vermijd rauwmelkse kaas).",
+      prep4to12y: "1 tot 2 plakjes 30+ kaas, hüttenkäse of zuivelspread op volkorenbrood voor in de schooltrommel."
     },
     {
       id: "fd-crackers",
@@ -3288,8 +3288,8 @@ window.GROWING_DATA = {
       prep4to5m: "Wacht tot 6 maanden wanneer je baby rechtop kan zitten.",
       prep6to8m: "Zoutloze maisvingers smelten direct op de tong en zijn ideaal om zelf vast te houden.",
       prep9to12m: "Zoutloze maisvinger of volkoren cracotte (geef niet dagelijks rijstwafels i.v.m. arseen in rijst).",
-      prep1to3y: "Volkoren cracker of soepstengel met hummus, zuivelspread light of 100% pindakaas (wissel af en geef niet dagelijks rijstwafels).",
-      prep4to12y: "Volkoren crackers met gezond beleg als tussendoortje na school."
+      prep1to3y: "Volkoren cracker of soepstengel met hummus, zuivelspread light of 100% pindakaas (geef niet dagelijks rijstwafels).",
+      prep4to12y: "Volkoren crackers met hartig beleg als voedzaam tussendoortje uit school of voor het sporten."
     },
     {
       id: "fd-water-tea",
@@ -3302,7 +3302,7 @@ window.GROWING_DATA = {
       prep6to8m: "Geef na de oefenhapjes een paar slokjes water uit een klein open bekertje (geen venkel- of anijsthee voor baby's!).",
       prep9to12m: "Water of lauwe slappe rooibos-/vruchtenthee zonder suiker uit een open beker of rietjesbeker naast de melkvoedingen.",
       prep1to3y: "450–700 ml water of lauwe thee zonder suiker per dag naast 300 ml zuivel (geen venkelthee onder 4 jaar).",
-      prep4to12y: "1 tot 1,5 liter water of ongezoete thee per dag (vaste waterfles mee naar school)."
+      prep4to12y: "1 tot 1,5 liter kraanwater of ongezoete thee per dag (vaste herbruikbare waterfles mee naar school en sport)."
     },
     {
       id: "fd-honey",
@@ -3315,7 +3315,7 @@ window.GROWING_DATA = {
       prep6to8m: "🚫 VERBODEN ONDER 1 JAAR! Honing kan sporen bevatten van de botulisme-bacterie waar baby's onder 12 maanden ernstig ziek van worden.",
       prep9to12m: "🚫 VERBODEN ONDER 1 JAAR! Wacht tot na de eerste verjaardag.",
       prep1to3y: "✅ Veilig vanaf 1 jaar (met mate gebruiken vanwege suiker; 1/2 tl honing helpt wel goed bij nachtelijke kriebelhoest).",
-      prep4to12y: "Veilig met mate."
+      prep4to12y: "Veilig te gebruiken met mate (bijvoorbeeld een theelepeltje in warme thee bij keelpijn of op een pannenkoek)."
     },
     {
       id: "fd-dairy",
@@ -3327,8 +3327,8 @@ window.GROWING_DATA = {
       prep4to5m: "Onder 6 maanden alleen borstvoeding of standaard zuigelingenmelk (Nr. 1); nog geen yoghurt of gewone koemelk.",
       prep6to8m: "Vanaf 6–8 maanden mag een klein schaaltje ongezoete halfvolle of volle yoghurt. Gewone koemelk als hoofdvoeding pas vanaf 1 jaar!",
       prep9to12m: "Schaaltje ongezoete yoghurt als toetje; melkvoeding blijft borst- of opvolgmelk.",
-      prep1to3y: "✅ Vanaf 1 jaar: 300 ml gewone halfvolle melk/yoghurt per dag uit een beker (max 450 ml per dag zodat de ijzeropname goed blijft).",
-      prep4to12y: "300–500 ml halfvolle melk/yoghurt en een plakje 30+ kaas per dag."
+      prep1to3y: "✅ Vanaf 1 jaar: circa 300 ml gewone halfvolle melk, karnemelk of ongezoete yoghurt per dag uit een beker (max. 450 ml i.v.m. ijzeropname).",
+      prep4to12y: "300 tot 500 ml halfvolle melk, karnemelk of ongezoete yoghurt/kwark per dag voor sterke botten in de groei."
     },
     {
       id: "fd-mango-kiwi",
@@ -3340,8 +3340,8 @@ window.GROWING_DATA = {
       prep4to5m: "Oefenhapje (4–5 mnd): Prak of pureer een stukje zachte rijpe mango, meloen of zoete (gele) kiwi helemaal glad.",
       prep6to8m: "Puree: Geprakt. Rapley: Snijd een grote vingerlange reep met een strookje schil aan de onderkant als handvat, óf rol gladde stukken door fijne havermout of geraspte kokos voor grip.",
       prep9to12m: "Kleine zachte blokjes (1x1 cm) van rijpe mango, kiwi of watermeloen (zonder pitjes).",
-      prep1to3y: "In blokjes, partjes of een gehalveerde kiwi om zelf met een lepeltje uit te lepelen.",
-      prep4to12y: "In de fruitbak voor school, door de yoghurt of als frisse zomersnack."
+      prep1to3y: "In hapklare blokjes, partjes of een gehalveerde kiwi om zelf met een lepeltje uit te lepelen.",
+      prep4to12y: "In het fruitbakje voor het 10-uurtje op school, door de yoghurt of als frisse snack na het sporten."
     },
     {
       id: "fd-raisins",
@@ -3354,7 +3354,7 @@ window.GROWING_DATA = {
       prep6to8m: "Wacht met losse rozijntjes tot circa 9 maanden; je kunt wel een rozijntje meekoken met appel en volledig gladpureren.",
       prep9to12m: "Wel rozijntjes eerst 5 minuten in warm water zodat ze zacht zijn en halveer grote rozijnen — ideaal om de pincetgreep te oefenen!",
       prep1to3y: "Max. 1 klein doosje rozijntjes en altijd op 1 vast eetmoment (Ivoren Kruis: geef ze niet verspreid over de middag i.v.m. gaatjes en geef er een beker water bij).",
-      prep4to12y: "Met mate als tussendoortje op 1 vast eetmoment (bij voorkeur vers fruit kiezen voor het gebit)."
+      prep4to12y: "Af en toe als tussendoortje op 1 vast eetmoment (wissel voor het blijvende gebit vooral af met vers fruit en rauwkost)."
     },
     {
       id: "fd-sausage-popcorn",
@@ -3367,7 +3367,7 @@ window.GROWING_DATA = {
       prep6to8m: "🚫 NIET GEVEN ONDER 1 JAAR! Knakworst en rookworst bevatten te veel zout en verzadigd vet voor een baby; popcorn geeft acuut verstikkingsgevaar.",
       prep9to12m: "🚫 NIET GEVEN ONDER 1 JAAR! Kies liever een zelfgemaakt runder- of kipgehaktballetje zonder zout.",
       prep1to3y: "⚠️ Knakworst/rookworst (af en toe): snijd ALTIJD eerst in de lengte in vieren en daarna in stukjes (NOOIT ronde munt-schijfjes!). 🚫 Popcorn: nog NIET geven onder 4 jaar vanwege scherp vliesje en verslikkingsgevaar.",
-      prep4to12y: "Knakworst rustig zittend eten. Popcorn mag vanaf 4–5 jaar uitsluitend rustig zittend (nooit tijdens het rennen of spelen)."
+      prep4to12y: "Knakworst en popcorn vanaf 4–5 jaar uitsluitend rustig zittend eten (nooit tijdens het rennen, gamen of stoeien)."
     },
     {
       id: "fd-liver-raw",
@@ -3380,7 +3380,7 @@ window.GROWING_DATA = {
       prep6to8m: "Kies liever 100% pindakaas, geprakt ei of zoutarme hummus op brood. Geef maximaal 1 boterham met smeerleverworst per week (vanwege te veel vitamine A). 🚫 Géén rauw vlees of rauwe vis.",
       prep9to12m: "Voedingscentrum-advies: maximaal 1 boterham met smeerleverworst of paté per week. 🚫 Geef géén filet americain, ossenworst, tartaar of voorverpakte gerookte zalm.",
       prep1to3y: "Smeerleverworst/paté: max. 1 boterham per week (vitamine A-limiet). 🚫 Rauw vlees (filet americain, ossenworst, carpaccio), rauwe vis en voorverpakte gerookte vis pas vanaf 4 jaar geven!",
-      prep4to12y: "Smeerleverworst met mate (niet dagelijks). Let bij rauw vlees of gerookte vis altijd op koeling en versheid."
+      prep4to12y: "Smeerleverworst met mate (niet dagelijks). Let bij rauw vlees of gerookte vis op goede koeling en versheid."
     }
   ]
 };

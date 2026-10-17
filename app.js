@@ -1590,17 +1590,19 @@
 
     const pureeKeyBarEl = document.getElementById("pureeKeyMetricBar");
     if (pureeKeyBarEl) {
-      pureeKeyBarEl.innerHTML = `🍼 <strong>Richtlijn ${escapeHtml(stage.shortLabel)}:</strong> ${boldNumbersInEscapedHtml(
+      const drinkIcon = week <= 52 ? "🍼" : week <= 208 ? "🥛" : "💧";
+      pureeKeyBarEl.innerHTML = `${drinkIcon} <strong>Richtlijn ${escapeHtml(stage.shortLabel)}:</strong> ${boldNumbersInEscapedHtml(
         escapeHtml(stage.nutrition.milkVolumeMetric)
       )} • ${boldNumbersInEscapedHtml(escapeHtml(stage.nutrition.feedsPerDay))}`;
     }
 
     const blwKeyBarEl = document.getElementById("blwKeyMetricBar");
     if (blwKeyBarEl) {
+      const solidIcon = week > 208 ? "🥪" : "🥣";
       blwKeyBarEl.innerHTML =
         week <= 16
           ? `⏳ <strong>Vaste hapjes (${escapeHtml(stage.shortLabel)}):</strong> Start pas vanaf <strong class="num-bold">4 maanden</strong> (Week 17)`
-          : `🥣 <strong>Portie ${escapeHtml(stage.shortLabel)}:</strong> ${boldNumbersInEscapedHtml(
+          : `${solidIcon} <strong>Portie ${escapeHtml(stage.shortLabel)}:</strong> ${boldNumbersInEscapedHtml(
               escapeHtml(stage.nutrition.portionGuideMetric)
             )}`;
     }
@@ -1661,7 +1663,7 @@
               </div>
             </div>
             <div class="food-row-actions">
-              <button type="button" class="lookup-jump-btn" data-jump-lookup="${linkedFoodId}" title="Bekijk snij- en bereidingsadvies in Eet-Check">
+              <button type="button" class="lookup-jump-btn" data-jump-lookup="${linkedFoodId}" title="${week > 208 ? "Bekijk portie- en trommeladvies in Eet-Check" : "Bekijk snij- en bereidingsadvies in Eet-Check"}">
                 🔍 Eet-Check
               </button>
               <button type="button" class="log-btn ${logged ? "is-logged" : ""}" data-linked-food="${linkedFoodId}">
@@ -2282,6 +2284,25 @@
       <path d="M12 27C17 23 23 23 27 27C31 31 37 31 42 27" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"/>
       <path d="M15 35C19 31 25 31 29 35C33 39 39 39 43 35" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
     </svg>`,
+    fork: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="Zelf eten met vorkje of uit de hand">
+      <rect width="54" height="54" rx="12" fill="var(--primary-soft)"/>
+      <circle cx="27" cy="29" r="15" fill="#fff" stroke="var(--primary)" stroke-width="2"/>
+      <rect x="20" y="23" width="6" height="6" rx="2" fill="var(--accent)"/>
+      <rect x="28" y="23" width="6" height="6" rx="2" fill="var(--primary)"/>
+      <rect x="23" y="31" width="7" height="6" rx="2" fill="var(--primary)"/>
+      <path d="M38 10L30 22" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M36 9L29 19M40 12L33 22" stroke="var(--accent)" stroke-width="1.4" stroke-linecap="round"/>
+    </svg>`,
+    plate: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="Gezinsmaaltijd en schooltrommel">
+      <rect width="54" height="54" rx="12" fill="var(--primary-soft)"/>
+      <circle cx="27" cy="27" r="16" fill="#fff" stroke="var(--primary)" stroke-width="2"/>
+      <path d="M27 11V43" stroke="var(--primary)" stroke-width="1.8"/>
+      <path d="M27 27H43" stroke="var(--accent)" stroke-width="1.8"/>
+      <circle cx="19" cy="24" r="3" fill="var(--primary)" opacity="0.85"/>
+      <circle cx="20" cy="32" r="2.5" fill="var(--primary)" opacity="0.65"/>
+      <rect x="31" y="18" width="6" height="5" rx="1.5" fill="var(--accent)"/>
+      <rect x="31" y="31" width="6" height="5" rx="1.5" fill="var(--primary)"/>
+    </svg>`,
     prohibited: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="Verboden onder 1 jaar">
       <rect width="54" height="54" rx="12" fill="var(--warn-soft)"/>
       <circle cx="27" cy="27" r="17" fill="#fff" stroke="var(--warn)" stroke-width="3"/>
@@ -2311,7 +2332,7 @@
           shape: "cup",
           shapeLabel: "🥛 Oefenslokjes open beker",
           ageLabel: "Vocht uit melk",
-          rule: "Baby haalt al het vocht uit melkvoeding; geef evt. 1-2 oefenslokjes lauw water uit een klein open bekertje",
+          rule: "Baby haalt al het vocht uit melkvoeding; geef evt. 1–2 oefenslokjes lauw water uit een klein open bekertje",
           svg: CUT_SVGS.cup
         };
       }
@@ -2319,16 +2340,25 @@
         return {
           shape: "cup",
           shapeLabel: "🥛 Open bekertje (Slokjes)",
-          ageLabel: "Mondmotoriek",
+          ageLabel: "Mondmotoriek (6–12m)",
           rule: "Geef kleine slokjes water of lauwe ongezoete thee uit een open beker (geen tuitbeker!) na de hapjes",
+          svg: CUT_SVGS.cup
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "cup",
+          shapeLabel: "🥛 Open beker / Rietjesbeker",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "Bied over de dag 450–700 ml water of lauwe ongezoete thee aan uit een open beker of rietjesbeker",
           svg: CUT_SVGS.cup
         };
       }
       return {
         shape: "cup",
-        shapeLabel: "🥛 Open beker / Rietjesbeker",
-        ageLabel: "Zelfstandig drinken",
-        rule: "Bied over de dag 450–700 ml water of ongezoete thee aan uit een open beker of rietjesbeker",
+        shapeLabel: "🚰 Waterfles & Glas (1–1,5 L)",
+        ageLabel: "School & Sport (4–12 jr)",
+        rule: "Geef een vaste herbruikbare waterfles mee naar school en sport; drink 1 tot 1,5 liter water of ongezoete thee per dag",
         svg: CUT_SVGS.cup
       };
     }
@@ -2344,11 +2374,20 @@
           svg: CUT_SVGS.spoon
         };
       }
+      if (week <= 208) {
+        return {
+          shape: "cup",
+          shapeLabel: "🥛 Beker melk & schaaltje yoghurt",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "Circa 300 ml zuivel per dag (bijv. 2 bekertjes halfvolle melk/karnemelk en een schaaltje ongezoete yoghurt)",
+          svg: CUT_SVGS.cup
+        };
+      }
       return {
         shape: "cup",
-        shapeLabel: "🥛 Beker halfvolle melk & yoghurt",
-        ageLabel: "Mee-eten (vanaf 1 jaar)",
-        rule: "Ongeveer 300 ml zuivel per dag (bijv. 2 bekertjes halfvolle melk en een schaaltje ongezoete halfvolle yoghurt)",
+        shapeLabel: "🥛 300–500 ml Zuivel per dag",
+        ageLabel: "Groei & Botten (4–12 jr)",
+        rule: "2 tot 3 glazen halfvolle melk/karnemelk of een schaal ongezoete yoghurt/kwark voor calcium en eiwit in de groei",
         svg: CUT_SVGS.cup
       };
     }
@@ -2364,12 +2403,30 @@
           svg: CUT_SVGS.spread
         };
       }
+      if (week <= 52) {
+        return {
+          shape: "dices",
+          shapeLabel: "🎲 Blokjes 1×1 cm of op brood",
+          ageLabel: "Pincetgreep (8–12m)",
+          rule: "Zachte zoutarme jonge kaas (20+/30+) of hüttenkäse in kleine blokjes of dun op brood",
+          svg: CUT_SVGS.dices
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "spread",
+          shapeLabel: "🧀 Op volkorenbrood (30+ kaas)",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "Beleg volkorenbrood met hüttenkäse, zuivelspread of minder zoute 20+/30+ kaas (vermijd rauwmelkse kaas)",
+          svg: CUT_SVGS.spread
+        };
+      }
       return {
-        shape: "dices",
-        shapeLabel: "🎲 Blokjes 1×1 cm",
-        ageLabel: "Pincetgreep",
-        rule: "Zachte zoutarme jonge kaas of hüttenkäse in kleine hapklare blokjes of dun op brood",
-        svg: CUT_SVGS.dices
+        shape: "plate",
+        shapeLabel: "🥪 Plakje 30+ kaas of spread",
+        ageLabel: "Broodtrommel (4–12 jr)",
+        rule: "1 tot 2 plakjes 30+ kaas, hüttenkäse of zuivelspread op de volkoren boterham voor school",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2393,12 +2450,30 @@
           svg: CUT_SVGS.bread
         };
       }
+      if (week <= 52) {
+        return {
+          shape: "dices",
+          shapeLabel: "🎲 Boterham-dobbelsteentjes",
+          ageLabel: "Pincetgreep (8–12m)",
+          rule: "Snijd de boterham in kleine vierkante blokjes (1×1 cm) met zachte margarine en gezond beleg",
+          svg: CUT_SVGS.dices
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "bread",
+          shapeLabel: "🍞 Dubbelgevouwen of kwartjes",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "Geef 2–3 volkoren boterhammen per dag in dubbelgevouwen helften of kwartjes, of een schaaltje havermout",
+          svg: CUT_SVGS.bread
+        };
+      }
       return {
-        shape: "dices",
-        shapeLabel: "🎲 Boterham-dobbelsteentjes",
-        ageLabel: "Pincetgreep",
-        rule: "Snijd de boterham in kleine vierkante blokjes (1×1 cm) met zachte margarine en gezond beleg",
-        svg: CUT_SVGS.dices
+        shape: "plate",
+        shapeLabel: "🥪 3–6 Volkoren boterhammen",
+        ageLabel: "School & Groei (4–12 jr)",
+        rule: "Hele volkoren boterhammen voor ontbijt en de schooltrommel (laat je kind zelf meehelpen smeren)",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2413,12 +2488,30 @@
           svg: CUT_SVGS.flakes
         };
       }
+      if (week <= 52) {
+        return {
+          shape: "dices",
+          shapeLabel: "🎲 Zachtgekookte stukjes",
+          ageLabel: "Pincetgreep (8–12m)",
+          rule: "Zachtgekookte volkorenpasta in kleine stukjes, zilvervliesrijst of couscous gemengd met groente",
+          svg: CUT_SVGS.dices
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "fork",
+          shapeLabel: "🍴 Zelf prikken & scheppen",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "2–4 eetlepels volkoren pasta, zilvervliesrijst of couscous bij de warme maaltijd om zelf met vork en lepel te eten",
+          svg: CUT_SVGS.fork
+        };
+      }
       return {
-        shape: "dices",
-        shapeLabel: "🎲 Zachtgekookt mee-eten",
-        ageLabel: "Zelf prikken/lepelen",
-        rule: "Volkorenpasta in hapklare stukjes, rijst of couscous met groentesaus om zelf te scheppen",
-        svg: CUT_SVGS.dices
+        shape: "plate",
+        shapeLabel: "🍽️ Volkoren gezinsportie (25% bord)",
+        ageLabel: "Energie & Sport (4–12 jr)",
+        rule: "Volkoren pasta, zilvervliesrijst of couscous als 1/4 deel van het avondbord voor langdurige energie",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2442,12 +2535,30 @@
           svg: CUT_SVGS.flakes
         };
       }
+      if (week <= 52) {
+        return {
+          shape: "dices",
+          shapeLabel: "🎲 Blokjes hardgekookt ei",
+          ageLabel: "Pincetgreep (8–12m)",
+          rule: "Snijd een hardgekookt ei in kleine blokjes van 1×1 cm of prak fijn op brood",
+          svg: CUT_SVGS.dices
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "fork",
+          shapeLabel: "🍳 Partjes, roerei of op brood",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "Gekookt ei in partjes, plakjes op volkorenbrood of een groente-omelet om zelf met een vorkje te prikken",
+          svg: CUT_SVGS.fork
+        };
+      }
       return {
-        shape: "dices",
-        shapeLabel: "🎲 Blokjes hardgekookt ei",
-        ageLabel: "Pincetgreep",
-        rule: "Snijd een hardgekookt ei in kleine blokjes van 1×1 cm of prak fijn op brood",
-        svg: CUT_SVGS.dices
+        shape: "plate",
+        shapeLabel: "🥚 Gekookt ei, omelet of roerei",
+        ageLabel: "Ontbijt & Lunchtrommel",
+        rule: "Alle bereidingen geschikt: op volkorenbrood, bij het ontbijt of als gekookt ei in de schooltrommel",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2462,12 +2573,30 @@
           svg: CUT_SVGS.flakes
         };
       }
+      if (week <= 52) {
+        return {
+          shape: "dices",
+          shapeLabel: "🎲 Zachte stukjes 1×1 cm",
+          ageLabel: "Pincetgreep (8–12m)",
+          rule: "Mals gesneden stukjes vis, kip, gehakt of geplette linzen/bonen om zelf te pakken",
+          svg: CUT_SVGS.dices
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "fork",
+          shapeLabel: "🍴 Hapklare stukjes (vorkje)",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "Mee-eten met de gezinsmaaltijd in malse stukjes (vermijd t/m 3 jaar nog wel rauw vlees en rauwe vis)",
+          svg: CUT_SVGS.fork
+        };
+      }
       return {
-        shape: "dices",
-        shapeLabel: "🎲 Zachte stukjes 1×1 cm",
-        ageLabel: "Kauwontwikkeling",
-        rule: "Mals gesneden stukjes vis, kip, gehakt of zachte linzen/bonen om zelf te prikken",
-        svg: CUT_SVGS.dices
+        shape: "plate",
+        shapeLabel: "🍽️ Gezinsportie (25% van het bord)",
+        ageLabel: "Groei & IJzer (4–12 jr)",
+        rule: "Normale portie vlees, kip, vette vis of peulvruchten; laat je kind aan tafel zelf snijden met mes en vork",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2482,12 +2611,30 @@
           svg: CUT_SVGS.spear
         };
       }
+      if (week <= 52) {
+        return {
+          shape: "bread",
+          shapeLabel: "🍘 Cracker-reepje / maisvinger",
+          ageLabel: "Krokant oefenen (8–12m)",
+          rule: "Een zoutloze maisvinger of volkoren cracotte met dun beleg; blijf er altijd bij",
+          svg: CUT_SVGS.bread
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "bread",
+          shapeLabel: "🍘 Volkoren cracker / soepstengel",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "Volkoren cracker met gezond beleg of een soepstengel (wissel af en geef niet dagelijks rijstwafels)",
+          svg: CUT_SVGS.bread
+        };
+      }
       return {
-        shape: "bread",
-        shapeLabel: "🍘 Volkoren cracker / soepstengel",
-        ageLabel: "Krokant oefenen",
-        rule: "Een stukje volkoren cracker met dun beleg of zachte soepstengel; blijf er altijd bij",
-        svg: CUT_SVGS.bread
+        shape: "plate",
+        shapeLabel: "🍘 Volkoren cracker na school",
+        ageLabel: "Tussendoor (4–12 jr)",
+        rule: "Volkoren crackers met hummus, 30+ kaas of 100% pindakaas als voedzame snack na school",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2498,16 +2645,25 @@
           shape: "spread",
           shapeLabel: "🥄 Mespuntje door puree",
           ageLabel: "Allergeen-introductie",
-          rule: "Roer 1/4 theelepel 100% pindakaas los door warm groente- of fruithapje",
+          rule: "Roer 1/4 tot 1/2 theelepel gladde 100% pindakaas los door een warm groente- of fruithapje",
+          svg: CUT_SVGS.spread
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "spread",
+          shapeLabel: "🍞 Dun gesmeerd (zonder stukjes)",
+          ageLabel: "Geen hele noten <4 jr",
+          rule: "Smeer gladde 100% pindakaas/notenpasta op brood of roer door pap; geef onder 4 jaar géén pindakaas met stukjes of hele noten",
           svg: CUT_SVGS.spread
         };
       }
       return {
-        shape: "spread",
-        shapeLabel: "🍞 Flinterdun gesmeerd",
-        ageLabel: "Geen losse klodder",
-        rule: "Smeer flinterdun op brood of roer door de pap; geef NOOIT een dikke lepel (plakt in de keel)",
-        svg: CUT_SVGS.spread
+        shape: "plate",
+        shapeLabel: "🥜 Op brood, dip of handje noten",
+        ageLabel: "Gezonde vetten (4–12 jr)",
+        rule: "Op volkorenbrood, als dip bij appelpartjes én vanaf 4–5 jaar dagelijks een klein handje ongezouten noten (rustig zittend)",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2522,12 +2678,21 @@
           svg: CUT_SVGS.prohibited
         };
       }
+      if (week <= 208) {
+        return {
+          shape: "spread",
+          shapeLabel: "🍯 Dun gesmeerd (vanaf 1 jaar)",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "Veilig vanaf 12 maanden; spaarzaam gebruiken i.v.m. suikers (1/2 tl honing helpt wel bij nachtelijke kriebelhoest)",
+          svg: CUT_SVGS.spread
+        };
+      }
       return {
-        shape: "spread",
-        shapeLabel: "🍯 Dun gesmeerd (vanaf 1 jaar)",
-        ageLabel: "Met mate",
-        rule: "Veilig vanaf 12 maanden; met mate gebruiken op brood of door de pap vanwege suikers",
-        svg: CUT_SVGS.spread
+        shape: "plate",
+        shapeLabel: "🍯 Met mate gebruiken",
+        ageLabel: "Vrije suikers beperken",
+        rule: "Veilig te gebruiken met mate, bijvoorbeeld een theelepeltje in warme thee bij keelpijn of op een pannenkoek",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2537,37 +2702,55 @@
         return {
           shape: "quarters",
           shapeLabel: "🔪 In lengte in 4en",
-          ageLabel: "Anti-verstikking",
+          ageLabel: "Anti-verstikking (<4 jr)",
           rule: "ALTIJD in de lengte in 4 partjes snijden tot minstens 4 jaar! Nooit dwars of heel geven",
           svg: CUT_SVGS.quarters
         };
       }
-      return {
-        shape: "dices",
-        shapeLabel: "🍇 Gehalveerd of heel",
-        ageLabel: "Rustig zittend",
-        rule: "Vanaf 4 jaar mag kind hele druiven leren eten, maar uitsluitend rustig zittend aan tafel",
-        svg: CUT_SVGS.dices
-      };
-    }
-
-    // 12. Blauwe bessen & Erwtjes (pletten!)
-    if (fid === "fd-blueberry" || nameLow.includes("bes") || nameLow.includes("erwt")) {
-      if (week > 208) {
+      if (week <= 312) {
         return {
-          shape: "dices",
-          shapeLabel: "🫐 Heel (Schoolkind)",
-          ageLabel: "Vanaf 4 jaar",
-          rule: "Mag heel gegeten worden mits kind rustig aan tafel zit",
-          svg: CUT_SVGS.dices
+          shape: "quarters",
+          shapeLabel: "🍇 Halveren & rustig zittend",
+          ageLabel: "Kleuter (4–5 jr)",
+          rule: "Halveer grote druiven en cherrytomaatjes bij kleuters nog even en laat ze altijd rustig zittend opeten",
+          svg: CUT_SVGS.quarters
         };
       }
       return {
-        shape: "squash",
-        shapeLabel: "🫐 Platgedrukt",
-        ageLabel: "Anti-verstikking",
-        rule: "Plet ronde bessen of erwtjes tussen duim en vinger; snijd aardbeien in partjes",
-        svg: CUT_SVGS.squash
+        shape: "plate",
+        shapeLabel: "🍇 Heel in fruitbak (rustig zittend)",
+        ageLabel: "Schoolkind (6–12 jr)",
+        rule: "Mag heel gegeten worden in de schoolpauze of thuis, mits je kind rustig zit (nooit tijdens het rennen of spelen)",
+        svg: CUT_SVGS.plate
+      };
+    }
+
+    // 12. Blauwe bessen & Aardbeien
+    if (fid === "fd-blueberry" || nameLow.includes("bes") || nameLow.includes("erwt")) {
+      if (week <= 52) {
+        return {
+          shape: "squash",
+          shapeLabel: "🫐 Platgedrukt / kwartjes",
+          ageLabel: "Anti-verstikking (6–12m)",
+          rule: "Plet ronde blauwe bessen altijd tussen duim en wijsvinger; snijd aardbeien in kleine kwartjes",
+          svg: CUT_SVGS.squash
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "squash",
+          shapeLabel: "🍓 Halveren (grote bessen)",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "Halveer of plet grote, stevige blauwe bessen t/m 3 jaar; aardbeien gehalveerd of uit de hand",
+          svg: CUT_SVGS.squash
+        };
+      }
+      return {
+        shape: "plate",
+        shapeLabel: "🍓 Heel in fruitbak of yoghurt",
+        ageLabel: "School & Thuis (4–12 jr)",
+        rule: "Gewoon heel uit de hand, in het fruitbakje voor school of door een schaaltje yoghurt/kwark",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2578,7 +2761,7 @@
           shape: "puree",
           shapeLabel: "🥄 Gladde Fruitpuree",
           ageLabel: "Gestoomd & gepureerd",
-          rule: "Stoom geschilde appel zacht en pureer glad met een vork of staafmixer",
+          rule: "Stoom geschilde appel of peer zacht en pureer glad met een vork of staafmixer",
           svg: CUT_SVGS.puree
         };
       }
@@ -2591,21 +2774,30 @@
           svg: CUT_SVGS.puree
         };
       }
-      if (week <= 104) {
+      if (week <= 52) {
         return {
           shape: "dices",
-          shapeLabel: "🍎 Flinterdunne schijfjes",
-          ageLabel: "Zonder schil",
-          rule: "Snijd flinterdunne schijfjes (als chips) of rasp grof; geef géén dikke harde brokken rauwe appel",
+          shapeLabel: "🍎 Zachte blokjes / fijne rasp",
+          ageLabel: "Pincetgreep (8–12m)",
+          rule: "Geef zacht gestoofde blokjes (1×1 cm), geraspte appel of rijpe zachte peer zonder schil",
           svg: CUT_SVGS.dices
         };
       }
+      if (week <= 208) {
+        return {
+          shape: "fork",
+          shapeLabel: "🍎 Flinterdunne partjes",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "Snijd rauwe appel in flinterdunne partjes (zonder harde schil) of geef rijpe zachte peer; géén dikke harde brokken",
+          svg: CUT_SVGS.fork
+        };
+      }
       return {
-        shape: "dices",
-        shapeLabel: "🍎 Dunne partjes",
-        ageLabel: "Met schil",
-        rule: "Dunne maantjes of partjes; vanaf 4 jaar ook afhappen uit het vuistje",
-        svg: CUT_SVGS.dices
+        shape: "plate",
+        shapeLabel: "🍎 Partjes met schil of hele appel",
+        ageLabel: "10-uurtje & Thuis (4–12 jr)",
+        rule: "Knapperige appelpartjes met schil in de fruitbak voor school, of gewoon zelf afhappen van een hele appel",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2629,12 +2821,30 @@
           svg: CUT_SVGS.handle
         };
       }
+      if (week <= 52) {
+        return {
+          shape: "dices",
+          shapeLabel: "🎲 Halve maantjes / blokjes",
+          ageLabel: "Pincetgreep (8–12m)",
+          rule: "Snijd in halve maantjes of kleine blokjes die je baby zelf tussen duim en wijsvinger kan pakken",
+          svg: CUT_SVGS.dices
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "fork",
+          shapeLabel: "🍌 Plakjes of zelf afhappen",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "Geef een (halve) gepelde banaan om zelf van af te happen, of schijfjes voor op brood en met een vorkje",
+          svg: CUT_SVGS.fork
+        };
+      }
       return {
-        shape: "dices",
-        shapeLabel: "🎲 Schijfjes of blokjes",
-        ageLabel: "Pincetgreep",
-        rule: "Snijd in ronde schijfjes of halve maantjes om zelf te prikken",
-        svg: CUT_SVGS.dices
+        shape: "plate",
+        shapeLabel: "🍌 Hele banaan of op brood",
+        ageLabel: "School & Sport (4–12 jr)",
+        rule: "Zelf pellen en opeten als 10-uurtje op school, voor het sporten of in plakjes op volkorenbrood",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2658,12 +2868,30 @@
           svg: CUT_SVGS.handle
         };
       }
+      if (week <= 52) {
+        return {
+          shape: "dices",
+          shapeLabel: "🎲 Kleine roosjes & blokjes",
+          ageLabel: "Pincetgreep (8–12m)",
+          rule: "Snijd de zachte steel in blokjes (1×1 cm) en breek de roosjes in kleine plukjes voor duim en wijsvinger",
+          svg: CUT_SVGS.dices
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "fork",
+          shapeLabel: "🥦 Gestoomde 'dino-boompjes'",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "Beetgare roosjes om zelf met een vorkje aan te prikken of lekker met de hand te eten",
+          svg: CUT_SVGS.fork
+        };
+      }
       return {
-        shape: "dices",
-        shapeLabel: "🎲 Kleine roosjes & blokjes",
-        ageLabel: "Pincetgreep",
-        rule: "Snijd de steel in kleine blokjes en breek de roosjes in kleine plukjes",
-        svg: CUT_SVGS.dices
+        shape: "plate",
+        shapeLabel: "🍽️ Gestoomd, gewokt of uit de oven",
+        ageLabel: "Gezinsmaaltijd (4–12 jr)",
+        rule: "Normale roosjes bij de avondmaaltijd, gewokt of geroosterd uit de oven (vult samen met andere groente 50% van het bord)",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2687,12 +2915,30 @@
           svg: CUT_SVGS.spear
         };
       }
+      if (week <= 52) {
+        return {
+          shape: "dices",
+          shapeLabel: "🎲 Blokjes 1×1 cm",
+          ageLabel: "Pincetgreep (8–12m)",
+          rule: "Snijd in zachte hapklare blokjes die je baby zelf tussen duim en wijsvinger kan pakken",
+          svg: CUT_SVGS.dices
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "fork",
+          shapeLabel: "🥑 Plakjes, blokjes of spread",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "In plakjes op volkorenbrood, als guacamole-dip of in stukjes om met een vorkje te prikken",
+          svg: CUT_SVGS.fork
+        };
+      }
       return {
-        shape: "dices",
-        shapeLabel: "🎲 Blokjes 1×1 cm",
-        ageLabel: "Pincetgreep",
-        rule: "Snijd in zachte hapklare blokjes die baby zelf tussen duim en wijsvinger kan pakken",
-        svg: CUT_SVGS.dices
+        shape: "plate",
+        shapeLabel: "🥪 Op toast, in wrap of salade",
+        ageLabel: "Gezinstafel & Trommel",
+        rule: "In plakjes op volkoren toast, in een lunchwrap voor school of in blokjes door een salade of pokébowl",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2712,16 +2958,34 @@
           shape: "spear",
           shapeLabel: "🥢 Vingerlange reep (5–7 cm)",
           ageLabel: "Zacht gestoomd",
-          rule: "Snijd een reep zo dik als je wijsvinger; stoom zo zacht dat je het moeiteloos fijnknijpt",
+          rule: "Snijd een reep zo dik als je wijsvinger (geen ronde schijfjes!); stoom zo zacht dat je het moeiteloos fijnknijpt",
           svg: CUT_SVGS.spear
         };
       }
+      if (week <= 52) {
+        return {
+          shape: "dices",
+          shapeLabel: "🎲 Zachtgekookte blokjes 1×1 cm",
+          ageLabel: "Pincetgreep (8–12m)",
+          rule: "Zacht gekookte wortel- of pompoenblokjes (of halve schijfjes) om zelf met duim en wijsvinger te pakken",
+          svg: CUT_SVGS.dices
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "fork",
+          shapeLabel: "🥕 Gekookt of fijn geraspt",
+          ageLabel: "Geen harde rauwe wortel <4 jr",
+          rule: "Geef wortel gekookt/geroosterd of fijn geraspt; harde rauwe snackwortels pas vanaf 4 jaar geven i.v.m. verslikken",
+          svg: CUT_SVGS.fork
+        };
+      }
       return {
-        shape: "dices",
-        shapeLabel: "🎲 Blokjes 1×1 cm",
-        ageLabel: "Pincetgreep",
-        rule: "Zacht gekookte wortel- of pompoenblokjes om zelf te prikken",
-        svg: CUT_SVGS.dices
+        shape: "plate",
+        shapeLabel: "🥕 Rauwe snackworteltjes of warm",
+        ageLabel: "Schooltrommel & Diner",
+        rule: "Vanaf 4 jaar veilig als knapperige rauwe snackworteltjes in de schooltrommel (rustig zittend eten) of bij het avondeten",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2732,7 +2996,7 @@
           shape: "puree",
           shapeLabel: "🥄 Gladde Courgettepuree",
           ageLabel: "Zonder schil",
-          rule: "Stoom courgette gaar en pureer glad (komkommer nog niet pureren)",
+          rule: "Stoom courgette gaar en pureer glad (rauwe komkommer en paprika zijn nog te hard)",
           svg: CUT_SVGS.puree
         };
       }
@@ -2745,12 +3009,30 @@
           svg: CUT_SVGS.spear
         };
       }
+      if (week <= 52) {
+        return {
+          shape: "dices",
+          shapeLabel: "🎲 Halve maantjes / blokjes",
+          ageLabel: "Pincetgreep (8–12m)",
+          rule: "Kleine zachte blokjes ontvelde komkommer of zacht gestoofde paprikareepjes",
+          svg: CUT_SVGS.dices
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "fork",
+          shapeLabel: "🥒 Rauwkoststaafjes & reepjes",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "Dunne reepjes zoete paprika en komkommerstaafjes (lekker om te dippen in hummus) of gewokte courgette",
+          svg: CUT_SVGS.fork
+        };
+      }
       return {
-        shape: "dices",
-        shapeLabel: "🎲 Halve maantjes / blokjes",
-        ageLabel: "Pincetgreep",
-        rule: "Kleine zachte blokjes ontvelde komkommer of zacht gestoofde paprikareepjes",
-        svg: CUT_SVGS.dices
+        shape: "plate",
+        shapeLabel: "🥒 Snackgroente in de trommel",
+        ageLabel: "10-uurtje & 16:00-plankje",
+        rule: "Ideale knapperige snackgroente voor in de schooltrommel of op een schaaltje na school om 16:00 uur",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2774,12 +3056,30 @@
           svg: CUT_SVGS.handle
         };
       }
+      if (week <= 52) {
+        return {
+          shape: "dices",
+          shapeLabel: "🎲 Zachte blokjes 1×1 cm",
+          ageLabel: "Pincetgreep (8–12m)",
+          rule: "Snijd rijpe mango, kiwi of ontpitte meloen in kleine blokjes voor de pincetgreep",
+          svg: CUT_SVGS.dices
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "fork",
+          shapeLabel: "🥄 Blokjes of kiwi uitlepelen",
+          ageLabel: "Dreumes & Peuter (1–3 jr)",
+          rule: "In stukjes om met een vorkje te prikken, of halveer een kiwi zodat je peuter hem zelf met een lepeltje kan uitlepelen",
+          svg: CUT_SVGS.fork
+        };
+      }
       return {
-        shape: "dices",
-        shapeLabel: "🎲 Zachte blokjes 1×1 cm",
-        ageLabel: "Pincetgreep",
-        rule: "Snijd rijpe mango, kiwi of ontpitte meloen in hapklare blokjes",
-        svg: CUT_SVGS.dices
+        shape: "plate",
+        shapeLabel: "🥭 Fruitbakje voor school",
+        ageLabel: "10-uurtje & Sport (4–12 jr)",
+        rule: "In partjes of blokjes mee in de fruitbak voor school, door de yoghurt/kwark of als frisse snack",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2803,12 +3103,21 @@
           svg: CUT_SVGS.squash
         };
       }
+      if (week <= 208) {
+        return {
+          shape: "fork",
+          shapeLabel: "🍇 Max. 1 doosje op 1 eetmoment",
+          ageLabel: "Tandvriendelijk (1–3 jr)",
+          rule: "Geef op 1 vast moment (niet de hele middag door i.v.m. gaatjes) met een beker water erbij",
+          svg: CUT_SVGS.fork
+        };
+      }
       return {
-        shape: "dices",
-        shapeLabel: "🍇 Max. 1 doosje op 1 eetmoment",
-        ageLabel: "Tandvriendelijk",
-        rule: "Geef op 1 vast moment (niet de hele middag door i.v.m. gaatjes) met een beker water",
-        svg: CUT_SVGS.dices
+        shape: "plate",
+        shapeLabel: "🦷 Met mate (1 vast moment)",
+        ageLabel: "Gebitsbescherming (4–12 jr)",
+        rule: "Gedroogd fruit plakt aan de kiezen; geef het alleen op 1 vast eetmoment en kies voor school liever vers fruit",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2827,17 +3136,17 @@
         return {
           shape: "quarters",
           shapeLabel: "🔪 Worst in lengte in 4en • Geen popcorn",
-          ageLabel: "Anti-verstikking",
+          ageLabel: "Anti-verstikking (<4 jr)",
           rule: "Snijd knakworst ALTIJD in de lengte in vieren (nooit ronde schijfjes!). Geef géén popcorn onder 4 jaar",
           svg: CUT_SVGS.quarters
         };
       }
       return {
-        shape: "dices",
-        shapeLabel: "🌭 Rustig zittend aan tafel",
+        shape: "plate",
+        shapeLabel: "🍿 Rustig zittend aan tafel",
         ageLabel: "Vanaf 4–5 jaar",
-        rule: "Knakworst en popcorn vanaf 4–5 jaar uitsluitend rustig zittend eten (nooit tijdens het rennen)",
-        svg: CUT_SVGS.dices
+        rule: "Knakworst en popcorn vanaf 4–5 jaar uitsluitend rustig zittend eten (nooit tijdens het rennen of spelen)",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2847,17 +3156,17 @@
         return {
           shape: "spread",
           shapeLabel: "🥪 Max. 1× p/w • Géén rauw vlees/vis",
-          ageLabel: "Vitamine A & Hygiëne",
+          ageLabel: "Vitamine A & Hygiëne (<4 jr)",
           rule: "Voedingscentrum: max. 1 boterham smeerleverworst/paté per week. Rauw vlees (filet americain/tartaar) en gerookte zalm pas vanaf 4 jaar!",
           svg: CUT_SVGS.spread
         };
       }
       return {
-        shape: "spread",
+        shape: "plate",
         shapeLabel: "🥪 Met mate op volkorenbrood",
-        ageLabel: "Wissel beleg af",
-        rule: "Smeerleverworst niet dagelijks geven; let bij vlees en vis altijd op koeling en versheid",
-        svg: CUT_SVGS.spread
+        ageLabel: "Wissel beleg af (4–12 jr)",
+        rule: "Smeerleverworst niet dagelijks geven; let bij vlees en vis in de lunchtrommel op goede koeling",
+        svg: CUT_SVGS.plate
       };
     }
 
@@ -2882,12 +3191,32 @@
       };
     }
 
+    if (week <= 52) {
+      return {
+        shape: "dices",
+        shapeLabel: "🎲 Blokjes 1×1 cm",
+        ageLabel: "Pincetgreep (8–12m)",
+        rule: "Snijd in zachte hapklare blokjes die je baby met duim en wijsvinger kan pakken",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    if (week <= 208) {
+      return {
+        shape: "fork",
+        shapeLabel: "🍴 Hapklare stukjes (vorkje)",
+        ageLabel: "Dreumes & Peuter (1–3 jr)",
+        rule: "Mee-eten met de gezinsmaaltijd in stukjes om zelf met een vorkje of lepel te eten",
+        svg: CUT_SVGS.fork
+      };
+    }
+
     return {
-      shape: "dices",
-      shapeLabel: "🎲 Blokjes 1×1 cm",
-      ageLabel: "Pincetgreep & Mee-eten",
-      rule: "Snijd in hapklare blokjes of schijfjes die zelf geprikt kunnen worden",
-      svg: CUT_SVGS.dices
+      shape: "plate",
+      shapeLabel: "🍽️ Gezinsmaaltijd & Schooltrommel",
+      ageLabel: "Gezonde portie (4–12 jr)",
+      rule: "Gewoon mee-eten aan tafel of mee in de broodtrommel naar school",
+      svg: CUT_SVGS.plate
     };
   }
 
@@ -2993,7 +3322,10 @@
     const waitAllInStage = DATA.foodDatabase.filter((f) => !getPrepForWeek(f, week).ok);
 
     if (headerTitleEl) {
-      headerTitleEl.textContent = `🔍 Eet- & Snijgids (${stage.shortLabel})`;
+      headerTitleEl.textContent =
+        week > 208
+          ? `🍽️ Voedings- & Trommelwijzer (${stage.shortLabel})`
+          : `🔍 Eet- & Snijgids (${stage.shortLabel})`;
     }
     if (stageCountPillEl) {
       stageCountPillEl.textContent =
@@ -3055,13 +3387,17 @@
     const cutBannerEl = document.getElementById("lookupPhaseCutBanner");
     if (cutBannerEl) {
       const cutData = getCutVisualData(stage.cutType, stage);
+      const cutBannerTag =
+        week > 208
+          ? `🍽️ Bord- & Trommelwijzer ${escapeHtml(stage.shortLabel)}`
+          : `🔪 Snijadvies ${escapeHtml(stage.shortLabel)}`;
       cutBannerEl.classList.remove("hidden");
       cutBannerEl.innerHTML = `
         <div class="lookup-cut-highlight">
           <div class="lookup-cut-svg-box" aria-hidden="true">${cutData.svg}</div>
           <div class="lookup-cut-text">
             <div class="lookup-cut-top">
-              <span class="food-cut-shape-tag">🔪 Snijadvies ${escapeHtml(stage.shortLabel)}</span>
+              <span class="food-cut-shape-tag">${cutBannerTag}</span>
               <strong class="lookup-cut-title">${escapeHtml(cutData.title)}</strong>
             </div>
             <p class="lookup-cut-desc">${escapeHtml(cutData.desc)}</p>
@@ -3078,8 +3414,10 @@
         subtitleEl.textContent = `🥄 ${suitableAllInStage.length} veilige oefenhapjes voor 4–5 maanden — kies een productgroep en vink je proeflijst bij (de ${waitAllInStage.length} producten vanaf 6, 9 of 12 mnd staan onderaan).`;
       } else if (week <= 52) {
         subtitleEl.textContent = `🥑 ${suitableAllInStage.length} geschikte producten voor ${stage.shortLabel} — bekijk de veilige snijvorm en vink je proeflijst bij (producten voor later staan onderaan).`;
+      } else if (week <= 208) {
+        subtitleEl.textContent = `🍽️ Alle ${suitableAllInStage.length} producten zijn geschikt voor ${stage.shortLabel} — bekijk de veilige peuter-serveervorm en vink je proeflijst bij.`;
       } else {
-        subtitleEl.textContent = `🍽️ Alle ${suitableAllInStage.length} producten zijn geschikt voor ${stage.shortLabel} — bekijk de veilige snijvorm en vink je proeflijst bij.`;
+        subtitleEl.textContent = `🥪 Alle ${suitableAllInStage.length} producten zijn geschikt voor ${stage.shortLabel} — bekijk gezonde porties voor aan tafel, het 10-uurtje en de schooltrommel.`;
       }
     }
 
@@ -3444,8 +3782,9 @@
       detailsEl.open = week >= 17 && week <= 104;
     }
 
+    // Toon het baby-opbouwschema (¼–½ tl proefhapje & eczeem-uitleg) alleen bij 4–24 maanden
     if (protocolBoxEl) {
-      protocolBoxEl.classList.toggle("hidden", week <= 16);
+      protocolBoxEl.classList.toggle("hidden", week <= 16 || week > 104);
     }
 
     if (summaryTitleEl && introHintEl) {
@@ -3457,10 +3796,18 @@
         summaryTitleEl.textContent = "🥜 Top 9 Allergenen Afvinklijst (4 geschikt bij 4–5 mnd • 5 vanaf 6 mnd)";
         introHintEl.textContent =
           "Advies 4–5 maanden: start in deze fase eerst met gladde Pinda, Kippenei, Notenpasta en een lepeltje fijne Gluten-pap. De overige 5 allergenen (yoghurt/zuivel, sesam, vis, soja en schaaldieren) volgen vanaf 6 maanden.";
-      } else {
-        summaryTitleEl.textContent = "🥜 Top 9 Allergenen Afvinklijst";
+      } else if (week <= 52) {
+        summaryTitleEl.textContent = "🥜 Top 9 Allergenen Afvinklijst (6–12 maanden)";
         introHintEl.textContent =
           "Advies: start tussen 4 en 8 maanden met pinda en ei, breid vanaf 6 maanden uit met de overige allergenen en houd ze na gewenning wekelijks op het menu.";
+      } else if (week <= 208) {
+        summaryTitleEl.textContent = "🥜 Top 9 Allergenen & Tolerantie-Onderhoud (1–3 jaar)";
+        introHintEl.textContent =
+          "Bij dreumesen en peuters draait het om wekelijkse variatie (zoals 100% pindakaas/notenpasta, ei, vis, zuivel en hummus) én veiligheid: geef onder 4 jaar nog géén hele noten.";
+      } else {
+        summaryTitleEl.textContent = `🥜 Top 9 Allergenen & Gezonde Variatie (${stage.shortLabel})`;
+        introHintEl.textContent =
+          "Op de basisschoolleeftijd leveren ongezouten noten, pinda's, ei, vette vis, zuivel en volkoren granen belangrijke bouwstoffen voor groei en concentratie.";
       }
     }
 
@@ -3518,24 +3865,31 @@
           ageLabel = "1–3 jaar";
         } else {
           prep = alg.safePrep4to12y || alg.safePrep1to4y;
-          ageLabel = "4–12 jaar";
+          ageLabel = stage.shortLabel;
         }
 
         const badgeHtml = isSuitableNow
           ? `<span class="pill-small ${count === 3 ? "pill-ok" : ""}">${count === 3 ? "✅ 3/3 Gewend (1× p/w)" : `${count}/3 keer geproefd`}</span>`
           : `<span class="pill-small pill-wait">⏳ Vanaf ${minM} mnd</span>`;
 
-        const stepHints = [
-          "Stap 1: Klein proefhapje (¼–½ tl op de ochtend/middag)",
-          "Stap 2: Portie opbouwen (½–1 tl op een volgende dag)",
-          "Stap 3: 3e keer zonder klachten (1 tl) — gewend! Houd 1× per week op het menu"
-        ];
+        const stepHints =
+          week <= 104
+            ? [
+                "Stap 1: Klein proefhapje (¼–½ tl op de ochtend/middag)",
+                "Stap 2: Portie opbouwen (½–1 tl op een volgende dag)",
+                "Stap 3: 3e keer zonder klachten (1 tl) — gewend! Houd 1× per week op het menu"
+              ]
+            : [
+                "Stap 1: 1e keer zonder klachten gegeten",
+                "Stap 2: 2e keer zonder klachten gegeten",
+                "Stap 3: 3e keer zonder klachten gegeten — gewend! Houd wekelijks op het menu"
+              ];
 
         const weeklyMaintenanceHtml =
           isSuitableNow && count === 3
             ? `
           <div class="allergen-weekly-row">
-            <span class="allergen-weekly-label">🔄 Wekelijks onderhoud (1× p/w voor tolerantie):</span>
+            <span class="allergen-weekly-label">🔄 Wekelijks onderhoud (1× p/w op het menu):</span>
             <button type="button" class="allergen-weekly-btn ${isGivenThisWeek ? "is-given" : ""}" data-alg-weekly="${alg.id}" title="Vink wekelijks aan of dit allergeen deze week op het menu stond">
               ${isGivenThisWeek ? "✓ Deze week gegeven" : "○ Deze week geven"}
             </button>
@@ -3548,9 +3902,9 @@
             <h3 class="item-title">${alg.icon} ${escapeHtml(alg.name)}</h3>
             ${badgeHtml}
           </div>
-          ${alg.whyEarly ? `<small class="subtle-hint">${escapeHtml(alg.whyEarly)}</small>` : ""}
+          ${alg.whyEarly && week <= 104 ? `<small class="subtle-hint">${escapeHtml(alg.whyEarly)}</small>` : ""}
           <div class="highlight-note ${isSuitableNow ? "" : "highlight-note-wait"}">
-            <strong>🥄 Advies (${escapeHtml(ageLabel)}):</strong> ${escapeHtml(prep)}
+            <strong>${week > 208 ? "🍽️" : "🥄"} Advies (${escapeHtml(ageLabel)}):</strong> ${escapeHtml(prep)}
           </div>
           ${
             isSuitableNow
@@ -3666,6 +4020,7 @@
   // 10. TAB 5: SOS "EERSTE HULP" & CONSULTATIEBUREAU / RVP / TANDJES
   // =========================================================================
   function renderSosAndCb(stage, week) {
+    const cbTitleEl = document.getElementById("cbCardTitle");
     const cbLabel = document.getElementById("cbStageLabel");
     const cbSub = document.getElementById("cbAgeSubtitle");
     const cbGrid = document.getElementById("healthCbGrid");
@@ -3674,9 +4029,17 @@
     const sosStageLabelEl = document.getElementById("sosStageLabel");
     if (!cbGrid || !sosContainer) return;
 
+    const isSchoolAge = week > 208;
+    if (cbTitleEl) {
+      cbTitleEl.textContent = isSchoolAge
+        ? "🏫 Schoolarts (JGZ), Vaccinaties & Gebit"
+        : "🏥 Consultatiebureau, Vaccinaties & Tandjes";
+    }
     if (cbLabel) cbLabel.textContent = stage.shortLabel;
     if (cbSub) {
-      cbSub.textContent = `Controles, RVP-vaccinaties en gebitsontwikkeling voor fase ${stage.shortLabel} (${stage.ageRangeLabel}).`;
+      cbSub.textContent = isSchoolAge
+        ? `Gezondheidsonderzoeken op de basisschool (JGZ), RVP-prikken en het wisselgebit voor fase ${stage.shortLabel} (${stage.ageRangeLabel}).`
+        : `Controles, RVP-vaccinaties en gebitsontwikkeling voor fase ${stage.shortLabel} (${stage.ageRangeLabel}).`;
     }
 
     const h = stage.healthCB || {
@@ -3699,9 +4062,16 @@
         .join("")}</ul>`;
     };
 
+    const cbFirstLabel = isSchoolAge
+      ? `🏫 Schoolarts / JGZ (${escapeHtml(stage.shortLabel)})`
+      : `🏥 Consultatiebureau / JGZ (${escapeHtml(stage.shortLabel)})`;
+    const cbTeethLabel = isSchoolAge
+      ? `🦷 Gebit &amp; Wisselen (${escapeHtml(stage.shortLabel)})`
+      : `😁 Tandjes &amp; Gebit (${escapeHtml(stage.shortLabel)})`;
+
     cbGrid.innerHTML = `
       <div class="cb-item-box">
-        <span class="cb-item-label">🏥 Consultatiebureau / JGZ (${escapeHtml(stage.shortLabel)})</span>
+        <span class="cb-item-label">${cbFirstLabel}</span>
         ${formatCbBoxHtml(h.cbVisit)}
       </div>
       <div class="cb-item-box">
@@ -3709,7 +4079,7 @@
         ${formatCbBoxHtml(h.vaccines)}
       </div>
       <div class="cb-item-box">
-        <span class="cb-item-label">😁 Tandjes &amp; Gebit (${escapeHtml(stage.shortLabel)})</span>
+        <span class="cb-item-label">${cbTeethLabel}</span>
         ${formatCbBoxHtml(h.teeth)}
       </div>
     `;
@@ -3832,10 +4202,14 @@
     sosContainer.innerHTML = sosList
       .map((card) => {
         const isOpen = state.activeSosCardId === card.id;
+        const cardTitle =
+          isSchoolAge && card.id === "sos-teeth-cold"
+            ? "Wisselgebit, Kiespijn, Verkoudheid & Oorpijn"
+            : card.title;
         return `
         <details class="sos-details" name="sos-accordion" data-sos-id="${card.id}" ${isOpen ? "open" : ""}>
           <summary>
-            <span class="sos-summary-title">${card.icon} ${escapeHtml(card.title)}</span>
+            <span class="sos-summary-title">${card.icon} ${escapeHtml(cardTitle)}</span>
             <span class="summary-badge">${escapeHtml(shortAgeTag)}</span>
           </summary>
           <div class="sos-body">
@@ -4204,6 +4578,8 @@
       allergenLine = `🥜 *Al gewend aan allergenen:* ${testedAllergens.join(", ")}`;
     } else if (week <= 16) {
       allergenLine = `🥜 *Allergenen:* Nog niet van toepassing (tot 4 maanden uitsluitend melkvoeding).`;
+    } else if (week > 208) {
+      allergenLine = `🥜 *Allergieën / Dieet:* Geen bijzonderheden gemeld.`;
     } else {
       allergenLine = `🥜 *Allergenen:* Geef geen nieuwe allergenen zonder overleg.`;
     }
@@ -4215,19 +4591,25 @@
       stageGames[0] ||
       null;
 
+    const drinkHeader =
+      week <= 52 ? "🍼 *Melk & Drinken:*" : week <= 208 ? "🥛 *Zuivel & Drinken:*" : "💧 *Drinken & Zuivel:*";
+    const solidHeader = week <= 52 ? "🥣 *Vaste voeding:*" : "🍽️ *Maaltijden & Tussendoor:*";
+    const cutHeader = week > 208 ? "🍽️ *Bord- & Trommelrichtlijn:*" : "🔪 *Veilig serveren:*";
+    const avoidHeader = week > 208 ? "⚠️ *Aandachtspunt:*" : "🚫 *Niet geven:*";
+
     const lines = [
       `👵 *Oppas- & Oma-Kaartje voor ${childName}*`,
       `📅 *Leeftijd:* ${exactAge} (${stage.shortLabel})`,
       ``,
-      `🍼 *Melk & Drinken:* ${milkVol} (${stage.nutrition.feedsPerDay})`,
-      `🥣 *Vaste voeding:* ${solidPortion} (${stage.nutrition.solidsPerDay})`,
-      `🔪 *Veilig serveren:* ${cutInfo.title}`,
-      `🚫 *Niet geven:* ${stage.nutrition.avoidFoods[0] || "Honing (<1jr) en hele noten/druiven"}`,
+      `${drinkHeader} ${milkVol} (${stage.nutrition.feedsPerDay})`,
+      `${solidHeader} ${solidPortion} (${stage.nutrition.solidsPerDay})`,
+      `${cutHeader} ${cutInfo.title}`,
+      `${avoidHeader} ${stage.nutrition.avoidFoods[0] || "Honing (<1jr) en hele noten/druiven"}`,
       ``,
       `🌙 *Slaap & Ritme:* ${stage.sleep.wakeWindow} • ${stage.sleep.naps}`,
       napStr ? `⏰ *Richtlijn vandaag:* ${napStr}` : null,
       allergenLine,
-      favGame ? `🎲 *Leuk spelletje nu:* ${favGame.title} — ${favGame.howToPlay}` : null,
+      favGame ? `🎲 *Leuke activiteit nu:* ${favGame.title} — ${favGame.howToPlay}` : null,
       customNote ? `\n💛 *Extra notitie:* ${customNote}` : null
     ].filter(Boolean);
 
