@@ -243,9 +243,21 @@ p, li {
   padding: 5px 9px;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .brand-subtitle {
     display: none;
+  }
+  .header-actions {
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+  .profile-chip,
+  .oppas-chip,
+  .pwa-header-btn,
+  .icon-btn {
+    padding: 4px 8px;
+    min-height: 32px;
+    font-size: var(--fs-xs);
   }
 }
 
