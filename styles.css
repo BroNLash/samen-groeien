@@ -4611,6 +4611,92 @@ p, li {
   border-color: var(--primary);
 }
 
+.ms-share-btn.has-photo {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.ms-photo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px dashed rgba(43, 122, 105, 0.42);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.ms-photo-btn:hover,
+.ms-photo-btn.has-photo {
+  border-style: solid;
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.ms-photo-preview-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid rgba(43, 122, 105, 0.24);
+}
+
+.ms-photo-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(24, 52, 46, 0.12);
+}
+
+.ms-photo-preview-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ms-photo-preview-info strong {
+  font-size: 0.78rem;
+  color: var(--text);
+}
+
+.ms-photo-preview-info span {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.ms-photo-del-btn {
+  padding: 4px 7px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  border-radius: 6px;
+}
+
+.ms-photo-del-btn:hover {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+}
+
 /* 5. CB-voorbereiding: Groei-logboek & Vragenlijstje */
 .cb-prep-body {
   padding: 12px 16px 16px;

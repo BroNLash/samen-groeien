@@ -2821,9 +2821,10 @@
         .map((ms, i) => {
           const key = `${stage.id}-ms-${i}`;
           const checked = Boolean(store.checkedMilestones[key]);
-          const mem = (store.milestoneMemories && store.milestoneMemories[key]) || { date: todayIso, note: "" };
+          const mem = (store.milestoneMemories && store.milestoneMemories[key]) || { date: todayIso, note: "", photoDataUrl: "" };
+          const hasPhoto = Boolean(mem.photoDataUrl);
           return `
-          <div class="check-card check-card-wrap">
+          <div class="check-card check-card-wrap ${checked ? "is-checked" : ""}">
             <label class="check-card-main" style="cursor:pointer;">
               <input type="checkbox" data-ms-key="${key}" ${checked ? "checked" : ""} />
               <span>${escapeHtml(ms)}</span>
@@ -2834,8 +2835,26 @@
               <div class="ms-memory-row">
                 <input type="date" class="ms-date-input" data-ms-date="${key}" value="${escapeHtml(mem.date || todayIso)}" aria-label="Datum van mijlpaal" title="Datum waarop deze mijlpaal is bereikt" />
                 <input type="text" class="ms-note-input" data-ms-note="${key}" maxlength="100" placeholder="Herinnering (bijv. 'Bij oma op het kleed!')" value="${escapeHtml(mem.note || "")}" aria-label="Persoonlijke herinnering bij mijlpaal" />
-                <button type="button" class="ms-share-btn" data-ms-share="${key}" data-ms-title="${escapeHtml(ms)}" title="Deel dit mijlpaalkaartje via WhatsApp">💬 Deel</button>
+                <label class="ms-photo-btn ${hasPhoto ? "has-photo" : ""}" title="${hasPhoto ? "Andere foto kiezen" : "Voeg een foto van dit moment toe om mee te sturen op WhatsApp"}">
+                  ${hasPhoto ? "📸 Foto wijzigen" : "📷 + Foto"}
+                  <input type="file" accept="image/*" data-ms-photo-input="${key}" hidden />
+                </label>
+                <button type="button" class="ms-share-btn ${hasPhoto ? "has-photo" : ""}" data-ms-share="${key}" data-ms-title="${escapeHtml(ms)}" title="${hasPhoto ? "Deel als Mijlpaal-Fotokaart met tekst via WhatsApp" : "Deel dit mijlpaalkaartje via WhatsApp"}">${hasPhoto ? "📸 Deel met foto" : "💬 Deel"}</button>
               </div>
+              ${
+                hasPhoto
+                  ? `
+                <div class="ms-photo-preview-bar">
+                  <img src="${mem.photoDataUrl}" alt="Mijlpaalfoto" class="ms-photo-thumb" />
+                  <div class="ms-photo-preview-info">
+                    <strong>📸 Foto toegevoegd aan deze mijlpaal</strong>
+                    <span>Bij klikken op <em>'Deel met foto'</em> maakt de app automatisch een mooie Mijlpaal-Fotokaart voor de familie-WhatsApp!</span>
+                  </div>
+                  <button type="button" class="ms-photo-del-btn" data-ms-photo-del="${key}" title="Foto verwijderen" aria-label="Foto verwijderen">✕</button>
+                </div>
+              `
+                  : ""
+              }
             `
                 : ""
             }
@@ -2851,7 +2870,7 @@
           if (chk.checked) {
             store.checkedMilestones[k] = true;
             if (!store.milestoneMemories[k]) {
-              store.milestoneMemories[k] = { date: todayIso, note: "" };
+              store.milestoneMemories[k] = { date: todayIso, note: "", photoDataUrl: "" };
             }
           } else {
             delete store.checkedMilestones[k];
@@ -2866,7 +2885,7 @@
         dateIn.addEventListener("change", () => {
           const k = dateIn.dataset.msDate;
           if (!store.milestoneMemories) store.milestoneMemories = {};
-          if (!store.milestoneMemories[k]) store.milestoneMemories[k] = { date: todayIso, note: "" };
+          if (!store.milestoneMemories[k]) store.milestoneMemories[k] = { date: todayIso, note: "", photoDataUrl: "" };
           store.milestoneMemories[k].date = dateIn.value;
           saveState();
         });
@@ -2876,17 +2895,46 @@
         noteIn.addEventListener("input", () => {
           const k = noteIn.dataset.msNote;
           if (!store.milestoneMemories) store.milestoneMemories = {};
-          if (!store.milestoneMemories[k]) store.milestoneMemories[k] = { date: todayIso, note: "" };
+          if (!store.milestoneMemories[k]) store.milestoneMemories[k] = { date: todayIso, note: "", photoDataUrl: "" };
           store.milestoneMemories[k].note = noteIn.value;
           saveState();
         });
       });
 
+      msEl.querySelectorAll("[data-ms-photo-input]").forEach((fileIn) => {
+        fileIn.addEventListener("change", async (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          const k = fileIn.dataset.msPhotoInput;
+          try {
+            const compressedDataUrl = await compressMilestonePhoto(file);
+            if (!store.milestoneMemories) store.milestoneMemories = {};
+            if (!store.milestoneMemories[k]) {
+              store.milestoneMemories[k] = { date: todayIso, note: "", photoDataUrl: "" };
+            }
+            store.milestoneMemories[k].photoDataUrl = compressedDataUrl;
+            saveState();
+            renderMilestonesList();
+          } catch (_) {}
+        });
+      });
+
+      msEl.querySelectorAll("[data-ms-photo-del]").forEach((delBtn) => {
+        delBtn.addEventListener("click", () => {
+          const k = delBtn.dataset.msPhotoDel;
+          if (store.milestoneMemories && store.milestoneMemories[k]) {
+            store.milestoneMemories[k].photoDataUrl = "";
+            saveState();
+            renderMilestonesList();
+          }
+        });
+      });
+
       msEl.querySelectorAll("[data-ms-share]").forEach((shareBtn) => {
-        shareBtn.addEventListener("click", () => {
+        shareBtn.addEventListener("click", async () => {
           const k = shareBtn.dataset.msShare;
           const msText = shareBtn.dataset.msTitle || "Nieuwe mijlpaal!";
-          const mem = (store.milestoneMemories && store.milestoneMemories[k]) || { date: todayIso, note: "" };
+          const mem = (store.milestoneMemories && store.milestoneMemories[k]) || { date: todayIso, note: "", photoDataUrl: "" };
           const activeChild = getActiveChild();
           const childName = activeChild ? activeChild.name : state.profile.name || "Ons kindje";
           const rawDate = mem.date || todayIso;
@@ -2902,8 +2950,68 @@
             ``,
             `_Vastgelegd in Samen Groeien_ 🌱`
           ].filter(Boolean);
+          const shareText = cardLines.join("\n");
 
-          openWhatsAppShare(cardLines.join("\n"), "auto");
+          if (mem.photoDataUrl) {
+            const origLabel = shareBtn.textContent;
+            shareBtn.textContent = "⏳ Kaart maken...";
+            shareBtn.disabled = true;
+            try {
+              const cardBlob = await generateMilestonePolaroidCardBlob({
+                childName,
+                stageLabel: stage.shortLabel,
+                nlDate,
+                msText,
+                note: mem.note ? mem.note.trim() : "",
+                photoDataUrl: mem.photoDataUrl
+              });
+              const safeName = String(childName || "kind")
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-|-$/g, "") || "mijlpaal";
+              const fileObj = new File([cardBlob], `mijlpaal-${safeName}-${rawDate}.png`, { type: "image/png" });
+
+              // 1. Mobiel & moderne browsers (Web Share API Level 2 met fotobestand + tekst direct naar WhatsApp!)
+              if (navigator.canShare && navigator.canShare({ files: [fileObj] })) {
+                await navigator.share({
+                  files: [fileObj],
+                  title: `🏆 Mijlpaal van ${childName}`,
+                  text: shareText
+                });
+                shareBtn.textContent = "✓ Foto & tekst gedeeld!";
+              } else {
+                // 2. Desktop / WhatsApp Web fallback: kopieer de Mijlpaal-Fotokaart naar het klembord + download + open WhatsApp Web
+                if (navigator.clipboard && window.ClipboardItem) {
+                  try {
+                    await navigator.clipboard.write([new ClipboardItem({ "image/png": cardBlob })]);
+                  } catch (_) {}
+                }
+                const dlUrl = URL.createObjectURL(cardBlob);
+                const a = document.createElement("a");
+                a.href = dlUrl;
+                a.download = `mijlpaal-${safeName}-${rawDate}.png`;
+                a.click();
+                setTimeout(() => URL.revokeObjectURL(dlUrl), 4000);
+
+                openWhatsAppShare(shareText, "auto");
+                shareBtn.textContent = "✓ Fotokaart gekopieerd (Ctrl+V)!";
+              }
+            } catch (err) {
+              // Als de gebruiker het deelvenster annuleert, doe niets; bij een andere fout val terug op tekst delen
+              if (!err || err.name !== "AbortError") {
+                openWhatsAppShare(shareText, "auto");
+              }
+              shareBtn.textContent = origLabel;
+            } finally {
+              shareBtn.disabled = false;
+              setTimeout(() => {
+                shareBtn.textContent = origLabel;
+              }, 2400);
+            }
+            return;
+          }
+
+          openWhatsAppShare(shareText, "auto");
           const origLabel = shareBtn.textContent;
           shareBtn.textContent = "✓ Gedeeld!";
           setTimeout(() => {
@@ -2914,6 +3022,193 @@
     };
 
     renderMilestonesList();
+  }
+
+  // =========================================================================
+  // 8B. MIJLPAAL-FOTO COMPRESSIE & POLAROID FOTOKAART GENERATOR (CANVAS)
+  // =========================================================================
+  function compressMilestonePhoto(file, maxDim = 900, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("File read error"));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error("Image load error"));
+        img.onload = () => {
+          let w = img.naturalWidth || img.width || 600;
+          let h = img.naturalHeight || img.height || 600;
+          if (w > maxDim || h > maxDim) {
+            if (w >= h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function wrapCanvasTextLines(ctx, text, maxWidth) {
+    const words = String(text || "").split(/\s+/).filter(Boolean);
+    const lines = [];
+    let currentLine = "";
+    words.forEach((word) => {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      if (ctx.measureText(testLine).width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  }
+
+  function drawRoundedRectPath(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function generateMilestonePolaroidCardBlob({ childName, stageLabel, nlDate, msText, note, photoDataUrl }) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Photo load failed"));
+      img.onload = () => {
+        const W = 1080;
+        const H = 1350;
+        const canvas = document.createElement("canvas");
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext("2d");
+
+        // 1. Warme crème achtergrond met subtiele gradiënt
+        const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+        bgGrad.addColorStop(0, "#fdfbf7");
+        bgGrad.addColorStop(1, "#f3efe6");
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, W, H);
+
+        // 2. Witte Polaroid-kaart in het midden met zachte schaduw
+        const cardX = 56;
+        const cardY = 56;
+        const cardW = W - 112;
+        const cardH = H - 112;
+
+        ctx.save();
+        ctx.shadowColor = "rgba(24, 52, 46, 0.14)";
+        ctx.shadowBlur = 36;
+        ctx.shadowOffsetY = 14;
+        drawRoundedRectPath(ctx, cardX, cardY, cardW, cardH, 36);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        ctx.restore();
+
+        drawRoundedRectPath(ctx, cardX, cardY, cardW, cardH, 36);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "rgba(43, 122, 105, 0.22)";
+        ctx.stroke();
+
+        // 3. Bovenste badge & titel
+        ctx.textAlign = "center";
+        ctx.font = "700 26px 'Plus Jakarta Sans', sans-serif";
+        ctx.fillStyle = "#2b7a69";
+        ctx.fillText(`🌱 SAMEN GROEIEN • ${String(stageLabel || "").toUpperCase()}`, W / 2, 132);
+
+        ctx.font = "800 46px 'Plus Jakarta Sans', sans-serif";
+        ctx.fillStyle = "#18342e";
+        ctx.fillText(`🏆 Mijlpaal van ${childName}!`, W / 2, 198);
+
+        ctx.font = "600 28px 'Plus Jakarta Sans', sans-serif";
+        ctx.fillStyle = "#5b706b";
+        ctx.fillText(`📅 ${nlDate}`, W / 2, 244);
+
+        // 4. Foto-venster (center-crop object-fit: cover met afgeronde hoeken)
+        const photoX = 104;
+        const photoY = 278;
+        const photoW = W - 208;
+        const photoH = 680;
+
+        ctx.save();
+        drawRoundedRectPath(ctx, photoX, photoY, photoW, photoH, 24);
+        ctx.clip();
+
+        const imgRatio = img.width / img.height;
+        const boxRatio = photoW / photoH;
+        let sx = 0;
+        let sy = 0;
+        let sw = img.width;
+        let sh = img.height;
+        if (imgRatio > boxRatio) {
+          sw = img.height * boxRatio;
+          sx = (img.width - sw) / 2;
+        } else {
+          sh = img.width / boxRatio;
+          sy = (img.height - sh) / 2;
+        }
+        ctx.drawImage(img, sx, sy, sw, sh, photoX, photoY, photoW, photoH);
+        ctx.restore();
+
+        drawRoundedRectPath(ctx, photoX, photoY, photoW, photoH, 24);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "rgba(24, 52, 46, 0.1)";
+        ctx.stroke();
+
+        // 5. Mijlpaal-tekst onder de foto
+        ctx.textAlign = "center";
+        ctx.font = "800 36px 'Plus Jakarta Sans', sans-serif";
+        ctx.fillStyle = "#18342e";
+        const msLines = wrapCanvasTextLines(ctx, `🌟 ${msText}`, photoW - 30).slice(0, 3);
+        let curY = 1025;
+        msLines.forEach((line) => {
+          ctx.fillText(line, W / 2, curY);
+          curY += 46;
+        });
+
+        // 6. Persoonlijke herinnering van mama (indien ingevuld)
+        if (note) {
+          curY += 12;
+          ctx.font = "italic 600 30px 'Plus Jakarta Sans', sans-serif";
+          ctx.fillStyle = "#b45309";
+          const noteLines = wrapCanvasTextLines(ctx, `💛 "${note}"`, photoW - 50).slice(0, 2);
+          noteLines.forEach((nLine) => {
+            ctx.fillText(nLine, W / 2, curY);
+            curY += 40;
+          });
+        }
+
+        // 7. Subtiele voettekst onderaan de Polaroid
+        ctx.font = "600 22px 'Plus Jakarta Sans', sans-serif";
+        ctx.fillStyle = "#7a8e89";
+        ctx.fillText("Liefdevol vastgelegd in Samen Groeien", W / 2, H - 88);
+
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error("Canvas toBlob failed"));
+        }, "image/png");
+      };
+      img.src = photoDataUrl;
+    });
   }
 
   function getNapWindowString(week) {
