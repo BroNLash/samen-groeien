@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=27" />
+  <link rel="stylesheet" href="styles.css?v=28" />
 </head>
 <body>
   <a href="#mainContent" class="skip-link">Direct naar inhoud</a>
@@ -52,6 +52,11 @@
           <span id="themeIcon">🌙</span>
         </button>
 
+        <button type="button" class="pwa-header-btn hidden" id="pwaHeaderInstallBtn" title="Installeer Samen Groeien als app op je telefoon of pc">
+          <span aria-hidden="true">📲</span>
+          <span>App installeren</span>
+        </button>
+
         <button type="button" class="icon-btn" id="openBackupBtn" aria-label="Gegevens opslaan of herstellen" title="Back-up">
           <span>💾</span>
         </button>
@@ -67,6 +72,29 @@
       <div class="multi-child-combo-tip hidden" id="multiChildComboTip"></div>
     </div>
   </header>
+
+  <!-- ===================================================================== -->
+  <!-- PWA INSTALLATIE BANNER (VOOR ANDROID & IPHONE)                        -->
+  <!-- ===================================================================== -->
+  <aside class="pwa-install-banner hidden" id="pwaInstallBanner" aria-label="App installeren">
+    <div class="pwa-banner-inner">
+      <div class="pwa-banner-left">
+        <span class="pwa-banner-icon" aria-hidden="true">📲</span>
+        <div class="pwa-banner-info">
+          <strong>Samen Groeien als app installeren?</strong>
+          <span>Open direct vanaf je startscherm, zonder app store. Werkt ook offline.</span>
+        </div>
+      </div>
+      <div class="pwa-banner-actions">
+        <button type="button" class="pwa-install-btn" id="pwaInstallBtn">
+          <span>App installeren</span>
+        </button>
+        <button type="button" class="pwa-dismiss-btn" id="pwaDismissBtn" aria-label="Melding sluiten" title="Niet nu">
+          ✕
+        </button>
+      </div>
+    </div>
+  </aside>
 
   <!-- ===================================================================== -->
   <!-- MEEBEWEGENDE TIJDLIJN & KIND-BALK (RUSTIG BOVENAAN, 1 RIJ BIJ SCROLLEN)-->
@@ -656,7 +684,55 @@
     </div>
   </dialog>
 
-  <script src="data.js?v=27"></script>
-  <script src="app.js?v=27"></script>
+  <!-- ===================================================================== -->
+  <!-- DIALOOG 4: APP INSTALLATIE UITLEG VOOR ANDROID & IPHONE              -->
+  <!-- ===================================================================== -->
+  <dialog class="app-dialog" id="installGuideDialog" closedby="any" aria-labelledby="installGuideTitle">
+    <div class="dialog-card">
+      <div class="dialog-header">
+        <h2 id="installGuideTitle">📲 Samen Groeien installeren</h2>
+        <button type="button" class="close-btn" id="closeInstallGuideBtn" aria-label="Sluiten">✕</button>
+      </div>
+
+      <div class="dialog-body">
+        <p class="subtle-hint" style="margin-bottom: 12px;">
+          Installeer Samen Groeien direct op je telefoon als volwaardige app. Zo open je hem met één tik en werkt hij ook supersnel offline.
+        </p>
+
+        <div class="install-guide-grid">
+          <div class="install-guide-card">
+            <div class="install-guide-os-title">
+              <span aria-hidden="true">🤖</span>
+              <strong>Android (Chrome)</strong>
+            </div>
+            <ol class="install-guide-steps">
+              <li>Tik rechtsboven op de <strong>3 puntjes (⋮)</strong>.</li>
+              <li>Kies <strong>'App installeren'</strong> of <strong>'Toevoegen aan startscherm'</strong>.</li>
+              <li>Tik op <strong>'Installeren'</strong>. Klaar!</li>
+            </ol>
+          </div>
+
+          <div class="install-guide-card">
+            <div class="install-guide-os-title">
+              <span aria-hidden="true">🍏</span>
+              <strong>iPhone / iPad (Safari)</strong>
+            </div>
+            <ol class="install-guide-steps">
+              <li>Tik onderaan op het <strong>Deel-icoon</strong> (vierkant met pijl omhoog ⎋).</li>
+              <li>Scroll omlaag en tik op <strong>'Zet op beginscherm'</strong> (⊕).</li>
+              <li>Tik rechtsboven op <strong>'Voeg toe'</strong>. Klaar!</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <div class="dialog-actions" style="margin-top: 14px; justify-content: flex-end;">
+        <button type="button" class="btn-primary" id="confirmInstallGuideBtn">Begrepen</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="data.js?v=28"></script>
+  <script src="app.js?v=28"></script>
 </body>
 </html>

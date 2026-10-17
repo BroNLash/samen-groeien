@@ -346,14 +346,18 @@ p, li {
    2. STICKY TIJDLIJN & WEERGAVE BALK
    ========================================================================== */
 .timeline-dock {
+  position: -webkit-sticky;
   position: sticky;
   top: 0;
-  z-index: 80;
+  z-index: 100;
   overflow-anchor: none;
-  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 97%, transparent);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   padding: 8px 14px 9px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .timeline-dock.is-compact {
@@ -374,12 +378,23 @@ p, li {
   gap: 7px;
 }
 
-/* In compacte scroll-modus: zet kindwisselaar + 'Nu' en de slanke 1-regel tijdlijn direct op ÉÉN enkele horizontale rij */
-.timeline-dock.is-compact .timeline-dock-inner {
-  flex-direction: row;
-  align-items: center;
-  flex-wrap: nowrap;
-  gap: 8px;
+/* In compacte scroll-modus op desktop: zet kindwisselaar + 'Nu' en de slanke 1-regel tijdlijn op 1 rij */
+@media (min-width: 721px) {
+  .timeline-dock.is-compact .timeline-dock-inner {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .timeline-dock.is-compact .timeline-top-row {
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+    padding-bottom: 0;
+    border-bottom: none;
+    padding-right: 8px;
+    border-right: 1px solid var(--border);
+  }
 }
 
 .timeline-top-row {
@@ -390,15 +405,6 @@ p, li {
   flex-wrap: wrap;
   padding-bottom: 6px;
   border-bottom: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
-}
-
-.timeline-dock.is-compact .timeline-top-row {
-  flex-shrink: 0;
-  flex-wrap: nowrap;
-  padding-bottom: 0;
-  border-bottom: none;
-  padding-right: 8px;
-  border-right: 1px solid var(--border);
 }
 
 .dock-quick-left {
@@ -809,12 +815,58 @@ p, li {
 }
 
 @media (max-width: 720px) {
+  .timeline-dock {
+    padding: 6px 10px 7px;
+  }
+
+  .timeline-dock.is-compact {
+    padding: 4px 8px 6px;
+  }
+
+  /* Op mobiel behouden we altijd de 2-rijige opzet: */
+  /* Rij 1: Kind pill + Nu knop */
+  /* Rij 2: 100% volledige breedte voor de fasen-weergave balk! */
   .timeline-dock.is-compact .timeline-dock-inner {
-    gap: 5px;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .timeline-dock.is-compact .timeline-top-row {
-    padding-right: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding-bottom: 3px;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+    border-right: none;
+    padding-right: 0;
+  }
+
+  .timeline-dock.is-compact .timeline-strip-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .timeline-dock.is-compact .timeline-ribbon {
+    flex: 1;
+    min-width: 0;
+    padding: 1px max(8px, calc(50% - 55px));
+  }
+}
+
+@media (max-width: 480px) {
+  .compact-expand-btn .expand-btn-text {
+    display: none;
+  }
+  .compact-expand-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    justify-content: center;
+    border-radius: var(--radius-pill);
+    font-size: 1rem;
   }
 }
 
@@ -3054,4 +3106,192 @@ p, li {
 /* Lege zoek- of filterstatus actieknop */
 .empty-state-action {
   margin-top: 8px;
+}
+
+/* ==========================================================================
+   PWA INSTALLATIE BANNER & BUTTONS
+   ========================================================================== */
+.pwa-install-banner {
+  background: var(--surface);
+  background: linear-gradient(135deg, var(--surface) 60%, var(--primary-soft) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  position: relative;
+  z-index: 90;
+  box-shadow: 0 2px 8px rgba(43, 122, 105, 0.08);
+  animation: pwaSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes pwaSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pwa-banner-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pwa-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.pwa-banner-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.pwa-banner-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pwa-banner-info strong {
+  font-size: var(--fs-body);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.pwa-banner-info span {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.pwa-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pwa-install-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  padding: 7px 15px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 6px rgba(43, 122, 105, 0.25);
+  transition: transform 0.1s ease, background 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.pwa-install-btn:hover {
+  background: color-mix(in srgb, var(--primary) 88%, black);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(43, 122, 105, 0.3);
+}
+
+.pwa-install-btn:active {
+  transform: translateY(0);
+}
+
+.pwa-dismiss-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pwa-dismiss-btn:hover {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.pwa-header-btn {
+  border: 1px solid color-mix(in srgb, var(--primary) 40%, var(--border));
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  min-height: 34px;
+  padding: 4px 11px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.pwa-header-btn:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* Install Guide Dialog */
+.install-guide-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.install-guide-card {
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+.install-guide-os-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.install-guide-steps {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.install-guide-steps strong {
+  color: var(--text);
 }

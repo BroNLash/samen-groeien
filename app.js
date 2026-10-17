@@ -2860,7 +2860,7 @@
       timelineManualExpanded = false;
       timelineDock.classList.remove("is-compact", "is-manual-expanded");
       if (expandTimelineBtn) {
-        expandTimelineBtn.innerHTML = `<span aria-hidden="true">↕</span><span>Weergave</span>`;
+        expandTimelineBtn.innerHTML = `<span aria-hidden="true">↕</span><span class="expand-btn-text">Weergave</span>`;
         expandTimelineBtn.setAttribute("aria-expanded", "true");
       }
       if (hadCompact || hadExpanded) {
@@ -2874,15 +2874,15 @@
         timelineDock.classList.remove("is-compact");
         timelineDock.classList.add("is-manual-expanded");
         if (expandTimelineBtn) {
-          expandTimelineBtn.innerHTML = `<span aria-hidden="true">▴</span><span>Inklappen</span>`;
+          expandTimelineBtn.innerHTML = `<span aria-hidden="true">▴</span><span class="expand-btn-text">Inklappen</span>`;
           expandTimelineBtn.setAttribute("aria-expanded", "true");
-          expandTimelineBtn.title = "Klap de weergave-opties weer in tot de compacte 1-rijige balk";
+          expandTimelineBtn.title = "Klap de weergave-opties weer in tot de compacte balk";
         }
       } else {
         timelineDock.classList.add("is-compact");
         timelineDock.classList.remove("is-manual-expanded");
         if (expandTimelineBtn) {
-          expandTimelineBtn.innerHTML = `<span aria-hidden="true">↕</span><span>Weergave</span>`;
+          expandTimelineBtn.innerHTML = `<span aria-hidden="true">↕</span><span class="expand-btn-text">Weergave</span>`;
           expandTimelineBtn.setAttribute("aria-expanded", "false");
           expandTimelineBtn.title = "Wissel weergave (Weken / Maanden / Fasen / Jaren)";
         }
@@ -3551,6 +3551,91 @@
     });
   }
 
+  // PWA Installatie: luisteren naar beforeinstallprompt, in-app banner & installatie-instructies
+  let deferredInstallPrompt = null;
+
+  function initPwaInstall() {
+    const banner = document.getElementById("pwaInstallBanner");
+    const installBtn = document.getElementById("pwaInstallBtn");
+    const headerInstallBtn = document.getElementById("pwaHeaderInstallBtn");
+    const dismissBtn = document.getElementById("pwaDismissBtn");
+    const guideDialog = document.getElementById("installGuideDialog");
+    const closeGuideBtn = document.getElementById("closeInstallGuideBtn");
+    const confirmGuideBtn = document.getElementById("confirmInstallGuideBtn");
+
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    if (isStandalone) {
+      if (banner) banner.classList.add("hidden");
+      if (headerInstallBtn) headerInstallBtn.classList.add("hidden");
+      return;
+    }
+
+    // Luister naar het officiële installatie-event van de browser (Android Chrome e.a.)
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+
+      // Toon de installatiebanner als deze sessie niet eerder is weggeklikt
+      if (banner && !sessionStorage.getItem("pwa_banner_dismissed")) {
+        banner.classList.remove("hidden");
+      }
+      if (headerInstallBtn) {
+        headerInstallBtn.classList.remove("hidden");
+      }
+    });
+
+    async function triggerInstallFlow() {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        try {
+          const choice = await deferredInstallPrompt.userChoice;
+          if (choice && choice.outcome === "accepted") {
+            if (banner) banner.classList.add("hidden");
+            if (headerInstallBtn) headerInstallBtn.classList.add("hidden");
+          }
+        } catch (_) {}
+        deferredInstallPrompt = null;
+      } else {
+        // Indien de browser geen directe installatieprompt ondersteunt (bijv. Safari iOS of eerdere weigering):
+        if (guideDialog) {
+          guideDialog.showModal();
+        }
+      }
+    }
+
+    if (installBtn) {
+      installBtn.addEventListener("click", triggerInstallFlow);
+    }
+    if (headerInstallBtn) {
+      headerInstallBtn.addEventListener("click", triggerInstallFlow);
+    }
+
+    if (dismissBtn) {
+      dismissBtn.addEventListener("click", () => {
+        if (banner) banner.classList.add("hidden");
+        sessionStorage.setItem("pwa_banner_dismissed", "1");
+      });
+    }
+
+    if (closeGuideBtn && guideDialog) {
+      closeGuideBtn.addEventListener("click", () => guideDialog.close());
+    }
+    if (confirmGuideBtn && guideDialog) {
+      confirmGuideBtn.addEventListener("click", () => guideDialog.close());
+    }
+
+    window.addEventListener("appinstalled", () => {
+      deferredInstallPrompt = null;
+      if (banner) banner.classList.add("hidden");
+      if (headerInstallBtn) headerInstallBtn.classList.add("hidden");
+    });
+
+    // Toon de header knop als fallback op mobiele browsers die installatie ondersteunen
+    if (headerInstallBtn && !isStandalone) {
+      headerInstallBtn.classList.remove("hidden");
+    }
+  }
+
   // Service Worker registreren voor offline PWA-werking
   function registerServiceWorker() {
     if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
@@ -3564,6 +3649,7 @@
     wireEvents();
     setView(state.activeView || "food");
     renderAll(true);
+    initPwaInstall();
     registerServiceWorker();
   });
 })();
