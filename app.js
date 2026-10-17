@@ -2486,9 +2486,9 @@
 
   function renderFamilyMealTranslator(stage, week) {
     const detailsEl = document.getElementById("familyMealTranslatorDetails");
-    const catRowEl = document.getElementById("familyMealCategoryRow");
-    const bodyEl = document.getElementById("familyMealTranslatorBody");
-    const badgeEl = document.getElementById("familyMealTranslatorBadge");
+    const catRowEl = document.getElementById("familyMealChipsRow") || document.getElementById("familyMealCategoryRow");
+    const bodyEl = document.getElementById("familyMealResultBox") || document.getElementById("familyMealTranslatorBody");
+    const badgeEl = document.getElementById("familyMealStagePill") || document.getElementById("familyMealTranslatorBadge");
     if (!detailsEl || !catRowEl || !bodyEl) return;
 
     if (badgeEl) {
@@ -2504,7 +2504,7 @@
     catRowEl.innerHTML = FAMILY_MEAL_DISHES.map((d) => {
       const isAct = d.id === activeDish.id;
       return `
-        <button type="button" class="filter-chip ${isAct ? "active" : ""}" data-family-dish="${d.id}">
+        <button type="button" class="chip ${isAct ? "active" : ""}" data-family-dish="${d.id}">
           ${d.icon} ${escapeHtml(d.label)}
         </button>
       `;
@@ -2542,7 +2542,7 @@
         .join("");
 
       multiChildHtml = `
-        <div class="family-meal-children-grid" style="margin-top:0.55rem;">
+        <div class="family-meal-children-grid">
           ${childCards}
         </div>
       `;
@@ -5521,8 +5521,10 @@
 
   function renderCbPrepAndGrowth(stage, week) {
     const store = getActiveStore();
-    const titleEl = document.getElementById("cbPrepTitle");
-    const badgeEl = document.getElementById("cbPrepBadge");
+    const titleEl = document.getElementById("cbPrepSummaryTitle") || document.getElementById("cbPrepTitle");
+    const badgeEl = document.getElementById("cbPrepSummaryBadge") || document.getElementById("cbPrepBadge");
+    const latestGrowthPillEl = document.getElementById("latestGrowthPill");
+    const questionsCountPillEl = document.getElementById("cbQuestionsCountPill");
     const dateInput = document.getElementById("growthDateInput");
     const growthListEl = document.getElementById("growthLogList");
     const cbqListEl = document.getElementById("cbQuestionsList");
@@ -5551,6 +5553,10 @@
           openQuestionsCount === 1 ? "open vraag" : "open vragen"
         }`;
       }
+    }
+
+    if (questionsCountPillEl) {
+      questionsCountPillEl.textContent = `${openQuestionsCount} open`;
     }
 
     // Sorteer metingen chronologisch (oud -> nieuw) om delta's te berekenen, en toon daarna nieuwste bovenaan
@@ -5586,6 +5592,17 @@
     }
 
     const sortedDesc = [...sortedAsc].reverse();
+    if (latestGrowthPillEl) {
+      if (sortedDesc.length > 0) {
+        const latest = sortedDesc[0];
+        const wStr = latest.weightKg > 0 ? `${Number(latest.weightKg).toFixed(2).replace(/\.?0+$/, "").replace(".", ",")} kg` : "";
+        const lStr = latest.lengthCm > 0 ? `${Number(latest.lengthCm).toFixed(1).replace(/\.0$/, "").replace(".", ",")} cm` : "";
+        latestGrowthPillEl.textContent = [wStr, lStr].filter(Boolean).join(" • ") || "Laatste meting";
+      } else {
+        latestGrowthPillEl.textContent = "Nog geen meting";
+      }
+    }
+
     if (sortedDesc.length === 0) {
       growthListEl.innerHTML = `<p class="subtle-hint" style="margin:0.2rem 0 0;">Nog geen metingen opgeslagen. Vul hierboven gewicht (kg) en/of lengte (cm) in—het nieuwste gewicht werkt direct je fles- en paracetamol-advies bij!</p>`;
     } else {
@@ -5602,7 +5619,7 @@
               <span class="growth-log-date">📅 ${escapeHtml(nlDate)}</span>
               <span class="growth-log-metrics">${escapeHtml(metricsStr)}</span>
               ${deltaStr ? `<span class="growth-log-delta">${escapeHtml(deltaStr)}</span>` : ""}
-              <button type="button" class="growth-del-btn" data-del-growth="${entry.id}" title="Meting verwijderen" aria-label="Meting verwijderen">✕</button>
+              <button type="button" class="mini-del-btn" data-del-growth="${entry.id}" title="Meting verwijderen" aria-label="Meting verwijderen">✕</button>
             </div>
           `;
         })
@@ -5631,11 +5648,11 @@
     if (questions.length === 0) {
       cbqListEl.innerHTML = `
         <p class="subtle-hint" style="margin:0.15rem 0 0.35rem;">Nog geen vragen genoteerd. Tik op een veelgestelde vraag voor deze fase of typ je eigen vraag hierboven:</p>
-        <div class="filter-chip-row" style="margin-bottom:0.2rem;">
+        <div class="filter-row" style="margin-bottom:0.2rem;">
           ${suggestions
             .map(
               (sug) =>
-                `<button type="button" class="filter-chip" data-quick-cbq="${escapeHtml(sug)}">➕ ${escapeHtml(sug)}</button>`
+                `<button type="button" class="chip" data-quick-cbq="${escapeHtml(sug)}">➕ ${escapeHtml(sug)}</button>`
             )
             .join("")}
         </div>
@@ -5655,9 +5672,11 @@
         .map((q) => {
           return `
             <div class="cb-question-item ${q.done ? "is-done" : ""}">
-              <input type="checkbox" data-toggle-cbq="${q.id}" ${q.done ? "checked" : ""} aria-label="Vraag besproken" />
-              <span>${escapeHtml(q.text)}</span>
-              <button type="button" class="growth-del-btn" data-del-cbq="${q.id}" title="Vraag verwijderen" aria-label="Vraag verwijderen">✕</button>
+              <label class="cb-q-label">
+                <input type="checkbox" data-toggle-cbq="${q.id}" ${q.done ? "checked" : ""} aria-label="Vraag besproken" />
+                <span>${escapeHtml(q.text)}</span>
+              </label>
+              <button type="button" class="mini-del-btn" data-del-cbq="${q.id}" title="Vraag verwijderen" aria-label="Vraag verwijderen">✕</button>
             </div>
           `;
         })
@@ -5720,7 +5739,7 @@
 
   function renderTeethTracker(stage, week) {
     const container = document.getElementById("teethTrackerContainer");
-    const titleEl = document.getElementById("teethTrackerTitle");
+    const titleEl = document.getElementById("teethTrackerSummaryTitle") || document.getElementById("teethTrackerTitle");
     const badgeEl = document.getElementById("teethTrackerBadge");
     if (!container) return;
 
@@ -6141,7 +6160,7 @@
     });
     const extraCustomLine =
       weightInfo.milkOppasShort
-        ? `<br/><span style="font-size:0.82rem; color:var(--text-secondary);">⚖️ ${escapeHtml(weightInfo.milkOppasShort)}</span>`
+        ? `<br/><span style="font-size:var(--fs-sm); color:var(--text-muted);">⚖️ ${escapeHtml(weightInfo.milkOppasShort)}</span>`
         : "";
 
     if (calc.isExpecting) {
