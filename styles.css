@@ -252,6 +252,29 @@ p, li {
   border-color: var(--primary);
 }
 
+.feedback-chip {
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  border-radius: var(--radius-pill);
+  padding: 5px 9px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.feedback-chip:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
 .icon-btn {
   padding: 5px 9px;
 }
@@ -286,6 +309,7 @@ p, li {
   }
   .profile-chip,
   .oppas-chip,
+  .feedback-chip,
   .pwa-header-btn,
   .icon-btn {
     padding: 4px 6px;
@@ -3725,3 +3749,41 @@ p, li {
     height: 38px;
   }
 }
+
+/* Responsieve WhatsApp knoppen in oppas-dialoog */
+@media (max-width: 720px) {
+  .desktop-only-btn {
+    display: none !important;
+  }
+}
+
+@media (min-width: 721px) {
+  .mobile-primary-btn {
+    background: transparent !important;
+    color: var(--primary) !important;
+    border: 1px solid var(--primary) !important;
+  }
+  .mobile-primary-btn:hover {
+    background: var(--primary-soft) !important;
+  }
+}
+
+/* Feedback-formulier styling */
+.form-select {
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 9px 12px;
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  background: var(--surface);
+  color: var(--text);
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.form-select:focus {
+  border-color: var(--primary);
+}
+

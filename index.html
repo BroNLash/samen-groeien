@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=32" />
+  <link rel="stylesheet" href="styles.css?v=33" />
 </head>
 <body>
   <a href="#mainContent" class="skip-link">Direct naar inhoud</a>
@@ -55,6 +55,11 @@
         <button type="button" class="pwa-header-btn hidden" id="pwaHeaderInstallBtn" title="Installeer Samen Groeien als app op je telefoon of pc">
           <span aria-hidden="true">📲</span>
           <span>App installeren</span>
+        </button>
+
+        <button type="button" class="feedback-chip" id="openFeedbackBtn" title="Deel je ervaring, compliment of suggestie">
+          <span aria-hidden="true">💬</span>
+          <span>Feedback</span>
         </button>
 
         <button type="button" class="icon-btn" id="openBackupBtn" aria-label="Gegevens opslaan of herstellen" title="Back-up">
@@ -383,6 +388,12 @@
       </div>
 
       <div class="cards-grid" id="gamesGrid"></div>
+
+      <div class="recipes-toggle-wrap hidden" id="gamesToggleWrap">
+        <button type="button" class="recipes-expand-btn" id="toggleGamesExpandBtn" aria-expanded="false">
+          ▼ Bekijk alle leerspelletjes
+        </button>
+      </div>
     </section>
 
     <!-- =================================================================== -->
@@ -488,6 +499,12 @@
 
       <div class="cards-grid" id="foodEncyclopediaGrid"></div>
 
+      <div class="recipes-toggle-wrap hidden" id="foodsToggleWrap">
+        <button type="button" class="recipes-expand-btn" id="toggleFoodsExpandBtn" aria-expanded="false">
+          ▼ Bekijk alle producten
+        </button>
+      </div>
+
       <!-- Uitklapbare sectie voor producten die pas in een latere fase geschikt zijn -->
       <details class="minimal-details details-wait hidden" id="waitFoodsDetails">
         <summary>
@@ -536,6 +553,12 @@
         </div>
 
         <div class="cards-grid" id="allergensGrid"></div>
+
+        <div class="recipes-toggle-wrap hidden" id="allergensToggleWrap">
+          <button type="button" class="recipes-expand-btn" id="toggleAllergensExpandBtn" aria-expanded="false">
+            ▼ Bekijk alle 9 allergenen
+          </button>
+        </div>
       </details>
     </section>
 
@@ -666,9 +689,9 @@
 
       <div class="oppas-preview-card" id="oppasPreviewText"></div>
 
-      <div class="backup-buttons">
-        <button type="button" class="btn-primary" id="shareOppasWhatsappBtn" title="Opent direct WhatsApp Web (op laptop) of de WhatsApp-app (op telefoon) met alle emoji's intact">💬 Direct naar WhatsApp Web</button>
-        <button type="button" class="btn-secondary" id="shareOppasWhatsappAppBtn" title="Open rechtstreeks in de geïnstalleerde WhatsApp Desktop of Telefoon app">📱 WhatsApp App</button>
+      <div class="backup-buttons" id="oppasShareActions">
+        <button type="button" class="btn-primary desktop-only-btn" id="shareOppasWhatsappBtn" title="Opent direct WhatsApp Web in je browser">🌐 WhatsApp Web (browser)</button>
+        <button type="button" class="btn-primary mobile-primary-btn" id="shareOppasWhatsappAppBtn" title="Opent direct de WhatsApp App op je telefoon of pc">💬 Deel via WhatsApp</button>
         <button type="button" class="btn-secondary" id="copyOppasTextBtn">📋 Kopieer tekst</button>
       </div>
 
@@ -750,7 +773,67 @@
     </div>
   </dialog>
 
-  <script src="data.js?v=32"></script>
-  <script src="app.js?v=32"></script>
+  <!-- ===================================================================== -->
+  <!-- DIALOOG 5: GEBRUIKERSFEEDBACK & ERVARING DELEN                       -->
+  <!-- ===================================================================== -->
+  <dialog class="app-dialog" id="feedbackDialog" closedby="any" aria-labelledby="feedbackDialogTitle">
+    <form method="dialog" class="dialog-card" id="feedbackForm">
+      <div class="dialog-header">
+        <h2 id="feedbackDialogTitle">💬 Jouw Ervaring &amp; Feedback</h2>
+        <button type="button" class="close-btn" id="closeFeedbackDialogBtn" aria-label="Sluiten">✕</button>
+      </div>
+
+      <p class="subtle-hint">
+        Wat vind je fijn aan Samen Groeien en wat kan er beter? We lezen alle tips zorgvuldig om de app nog waardevoller te maken voor alle ouders.
+      </p>
+
+      <div class="form-field">
+        <label>Wat voor feedback wil je delen?</label>
+        <div class="filter-row" id="feedbackTypeChips" role="radiogroup" aria-label="Type feedback">
+          <button type="button" class="chip active" data-fb-type="compliment">🌟 Compliment</button>
+          <button type="button" class="chip" data-fb-type="suggestion">💡 Verbetersuggestie</button>
+          <button type="button" class="chip" data-fb-type="bug">🐛 Probleem / Fout</button>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="feedbackSectionSelect">Over welk onderdeel gaat het?</label>
+        <select id="feedbackSectionSelect" class="form-select">
+          <option value="voeding">🥑 Voeding, Recepten &amp; Snijgids</option>
+          <option value="spel">🎲 Leerspelletjes &amp; Activiteiten</option>
+          <option value="slaap">🌙 Slaap, Wakkertijd &amp; Mijlpalen</option>
+          <option value="sos">🆘 SOS &amp; Consultatiebureau</option>
+          <option value="navigatie">📲 App, Navigatie &amp; Telefoonweergave</option>
+          <option value="algemeen">🌱 Algemeen / Anders</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="feedbackTextInput">Jouw toelichting <small>(wat vind je prettig of waar loop je tegenaan?)</small></label>
+        <textarea
+          id="feedbackTextInput"
+          rows="4"
+          placeholder="Typ hier je ervaring, opmerking of tip..."
+          required
+          style="width: 100%; border-radius: var(--radius); border: 1px solid var(--border); padding: 10px; font-family: inherit; font-size: var(--fs-sm); box-sizing: border-box; resize: vertical; min-height: 85px; background: var(--surface);"
+        ></textarea>
+      </div>
+
+      <div class="form-field">
+        <label for="feedbackEmailInput">Je e-mailadres <small>(optioneel, als je een reactie op prijs stelt)</small></label>
+        <input type="email" id="feedbackEmailInput" placeholder="jouw@email.nl" />
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn-secondary" id="cancelFeedbackBtn">Annuleren</button>
+        <button type="submit" class="btn-primary" id="submitFeedbackBtn">✓ Verstuur feedback</button>
+      </div>
+
+      <p class="status-text" id="feedbackStatusMsg" role="status" aria-live="polite"></p>
+    </form>
+  </dialog>
+
+  <script src="data.js?v=33"></script>
+  <script src="app.js?v=33"></script>
 </body>
 </html>

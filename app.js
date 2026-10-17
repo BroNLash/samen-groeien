@@ -33,6 +33,9 @@
     gameCategoryFilter: "all",
     recipeMealFilter: "all",
     recipesExpanded: false,
+    gamesExpanded: false,
+    foodsExpanded: false,
+    allergensExpanded: false,
     showAllStagesRecipes: false,
     showAllStagesGames: false,
     searchQuery: "",
@@ -1728,7 +1731,38 @@
       return;
     }
 
-    grid.innerHTML = filtered
+    const toggleWrap = document.getElementById("gamesToggleWrap");
+    const expandBtn = document.getElementById("toggleGamesExpandBtn");
+
+    // Progressive disclosure op mobiele schermen (<= 720px): toon standaard de eerste 2 spelletjes
+    const isMobile = window.innerWidth <= 720;
+    const canExpand = isMobile && filtered.length > 2;
+
+    let visibleGames = filtered;
+    if (canExpand && !state.gamesExpanded) {
+      visibleGames = filtered.slice(0, 2);
+    }
+
+    if (countBadge) {
+      countBadge.textContent =
+        canExpand && !state.gamesExpanded
+          ? `2 van ${filtered.length}`
+          : String(filtered.length);
+    }
+
+    if (toggleWrap && expandBtn) {
+      if (canExpand) {
+        toggleWrap.classList.remove("hidden");
+        expandBtn.setAttribute("aria-expanded", state.gamesExpanded ? "true" : "false");
+        expandBtn.innerHTML = state.gamesExpanded
+          ? `▲ Minder spelletjes tonen (toon top 2)`
+          : `▼ Bekijk alle ${filtered.length} leerspelletjes (${stage.shortLabel})`;
+      } else {
+        toggleWrap.classList.add("hidden");
+      }
+    }
+
+    grid.innerHTML = visibleGames
       .map((g) => {
         const fav = Boolean(store.favoriteGames[g.id]);
         const energyBadge = g.energy === "low" ? `<span class="pill-small">☕ Rustig</span>` : "";
@@ -2101,6 +2135,30 @@
       <path d="M14 12L38 18" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"/>
       <path d="M36 17L44 19L41 22L34 20Z" fill="var(--primary)"/>
     </svg>`,
+    cup: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="Open beker slokjes">
+      <rect width="54" height="54" rx="12" fill="var(--primary-soft)"/>
+      <path d="M16 15H38L35 39C35 42 33 44 30 44H24C21 44 19 42 19 39L16 15Z" fill="#fff" stroke="var(--primary)" stroke-width="2"/>
+      <path d="M18 23C22 21 32 21 36 23" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="27" cy="30" r="2.5" fill="var(--primary)" opacity="0.6"/>
+    </svg>`,
+    spoon: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="Lepelhapje">
+      <rect width="54" height="54" rx="12" fill="var(--primary-soft)"/>
+      <path d="M13 28C13 38 19 43 27 43C35 43 41 38 41 28H13Z" fill="#fff" stroke="var(--primary)" stroke-width="2"/>
+      <path d="M28 10L41 23" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+      <ellipse cx="26" cy="12" rx="5" ry="3.5" fill="var(--accent)" transform="rotate(-40 26 12)"/>
+    </svg>`,
+    bread: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="Broodkorst of reepje">
+      <rect width="54" height="54" rx="12" fill="var(--primary-soft)"/>
+      <path d="M13 20C13 14 18 11 27 11C36 11 41 14 41 20V38C41 41 38 43 35 43H19C16 43 13 41 13 38V20Z" fill="#fff" stroke="var(--primary)" stroke-width="2"/>
+      <rect x="23" y="16" width="8" height="23" rx="2" fill="var(--accent)" stroke="#fff" stroke-width="1"/>
+      <path d="M16 19C21 16 33 16 38 19" stroke="var(--primary)" stroke-width="1.8"/>
+    </svg>`,
+    flakes: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="Malse plukjes of zachte pasta">
+      <rect width="54" height="54" rx="12" fill="var(--accent-soft)"/>
+      <path d="M14 19C18 15 26 15 30 19C34 23 42 23 46 19" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M12 27C17 23 23 23 27 27C31 31 37 31 42 27" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M15 35C19 31 25 31 29 35C33 39 39 39 43 35" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>`,
     prohibited: `<svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" class="cut-mini-svg" aria-label="Verboden onder 1 jaar">
       <rect width="54" height="54" rx="12" fill="var(--warn-soft)"/>
       <circle cx="27" cy="27" r="17" fill="#fff" stroke="var(--warn)" stroke-width="3"/>
@@ -2122,19 +2180,459 @@
 
     const fid = food.id || "";
     const nameLow = (food.name || "").toLowerCase();
-    const textLow = (prep.text || "").toLowerCase();
 
-    // 1. Gladde puree fase (4-5 maanden)
-    if (week <= 23) {
-      if (fid === "fd-peanutbutter" || nameLow.includes("pinda") || nameLow.includes("noten")) {
+    // 1. Dranken (Water & Thee) — no steaming or cutting!
+    if (fid === "fd-water-tea" || nameLow.includes("water") || nameLow.includes("thee")) {
+      if (week <= 23) {
+        return {
+          shape: "cup",
+          shapeLabel: "🥛 Oefenslokjes open beker",
+          ageLabel: "Vocht uit melk",
+          rule: "Baby haalt al het vocht uit melkvoeding; geef evt. 1-2 oefenslokjes lauw water uit een klein open bekertje",
+          svg: CUT_SVGS.cup
+        };
+      }
+      if (week <= 52) {
+        return {
+          shape: "cup",
+          shapeLabel: "🥛 Open bekertje (Slokjes)",
+          ageLabel: "Mondmotoriek",
+          rule: "Geef kleine slokjes water of lauwe ongezoete thee uit een open beker (geen tuitbeker!) na de hapjes",
+          svg: CUT_SVGS.cup
+        };
+      }
+      return {
+        shape: "cup",
+        shapeLabel: "🥛 Open beker / Rietjesbeker",
+        ageLabel: "Zelfstandig drinken",
+        rule: "Bied over de dag 450–700 ml water of ongezoete thee aan uit een open beker of rietjesbeker",
+        svg: CUT_SVGS.cup
+      };
+    }
+
+    // 2. Gewone Melk & Yoghurt
+    if (fid === "fd-dairy" || nameLow.includes("yoghurt") || nameLow.includes("melk")) {
+      if (week <= 52) {
+        return {
+          shape: "spoon",
+          shapeLabel: "🥄 Lepelhapje volle yoghurt",
+          ageLabel: "Enkele theelepeltjes",
+          rule: "Geef volle ongezoete yoghurt/kwark met een klein lepeltje (wacht met gewone koemelk als drank tot 1 jaar)",
+          svg: CUT_SVGS.spoon
+        };
+      }
+      return {
+        shape: "cup",
+        shapeLabel: "🥛 Beker melk & lepel yoghurt",
+        ageLabel: "Mee-eten (vanaf 1 jaar)",
+        rule: "Ongeveer 300 ml zuivel per dag (bijv. 2 bekertjes melk en een schaaltje volle yoghurt)",
+        svg: CUT_SVGS.cup
+      };
+    }
+
+    // 3. Kaas, Hüttenkäse & Zuivelspread
+    if (fid === "fd-cheese" || nameLow.includes("hüttenkäse") || nameLow.includes("zuivelspread")) {
+      if (week <= 36) {
+        return {
+          shape: "spread",
+          shapeLabel: "🍞 Dun gesmeerd op korst",
+          ageLabel: "Zoutarm beleg",
+          rule: "Smeer een dun laagje hüttenkäse of zuivelspread light op een broodkorst; geef nog geen gewone zoute kaas",
+          svg: CUT_SVGS.spread
+        };
+      }
+      return {
+        shape: "dices",
+        shapeLabel: "🎲 Blokjes 1×1 cm",
+        ageLabel: "Pincetgreep",
+        rule: "Zachte zoutarme jonge kaas of hüttenkäse in kleine hapklare blokjes of dun op brood",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    // 4. Brood & Havermout
+    if (fid === "fd-bread-oats" || nameLow.includes("brood") || nameLow.includes("havermout")) {
+      if (week <= 23) {
+        return {
+          shape: "puree",
+          shapeLabel: "🥣 Fijne granenpap",
+          ageLabel: "Allergeen-wennen",
+          rule: "1 theelepeltje fijne baby-granenpap door de melk of fruit om aan gluten te wennen",
+          svg: CUT_SVGS.puree
+        };
+      }
+      if (week <= 36) {
+        return {
+          shape: "bread",
+          shapeLabel: "🍞 Broodkorst / Vingerbreed reepje",
+          ageLabel: "Sabbelen & Bijten",
+          rule: "Geef een stevige lichtbruine broodkorst om op te sabbelen, of een vingerbreed reepje met flinterdun beleg",
+          svg: CUT_SVGS.bread
+        };
+      }
+      return {
+        shape: "dices",
+        shapeLabel: "🎲 Boterham-dobbelsteentjes",
+        ageLabel: "Pincetgreep",
+        rule: "Snijd de boterham in kleine vierkante blokjes (1×1 cm) met zachte margarine en gezond beleg",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    // 5. Pasta, Rijst & Couscous
+    if (fid === "fd-pasta-rice" || (nameLow.includes("pasta") && !nameLow.includes("notenpasta")) || nameLow.includes("rijst") || nameLow.includes("couscous")) {
+      if (week <= 36) {
+        return {
+          shape: "flakes",
+          shapeLabel: "🍝 Zachte fusilli / plakrijst",
+          ageLabel: "BLW Vuistgreep",
+          rule: "Kook pastaspiraaltjes (fusilli/penne) extra zacht voor het vuistje, of kook rijst kleverig zodat het een balletje vormt",
+          svg: CUT_SVGS.flakes
+        };
+      }
+      return {
+        shape: "dices",
+        shapeLabel: "🎲 Zachtgekookt mee-eten",
+        ageLabel: "Zelf prikken/lepelen",
+        rule: "Volkorenpasta in hapklare stukjes, rijst of couscous met groentesaus om zelf te scheppen",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    // 6. Ei (geen spears!)
+    if (fid === "fd-egg" || nameLow.startsWith("ei") || nameLow.includes("kippenei") || nameLow.includes("roerei") || nameLow === "ei") {
+      if (week <= 23) {
+        return {
+          shape: "spread",
+          shapeLabel: "🥄 Kruimeltje door puree",
+          ageLabel: "Allergeen-opbouw",
+          rule: "Prak een klein mespuntje hardgekookt eigeel/eiwit fijn door een glad groentehapje",
+          svg: CUT_SVGS.spread
+        };
+      }
+      if (week <= 36) {
+        return {
+          shape: "flakes",
+          shapeLabel: "🍳 Zacht roerei of partjes",
+          ageLabel: "Gaar doorbakken",
+          rule: "Geef zachte plukjes rul doorbakken roerei, of snijd een hardgekookt ei in 4 langwerpige partjes",
+          svg: CUT_SVGS.flakes
+        };
+      }
+      return {
+        shape: "dices",
+        shapeLabel: "🎲 Blokjes hardgekookt ei",
+        ageLabel: "Pincetgreep",
+        rule: "Snijd een hardgekookt ei in kleine blokjes van 1×1 cm of prak fijn op brood",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    // 7. Vlees, Kip, Zalm & Linzen
+    if (fid === "fd-meat-fish" || nameLow.includes("vlees") || nameLow.includes("vis") || nameLow.includes("zalm") || nameLow.includes("kip")) {
+      if (week <= 36) {
+        return {
+          shape: "flakes",
+          shapeLabel: "🐟 Zalmvlokken / zachte kip",
+          ageLabel: "Mals geplozen",
+          rule: "Druk gaar gestoomde zalm met een vork in losse vlokken, pluk zacht kippenvlees uit elkaar, of geef een zacht gehaktballetje",
+          svg: CUT_SVGS.flakes
+        };
+      }
+      return {
+        shape: "dices",
+        shapeLabel: "🎲 Zachte stukjes 1×1 cm",
+        ageLabel: "Kauwontwikkeling",
+        rule: "Mals gesneden stukjes vis, kip, gehakt of zachte linzen/bonen om zelf te prikken",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    // 8. Maisvingers & Crackers
+    if (fid === "fd-crackers" || nameLow.includes("maisvinger") || nameLow.includes("cracker")) {
+      if (week <= 36) {
+        return {
+          shape: "spear",
+          shapeLabel: "🥢 Smeltende maisvinger",
+          ageLabel: "Zelf vasthouden",
+          rule: "Kies mais-/gierstvingers die direct smelten in het mondje; vingerlang formaat voor het vuistje",
+          svg: CUT_SVGS.spear
+        };
+      }
+      return {
+        shape: "bread",
+        shapeLabel: "🍘 Volkoren cracker / soepstengel",
+        ageLabel: "Krokant oefenen",
+        rule: "Een stukje volkoren cracker met dun beleg of zachte soepstengel; blijf er altijd bij",
+        svg: CUT_SVGS.bread
+      };
+    }
+
+    // 9. Pindakaas & Notenpasta
+    if (fid === "fd-peanutbutter" || nameLow.includes("pinda") || nameLow.includes("notenpasta")) {
+      if (week <= 23) {
         return {
           shape: "spread",
           shapeLabel: "🥄 Mespuntje door puree",
           ageLabel: "Allergeen-introductie",
-          rule: "Roer 1/4 theelepel 100% pindakaas door warme groentepuree",
+          rule: "Roer 1/4 theelepel 100% pindakaas los door warm groente- of fruithapje",
           svg: CUT_SVGS.spread
         };
       }
+      return {
+        shape: "spread",
+        shapeLabel: "🍞 Flinterdun gesmeerd",
+        ageLabel: "Geen losse klodder",
+        rule: "Smeer flinterdun op brood of roer door de pap; geef NOOIT een dikke lepel (plakt in de keel)",
+        svg: CUT_SVGS.spread
+      };
+    }
+
+    // 10. Honing
+    if (fid === "fd-honey" || nameLow.includes("honing")) {
+      if (week < 52) {
+        return {
+          shape: "prohibited",
+          shapeLabel: "🚫 Verboden onder 1 jaar",
+          ageLabel: "Botulisme-gevaar",
+          rule: "Geef NOOIT honing aan baby's onder 1 jaar vanwege gevaar voor ernstig botulisme!",
+          svg: CUT_SVGS.prohibited
+        };
+      }
+      return {
+        shape: "spread",
+        shapeLabel: "🍯 Dun gesmeerd (vanaf 1 jaar)",
+        ageLabel: "Met mate",
+        rule: "Veilig vanaf 12 maanden; met mate gebruiken op brood of door de pap vanwege suikers",
+        svg: CUT_SVGS.spread
+      };
+    }
+
+    // 11. Druiven & Snoeptomaatjes (levensgroot verstikkingsgevaar!)
+    if (fid === "fd-grapes" || nameLow.includes("druif") || nameLow.includes("tomaat")) {
+      if (week <= 208) {
+        return {
+          shape: "quarters",
+          shapeLabel: "🔪 In lengte in 4en",
+          ageLabel: "Anti-verstikking",
+          rule: "ALTIJD in de lengte in 4 partjes snijden tot minstens 4 jaar! Nooit dwars of heel geven",
+          svg: CUT_SVGS.quarters
+        };
+      }
+      return {
+        shape: "dices",
+        shapeLabel: "🍇 Gehalveerd of heel",
+        ageLabel: "Rustig zittend",
+        rule: "Vanaf 4 jaar mag kind hele druiven leren eten, maar uitsluitend rustig zittend aan tafel",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    // 12. Blauwe bessen & Erwtjes (pletten!)
+    if (fid === "fd-blueberry" || nameLow.includes("bes") || nameLow.includes("erwt")) {
+      if (week > 208) {
+        return {
+          shape: "dices",
+          shapeLabel: "🫐 Heel (Schoolkind)",
+          ageLabel: "Vanaf 4 jaar",
+          rule: "Mag heel gegeten worden mits kind rustig aan tafel zit",
+          svg: CUT_SVGS.dices
+        };
+      }
+      return {
+        shape: "squash",
+        shapeLabel: "🫐 Platgedrukt",
+        ageLabel: "Anti-verstikking",
+        rule: "Plet ronde bessen of erwtjes tussen duim en vinger; snijd aardbeien in partjes",
+        svg: CUT_SVGS.squash
+      };
+    }
+
+    // 13. Appel & Peer (rauw is te hard!)
+    if (fid === "fd-apple" || (nameLow.includes("appel") && !nameLow.includes("aardappel")) || nameLow.includes("peer")) {
+      if (week <= 23) {
+        return {
+          shape: "puree",
+          shapeLabel: "🥄 Gladde Fruitpuree",
+          ageLabel: "Gestoomd & gepureerd",
+          rule: "Stoom geschilde appel zacht en pureer glad met een vork of staafmixer",
+          svg: CUT_SVGS.puree
+        };
+      }
+      if (week <= 36) {
+        return {
+          shape: "puree",
+          shapeLabel: "🍎 Gestoomde part / rasp",
+          ageLabel: "Zacht stomen!",
+          rule: "Rauwe appel is gevaarlijk hard; stoom altijd zacht tot je het tussen 2 vingers platknijpt, of rasp heel fijn",
+          svg: CUT_SVGS.puree
+        };
+      }
+      if (week <= 104) {
+        return {
+          shape: "dices",
+          shapeLabel: "🍎 Flinterdunne schijfjes",
+          ageLabel: "Zonder schil",
+          rule: "Snijd flinterdunne schijfjes (als chips) of rasp grof; geef géén dikke harde brokken rauwe appel",
+          svg: CUT_SVGS.dices
+        };
+      }
+      return {
+        shape: "dices",
+        shapeLabel: "🍎 Dunne partjes",
+        ageLabel: "Met schil",
+        rule: "Dunne maantjes of partjes; vanaf 4 jaar ook afhappen uit het vuistje",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    // 14. Banaan
+    if (fid === "fd-banana" || nameLow.includes("banaan")) {
+      if (week <= 23) {
+        return {
+          shape: "puree",
+          shapeLabel: "🥄 Glad geprakte banaan",
+          ageLabel: "Zijdezacht",
+          rule: "Prak een rijpe banaan helemaal glad met een vork",
+          svg: CUT_SVGS.puree
+        };
+      }
+      if (week <= 36) {
+        return {
+          shape: "handle",
+          shapeLabel: "🍌 Schilhandvat of 3 repen",
+          ageLabel: "BLW Vuistgreep",
+          rule: "Laat 2 cm schil onderaan als handvat, of duw met je vinger in de lengte in 3 natuurlijke repen",
+          svg: CUT_SVGS.handle
+        };
+      }
+      return {
+        shape: "dices",
+        shapeLabel: "🎲 Schijfjes of blokjes",
+        ageLabel: "Pincetgreep",
+        rule: "Snijd in ronde schijfjes of halve maantjes om zelf te prikken",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    // 15. Broccoli & Bloemkool
+    if (fid === "fd-broccoli" || nameLow.includes("broccoli") || nameLow.includes("bloemkool")) {
+      if (week <= 23) {
+        return {
+          shape: "puree",
+          shapeLabel: "🥄 Gladde Broccolipuree",
+          ageLabel: "Milde smaak",
+          rule: "Stoom de roosjes goed gaar en pureer met wat kookvocht",
+          svg: CUT_SVGS.puree
+        };
+      }
+      if (week <= 36) {
+        return {
+          shape: "handle",
+          shapeLabel: "🥦 Roosje met lange steel",
+          ageLabel: "Natuurlijk handvat",
+          rule: "Laat de steel lang zodat baby het roosje met de vuist kan pakken; stoom zacht (knijpbaar)",
+          svg: CUT_SVGS.handle
+        };
+      }
+      return {
+        shape: "dices",
+        shapeLabel: "🎲 Kleine roosjes & blokjes",
+        ageLabel: "Pincetgreep",
+        rule: "Snijd de steel in kleine blokjes en breek de roosjes in kleine plukjes",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    // 16. Avocado
+    if (fid === "fd-avocado" || nameLow.includes("avocado")) {
+      if (week <= 23) {
+        return {
+          shape: "puree",
+          shapeLabel: "🥄 Gladde Avocado-puree",
+          ageLabel: "Gezonde vetten",
+          rule: "Prak een zachte rijpe avocado fijn met een vork",
+          svg: CUT_SVGS.puree
+        };
+      }
+      if (week <= 36) {
+        return {
+          shape: "spear",
+          shapeLabel: "🥢 Vingerlange reep (met grip)",
+          ageLabel: "Rijp & zacht",
+          rule: "Snijd in een vingerlange reep; rol eventueel door wat fijne havermoutvlokken voor betere grip",
+          svg: CUT_SVGS.spear
+        };
+      }
+      return {
+        shape: "dices",
+        shapeLabel: "🎲 Blokjes 1×1 cm",
+        ageLabel: "Pincetgreep",
+        rule: "Snijd in zachte hapklare blokjes die baby zelf tussen duim en wijsvinger kan pakken",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    // 17. Wortel, Pompoen & Zoete Aardappel
+    if (fid === "fd-carrot" || nameLow.includes("wortel") || nameLow.includes("pompoen") || nameLow.includes("zoete aardappel")) {
+      if (week <= 23) {
+        return {
+          shape: "puree",
+          shapeLabel: "🥄 Gladde Wortelpuree",
+          ageLabel: "Zoet & zacht",
+          rule: "Kook of stoom gaar en pureer met kookvocht glad",
+          svg: CUT_SVGS.puree
+        };
+      }
+      if (week <= 36) {
+        return {
+          shape: "spear",
+          shapeLabel: "🥢 Vingerlange reep (5–7 cm)",
+          ageLabel: "Zacht gestoomd",
+          rule: "Snijd een reep zo dik als je wijsvinger; stoom zo zacht dat je het moeiteloos fijnknijpt",
+          svg: CUT_SVGS.spear
+        };
+      }
+      return {
+        shape: "dices",
+        shapeLabel: "🎲 Blokjes 1×1 cm",
+        ageLabel: "Pincetgreep",
+        rule: "Zacht gekookte wortel- of pompoenblokjes om zelf te prikken",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    // 18. Komkommer, Paprika & Courgette
+    if (fid === "fd-cucumber" || nameLow.includes("komkommer") || nameLow.includes("courgette") || nameLow.includes("paprika")) {
+      if (week <= 23) {
+        return {
+          shape: "puree",
+          shapeLabel: "🥄 Gladde Courgettepuree",
+          ageLabel: "Zonder schil",
+          rule: "Stoom courgette gaar en pureer glad (komkommer nog niet pureren)",
+          svg: CUT_SVGS.puree
+        };
+      }
+      if (week <= 36) {
+        return {
+          shape: "spear",
+          shapeLabel: "🥒 Vingerlange ontpitte reep",
+          ageLabel: "Verkoelend bij tandjes",
+          rule: "Schil de komkommer, schraap de zaadlijst eruit en snijd in een stevige vingerlange reep om op te sabbelen",
+          svg: CUT_SVGS.spear
+        };
+      }
+      return {
+        shape: "dices",
+        shapeLabel: "🎲 Halve maantjes / blokjes",
+        ageLabel: "Pincetgreep",
+        rule: "Kleine zachte blokjes ontvelde komkommer of zacht gestoofde paprikareepjes",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    // Algemene fallback op basis van leeftijd
+    if (week <= 23) {
       return {
         shape: "puree",
         shapeLabel: "🥄 Gladde Oefenpuree",
@@ -2144,61 +2642,7 @@
       };
     }
 
-    // 2. Choking hazards: Druiven & snoeptomaatjes
-    if (fid === "fd-grapes" || nameLow.includes("druif") || nameLow.includes("tomaat")) {
-      return {
-        shape: "quarters",
-        shapeLabel: "🔪 In lengte in 4en",
-        ageLabel: "Anti-verstikking",
-        rule: "ALTIJD over de lengte in 4 partjes snijden (nooit dwars!)",
-        svg: CUT_SVGS.quarters
-      };
-    }
-
-    // 3. Blauwe bessen & erwtjes: pletten
-    if (fid === "fd-blueberry" || nameLow.includes("bes") || nameLow.includes("erwt")) {
-      if (week > 208) {
-        return {
-          shape: "dices",
-          shapeLabel: "🫐 Heel (Schoolkind)",
-          ageLabel: "Vanaf 4 jaar",
-          rule: "Mag heel gegeten worden zodra kind rustig kauwt",
-          svg: CUT_SVGS.dices
-        };
-      }
-      return {
-        shape: "squash",
-        shapeLabel: "🫐 Platgedrukt",
-        ageLabel: "Anti-verstikking",
-        rule: "Plet tussen duim en wijsvinger (nooit rond heel geven)",
-        svg: CUT_SVGS.squash
-      };
-    }
-
-    // 4. Pindakaas / notenpasta / spreads
-    if (fid === "fd-peanutbutter" || nameLow.includes("pinda") || nameLow.includes("pasta") || fid === "fd-honey" || nameLow.includes("honing")) {
-      return {
-        shape: "spread",
-        shapeLabel: "🍞 Dun uitgesmeerd",
-        ageLabel: "Veilige laag",
-        rule: "Smeer dun uit op broodkorst; geef nooit een dikke lepel",
-        svg: CUT_SVGS.spread
-      };
-    }
-
-    // 5. Broccoli / bloemkool / banaan met handvat (6-8 maanden)
-    if ((fid === "fd-broccoli" || fid === "fd-banana" || textLow.includes("handvat") || textLow.includes("steel")) && week <= 36) {
-      return {
-        shape: "handle",
-        shapeLabel: "🥦 Natuurlijk handvat",
-        ageLabel: "Palm-greep (BLW)",
-        rule: "Laat de steel lang zodat baby het met de vuist kan pakken",
-        svg: CUT_SVGS.handle
-      };
-    }
-
-    // 6. Rapley vingerlange repen (6-7 maanden)
-    if (week <= 36 || textLow.includes("reep") || textLow.includes("stengel") || textLow.includes("vinger")) {
+    if (week <= 36) {
       return {
         shape: "spear",
         shapeLabel: "🥢 Vingerlange reep (5–7 cm)",
@@ -2208,7 +2652,6 @@
       };
     }
 
-    // 7. Pincetgreep & peuter / schoolkind blokjes (8 maanden t/m 12 jaar)
     return {
       shape: "dices",
       shapeLabel: "🎲 Blokjes 1×1 cm",
@@ -2556,7 +2999,38 @@
       return;
     }
 
-    grid.innerHTML = list.map((f) => buildFoodCardHtml(f, week, stage, store)).join("");
+    // Progressive disclosure op mobiele schermen (<= 720px): toon standaard de eerste 4 producten
+    const toggleWrap = document.getElementById("foodsToggleWrap");
+    const expandBtn = document.getElementById("toggleFoodsExpandBtn");
+    const isMobile = window.innerWidth <= 720;
+    const FOOD_MOBILE_LIMIT = 4;
+    const canExpand = isMobile && list.length > FOOD_MOBILE_LIMIT && !q;
+
+    let visibleList = list;
+    if (canExpand && !state.foodsExpanded) {
+      visibleList = list.slice(0, FOOD_MOBILE_LIMIT);
+    }
+
+    if (toggleWrap && expandBtn) {
+      if (canExpand) {
+        toggleWrap.classList.remove("hidden");
+        expandBtn.setAttribute("aria-expanded", state.foodsExpanded ? "true" : "false");
+        expandBtn.innerHTML = state.foodsExpanded
+          ? `▲ Minder producten tonen (toon top ${FOOD_MOBILE_LIMIT})`
+          : `▼ Bekijk alle ${list.length} producten (${list.length - FOOD_MOBILE_LIMIT} overig)`;
+      } else {
+        toggleWrap.classList.add("hidden");
+      }
+    }
+
+    if (stageCountPillEl && week > 16) {
+      stageCountPillEl.textContent =
+        canExpand && !state.foodsExpanded
+          ? `${visibleList.length} van ${list.length} getoond • ${stage.shortLabel}`
+          : `${list.length} geschikt • ${stage.shortLabel}`;
+    }
+
+    grid.innerHTML = visibleList.map((f) => buildFoodCardHtml(f, week, stage, store)).join("");
 
     grid.querySelectorAll(".react-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -2626,7 +3100,30 @@
     }
 
     const store = getActiveStore();
-    grid.innerHTML = DATA.allergens
+    const toggleWrap = document.getElementById("allergensToggleWrap");
+    const expandBtn = document.getElementById("toggleAllergensExpandBtn");
+    const isMobile = window.innerWidth <= 720;
+    const ALLERGEN_MOBILE_LIMIT = week <= 23 ? 2 : 3;
+    const canExpand = isMobile && DATA.allergens.length > ALLERGEN_MOBILE_LIMIT;
+
+    let visibleAllergens = DATA.allergens;
+    if (canExpand && !state.allergensExpanded) {
+      visibleAllergens = DATA.allergens.slice(0, ALLERGEN_MOBILE_LIMIT);
+    }
+
+    if (toggleWrap && expandBtn) {
+      if (canExpand) {
+        toggleWrap.classList.remove("hidden");
+        expandBtn.setAttribute("aria-expanded", state.allergensExpanded ? "true" : "false");
+        expandBtn.innerHTML = state.allergensExpanded
+          ? `▲ Minder allergenen tonen (toon top ${ALLERGEN_MOBILE_LIMIT}: Pinda & Ei)`
+          : `▼ Bekijk alle ${DATA.allergens.length} allergenen (${DATA.allergens.length - ALLERGEN_MOBILE_LIMIT} overig)`;
+      } else {
+        toggleWrap.classList.add("hidden");
+      }
+    }
+
+    grid.innerHTML = visibleAllergens
       .map((alg) => {
         const rawArr = store.allergenExposures[alg.id] || [false, false, false];
         const count = Math.min(3, rawArr.filter(Boolean).length);
@@ -3347,6 +3844,9 @@
   function setWeek(w, scroll = true) {
     state.currentWeek = clampWeek(w);
     state.recipesExpanded = false;
+    state.gamesExpanded = false;
+    state.foodsExpanded = false;
+    state.allergensExpanded = false;
     syncEpochToWeek(state.currentWeek);
     saveState();
     renderAll(scroll);
@@ -3473,6 +3973,9 @@
       () => {
         scrollActiveNodeToCenter(false);
         renderStageRecipes(getStageForWeek(state.currentWeek));
+        renderGames(getStageForWeek(state.currentWeek));
+        renderFoodLookup(state.currentWeek);
+        renderAllergens(state.currentWeek);
       },
       { passive: true }
     );
@@ -3589,6 +4092,28 @@
       });
     }
 
+    const toggleGamesBtn = document.getElementById("toggleGamesExpandBtn");
+    if (toggleGamesBtn) {
+      toggleGamesBtn.addEventListener("click", () => {
+        const curStage = getStageForWeek(state.currentWeek);
+        const wasExpanded = state.gamesExpanded;
+        state.gamesExpanded = !state.gamesExpanded;
+        renderGames(curStage);
+
+        if (wasExpanded) {
+          const cardEl = document.getElementById("panelGames");
+          if (cardEl) {
+            const offset = getStickyNavOffset(16);
+            const cardTop = cardEl.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0);
+            window.scrollTo({
+              top: Math.max(0, Math.round(cardTop - offset)),
+              behavior: "smooth"
+            });
+          }
+        }
+      });
+    }
+
     const toggleAllGamesBtn = document.getElementById("toggleAllStagesGamesBtn");
     if (toggleAllGamesBtn) {
       toggleAllGamesBtn.addEventListener("click", () => {
@@ -3600,9 +4125,52 @@
     document.querySelectorAll("[data-game-cat]").forEach((chip) => {
       chip.addEventListener("click", () => {
         state.gameCategoryFilter = chip.dataset.gameCat;
+        state.gamesExpanded = false;
         renderGames(getStageForWeek(state.currentWeek));
       });
     });
+
+    const toggleFoodsBtn = document.getElementById("toggleFoodsExpandBtn");
+    if (toggleFoodsBtn) {
+      toggleFoodsBtn.addEventListener("click", () => {
+        const wasExpanded = state.foodsExpanded;
+        state.foodsExpanded = !state.foodsExpanded;
+        renderFoodLookup(state.currentWeek);
+
+        if (wasExpanded) {
+          const cardEl = document.getElementById("lookupHeaderTitle");
+          if (cardEl) {
+            const offset = getStickyNavOffset(16);
+            const cardTop = cardEl.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0);
+            window.scrollTo({
+              top: Math.max(0, Math.round(cardTop - offset)),
+              behavior: "smooth"
+            });
+          }
+        }
+      });
+    }
+
+    const toggleAllergensBtn = document.getElementById("toggleAllergensExpandBtn");
+    if (toggleAllergensBtn) {
+      toggleAllergensBtn.addEventListener("click", () => {
+        const wasExpanded = state.allergensExpanded;
+        state.allergensExpanded = !state.allergensExpanded;
+        renderAllergens(state.currentWeek);
+
+        if (wasExpanded) {
+          const cardEl = document.getElementById("allergensDetails");
+          if (cardEl) {
+            const offset = getStickyNavOffset(16);
+            const cardTop = cardEl.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0);
+            window.scrollTo({
+              top: Math.max(0, Math.round(cardTop - offset)),
+              behavior: "smooth"
+            });
+          }
+        }
+      });
+    }
 
     const searchInput = document.getElementById("globalSearchInput");
 
@@ -3639,6 +4207,7 @@
         const clicked = chip.dataset.foodCat;
         state.foodCategoryFilter =
           state.foodCategoryFilter === clicked && clicked !== "all" ? "all" : clicked;
+        state.foodsExpanded = false;
         clearStaleSearchIfEmpty();
         renderFoodLookup(state.currentWeek);
       });
@@ -3649,6 +4218,7 @@
         const clicked = chip.dataset.foodStatus;
         state.foodStatusFilter =
           state.foodStatusFilter === clicked && clicked !== "all" ? "all" : clicked;
+        state.foodsExpanded = false;
         clearStaleSearchIfEmpty();
         renderFoodLookup(state.currentWeek);
       });
@@ -3656,12 +4226,14 @@
 
     searchInput.addEventListener("input", () => {
       state.searchQuery = searchInput.value;
+      state.foodsExpanded = false;
       renderFoodLookup(state.currentWeek);
     });
 
     document.getElementById("clearSearchBtn").addEventListener("click", () => {
       searchInput.value = "";
       state.searchQuery = "";
+      state.foodsExpanded = false;
       renderFoodLookup(state.currentWeek);
     });
 
@@ -3889,6 +4461,85 @@
       };
       reader.readAsText(file);
     });
+
+    // Feedback & Ervaring Dialoog
+    const feedbackDialog = document.getElementById("feedbackDialog");
+    const openFeedbackBtn = document.getElementById("openFeedbackBtn");
+    const closeFeedbackBtn = document.getElementById("closeFeedbackDialogBtn");
+    const cancelFeedbackBtn = document.getElementById("cancelFeedbackBtn");
+    const feedbackForm = document.getElementById("feedbackForm");
+    const feedbackStatusMsg = document.getElementById("feedbackStatusMsg");
+    let activeFeedbackType = "compliment";
+
+    const feedbackTypeChips = document.querySelectorAll("#feedbackTypeChips [data-fb-type]");
+    feedbackTypeChips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        activeFeedbackType = chip.dataset.fbType;
+        feedbackTypeChips.forEach((c) => c.classList.toggle("active", c === chip));
+      });
+    });
+
+    if (openFeedbackBtn && feedbackDialog) {
+      openFeedbackBtn.addEventListener("click", () => {
+        activeFeedbackType = "compliment";
+        feedbackTypeChips.forEach((c) => c.classList.toggle("active", c.dataset.fbType === "compliment"));
+        const textInput = document.getElementById("feedbackTextInput");
+        const emailInput = document.getElementById("feedbackEmailInput");
+        if (textInput) textInput.value = "";
+        if (emailInput) emailInput.value = "";
+        if (feedbackStatusMsg) feedbackStatusMsg.textContent = "";
+        feedbackDialog.showModal();
+        if (textInput) textInput.focus();
+      });
+    }
+
+    if (closeFeedbackBtn && feedbackDialog) {
+      closeFeedbackBtn.addEventListener("click", () => feedbackDialog.close());
+    }
+    if (cancelFeedbackBtn && feedbackDialog) {
+      cancelFeedbackBtn.addEventListener("click", () => feedbackDialog.close());
+    }
+
+    if (feedbackForm && feedbackDialog) {
+      feedbackForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const textInput = document.getElementById("feedbackTextInput");
+        const sectionSelect = document.getElementById("feedbackSectionSelect");
+        const emailInput = document.getElementById("feedbackEmailInput");
+
+        const msg = textInput ? textInput.value.trim() : "";
+        if (!msg) return;
+
+        const entry = {
+          id: "fb-" + Date.now(),
+          type: activeFeedbackType,
+          section: sectionSelect ? sectionSelect.value : "algemeen",
+          message: msg,
+          email: emailInput ? emailInput.value.trim() : "",
+          timestamp: new Date().toISOString(),
+          week: state.currentWeek,
+          childName: getActiveChild() ? getActiveChild().name : ""
+        };
+
+        try {
+          const existingRaw = localStorage.getItem("samen_groeien_feedback_v1");
+          const existingList = existingRaw ? JSON.parse(existingRaw) : [];
+          existingList.push(entry);
+          localStorage.setItem("samen_groeien_feedback_v1", JSON.stringify(existingList));
+        } catch (err) {
+          // ignore error
+        }
+
+        if (feedbackStatusMsg) {
+          feedbackStatusMsg.textContent = "✓ Hartelijk dank voor je waardevolle feedback! We nemen je ervaring zorgvuldig mee.";
+        }
+
+        setTimeout(() => {
+          if (feedbackDialog.open) feedbackDialog.close();
+          if (feedbackStatusMsg) feedbackStatusMsg.textContent = "";
+        }, 1600);
+      });
+    }
   }
 
   // PWA Installatie: luisteren naar beforeinstallprompt, in-app banner & installatie-instructies
