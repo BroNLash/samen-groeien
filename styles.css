@@ -3916,4 +3916,419 @@ p, li {
   }
 }
 
+/* ==========================================================================
+   ONBOARDING WELKOMSTKAART, WEEKBALK, KRUISZOEKEN, ALLERGEEN-WEEKCHECK & LEGAL
+   ========================================================================== */
+
+.form-textarea {
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: var(--fs-body);
+  color: var(--text);
+  background: var(--surface);
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 90px;
+  line-height: 1.45;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+/* 1. Onboarding Welkomstkaart */
+.onboarding-welcome-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 16px;
+  margin-bottom: 12px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--primary-soft), var(--surface));
+  border: 1.5px solid var(--primary);
+  box-shadow: var(--shadow);
+}
+
+.onboarding-welcome-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.onboarding-welcome-icon {
+  font-size: 1.45rem;
+  line-height: 1.1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.onboarding-welcome-text {
+  min-width: 0;
+}
+
+.onboarding-welcome-title {
+  display: block;
+  font-size: var(--fs-card-title);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.onboarding-welcome-desc {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  line-height: 1.42;
+}
+
+.onboarding-welcome-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.onboarding-dismiss-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: var(--fs-sm);
+  transition: all 0.15s ease;
+}
+
+.onboarding-dismiss-btn:hover {
+  color: var(--text);
+  border-color: var(--primary);
+}
+
+/* 2. Gecombineerde Week-Boodschappenlijst Balk */
+.weekly-grocery-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 14px;
+  margin: 10px 0 12px;
+  border-radius: var(--radius-md);
+  background: var(--primary-soft);
+  border: 1.5px solid var(--primary);
+  flex-wrap: wrap;
+}
+
+.weekly-grocery-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.weekly-grocery-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.weekly-grocery-info strong {
+  display: block;
+  font-size: var(--fs-body);
+  color: var(--text);
+}
+
+.weekly-grocery-sub {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.weekly-grocery-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.recipe-weeklist-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+/* 3. Slimme Kruiszoekresultaten in Eet-Check */
+.lookup-cross-results {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.cross-results-title {
+  margin: 0 0 8px;
+  font-size: var(--fs-card-title);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cross-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 8px;
+}
+
+.cross-result-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.12s ease;
+}
+
+.cross-result-btn:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.cross-result-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cross-result-icon {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.cross-result-text {
+  min-width: 0;
+}
+
+.cross-result-text strong {
+  display: block;
+  font-size: var(--fs-body);
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cross-result-text span {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.cross-result-badge {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-soft);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  flex-shrink: 0;
+}
+
+/* 4. Wekelijkse Onderhouds-Check bij Allergenen (na 3/3 stappen) */
+.allergen-weekly-row {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.allergen-weekly-label {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.allergen-weekly-btn {
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.allergen-weekly-btn:hover {
+  border-color: var(--primary);
+}
+
+.allergen-weekly-btn.is-given {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+/* 5. Medische Disclaimer & Legal/Privacy Dialoog */
+.sos-medical-disclaimer {
+  border-left: 4px solid var(--primary);
+  background: var(--surface-soft);
+}
+
+.sos-disclaimer-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.sos-disclaimer-icon {
+  font-size: 1.35rem;
+  line-height: 1.1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.sos-disclaimer-text strong {
+  font-size: var(--fs-body);
+  color: var(--text);
+}
+
+.sos-disclaimer-text p {
+  margin: 4px 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.footer-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.footer-legal-link {
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.footer-legal-link:hover {
+  opacity: 0.85;
+}
+
+.legal-dialog-card {
+  max-width: 600px;
+}
+
+.legal-sections-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 68vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.legal-section {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+}
+
+.legal-section h3 {
+  margin: 0 0 6px;
+  font-size: var(--fs-card-title);
+  color: var(--text);
+}
+
+.legal-section p {
+  margin: 0 0 8px;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.legal-section p:last-child {
+  margin-bottom: 0;
+}
+
+.legal-sources-list {
+  margin-top: 6px;
+  font-size: var(--fs-sm);
+}
+
+.legal-data-delete-box {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.legal-data-delete-box strong {
+  display: block;
+  font-size: var(--fs-sm);
+  color: var(--text);
+}
+
+.legal-data-delete-box span {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.legal-delete-btn {
+  color: var(--warn-text);
+  border-color: var(--warn);
+}
+
+@media (max-width: 600px) {
+  .onboarding-welcome-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .onboarding-welcome-actions {
+    justify-content: space-between;
+  }
+}
+
+
 

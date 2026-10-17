@@ -51,14 +51,27 @@
       useAdjusted: true,
       customOppasNote: ""
     },
+    onboardingDismissed: false,
     triedFoods: {},
     favoriteGames: {},
     favoriteRecipes: {},
+    weeklyGroceryRecipes: {},
     checkedMilestones: {},
     checkedHabits: {},
     allergenExposures: {},
+    allergenWeeklyGiven: {},
     foodPracticeCounts: {}
   };
+
+  function getCurrentIsoWeekKey() {
+    const now = new Date();
+    const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+    return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
+  }
 
   // =========================================================================
   // 1. OPSLAG, MIGRATIE & ACTIEF KINDPROFIEL
@@ -95,12 +108,15 @@
       if (saved.theme) state.theme = saved.theme;
       if (saved.activeView) state.activeView = saved.activeView;
       if (saved.profile) state.profile = { ...state.profile, ...saved.profile };
+      if (typeof saved.onboardingDismissed === "boolean") state.onboardingDismissed = saved.onboardingDismissed;
       if (saved.triedFoods) state.triedFoods = saved.triedFoods;
       if (saved.favoriteGames) state.favoriteGames = saved.favoriteGames;
       if (saved.favoriteRecipes) state.favoriteRecipes = saved.favoriteRecipes;
+      if (saved.weeklyGroceryRecipes) state.weeklyGroceryRecipes = saved.weeklyGroceryRecipes;
       if (saved.checkedMilestones) state.checkedMilestones = saved.checkedMilestones;
       if (saved.checkedHabits) state.checkedHabits = saved.checkedHabits;
       if (saved.allergenExposures) state.allergenExposures = saved.allergenExposures;
+      if (saved.allergenWeeklyGiven) state.allergenWeeklyGiven = saved.allergenWeeklyGiven;
       if (saved.foodPracticeCounts) state.foodPracticeCounts = saved.foodPracticeCounts;
       if (Array.isArray(saved.children)) state.children = saved.children;
       if (saved.activeChildId) state.activeChildId = saved.activeChildId;
@@ -120,9 +136,11 @@
           triedFoods: { ...state.triedFoods },
           favoriteGames: { ...state.favoriteGames },
           favoriteRecipes: { ...state.favoriteRecipes },
+          weeklyGroceryRecipes: { ...state.weeklyGroceryRecipes },
           checkedMilestones: { ...state.checkedMilestones },
           checkedHabits: { ...state.checkedHabits },
           allergenExposures: { ...state.allergenExposures },
+          allergenWeeklyGiven: { ...state.allergenWeeklyGiven },
           foodPracticeCounts: { ...state.foodPracticeCounts }
         });
         state.activeChildId = firstId;
@@ -159,9 +177,11 @@
     if (!target.triedFoods) target.triedFoods = {};
     if (!target.favoriteGames) target.favoriteGames = {};
     if (!target.favoriteRecipes) target.favoriteRecipes = {};
+    if (!target.weeklyGroceryRecipes) target.weeklyGroceryRecipes = {};
     if (!target.checkedMilestones) target.checkedMilestones = {};
     if (!target.checkedHabits) target.checkedHabits = {};
     if (!target.allergenExposures) target.allergenExposures = {};
+    if (!target.allergenWeeklyGiven) target.allergenWeeklyGiven = {};
     if (!target.foodPracticeCounts) target.foodPracticeCounts = {};
     sanitizeTriedFoodsAndHabits(target);
     return target;
@@ -486,7 +506,22 @@
     const dobDate = new Date(prof.dob + "T00:00:00");
     const now = new Date();
     const diffMs = now - dobDate;
-    if (isNaN(diffMs) || diffMs < 0) return null;
+    if (isNaN(diffMs)) return null;
+
+    // Ondersteun toekomstige (uitgerekende) datum voor aanstaande ouders
+    if (diffMs < 0) {
+      const daysUntilDue = Math.max(1, Math.ceil(-diffMs / (1000 * 60 * 60 * 24)));
+      return {
+        chronoWeek: 1,
+        adjustedWeek: 1,
+        activeTargetWeek: 1,
+        isPreemie: false,
+        isExpecting: true,
+        daysUntilDue,
+        shortAge: "Verwacht 🤰",
+        readableAge: "Verwacht 🤰 • W1"
+      };
+    }
 
     const totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const chronoWeek = clampWeek(Math.floor(totalDays / 7) + 1);
@@ -531,6 +566,7 @@
       adjustedWeek,
       activeTargetWeek,
       isPreemie,
+      isExpecting: false,
       shortAge,
       readableAge
     };
@@ -908,6 +944,44 @@
     tussendoor: "🍎 Tussendoor"
   };
 
+  function getAllRecipesCatalog() {
+    return DATA.stages.flatMap((s) =>
+      ((s.nutrition && s.nutrition.recipes) || s.recipes || []).map((r, rIdx) => ({
+        ...r,
+        id: `rec-${s.id}-${rIdx}`,
+        stageLabel: s.shortLabel,
+        heroEmoji: s.heroEmoji,
+        minWeek: s.minWeek
+      }))
+    );
+  }
+
+  function buildWeeklyGroceryText(selectedRecipes) {
+    if (!selectedRecipes || selectedRecipes.length === 0) return "";
+    const allIngs = [];
+    const seen = new Set();
+    selectedRecipes.forEach((r) => {
+      (r.ingredients || []).forEach((ing) => {
+        const key = String(ing).trim().toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          allIngs.push(String(ing).trim());
+        }
+      });
+    });
+
+    const lines = [
+      `🛒 *Samen Groeien Week-Boodschappenlijst (${selectedRecipes.length} ${selectedRecipes.length === 1 ? "gerecht" : "gerechten"})*`,
+      ``,
+      `📋 *Alle benodigde ingrediënten:*`,
+      ...allIngs.map((i) => `• ${i}`),
+      ``,
+      `🍳 *Gekozen 5-minuten gerechten:*`,
+      ...selectedRecipes.map((r) => `• *${r.title}* (${r.stageLabel}, ${r.prepTime}): ${r.steps}`)
+    ];
+    return lines.join("\n");
+  }
+
   function renderStageRecipes(stage) {
     const grid = document.getElementById("stageRecipesGrid");
     if (!grid) return;
@@ -921,6 +995,9 @@
     const cardEl = document.getElementById("stageRecipesCard");
     const toggleWrap = document.getElementById("recipesToggleWrap");
     const expandBtn = document.getElementById("toggleRecipesExpandBtn");
+    const weeklyBarEl = document.getElementById("weeklyGroceryBar");
+    const weeklyTitleEl = document.getElementById("weeklyGroceryTitle");
+    const weeklySubEl = document.getElementById("weeklyGrocerySub");
 
     // In fase 0–3 maanden (Week 1–16) drinkt een baby 100% melkvoeding: verberg de lege receptenkaart om mobiele ruimte te besparen
     if (week <= 16) {
@@ -943,6 +1020,23 @@
       heroEmoji: stage.heroEmoji
     }));
 
+    // Update Gecombineerde Week-Boodschappenlijst Balk
+    const allCatalog = getAllRecipesCatalog();
+    const selectedForWeek = allCatalog.filter((r) => Boolean(store.weeklyGroceryRecipes && store.weeklyGroceryRecipes[r.id]));
+    if (weeklyBarEl) {
+      if (selectedForWeek.length > 0) {
+        weeklyBarEl.classList.remove("hidden");
+        if (weeklyTitleEl) {
+          weeklyTitleEl.textContent = `Week-Boodschappenlijst (${selectedForWeek.length} ${selectedForWeek.length === 1 ? "gerecht" : "gerechten"})`;
+        }
+        if (weeklySubEl) {
+          weeklySubEl.textContent = selectedForWeek.map((r) => r.title).join(" • ");
+        }
+      } else {
+        weeklyBarEl.classList.add("hidden");
+      }
+    }
+
     if (titleEl) {
       titleEl.textContent =
         week <= 23
@@ -952,8 +1046,8 @@
     if (subtitleEl) {
       subtitleEl.textContent =
         week <= 23
-          ? "Alleen gladde eerste oefenhapjes die veilig zijn voor 4–5 maanden, met 1 tik op WhatsApp te zetten."
-          : `Alleen gerechten die veilig en geschikt zijn voor ${stage.shortLabel} — met 1 tik als boodschappenlijstje op WhatsApp te zetten.`;
+          ? "Alleen gladde eerste oefenhapjes die veilig zijn voor 4–5 maanden, met 1 tik op WhatsApp of je weeklijst te zetten."
+          : `Alleen gerechten die veilig en geschikt zijn voor ${stage.shortLabel} — zet losse recepten of een gecombineerde weeklijst met 1 tik op WhatsApp.`;
     }
 
     const favStageRecipes = stageRecipes.filter((r) => Boolean(store.favoriteRecipes[r.id]));
@@ -1035,6 +1129,7 @@
       .map((r) => {
         const mealBadge = MEAL_TYPE_LABELS[r.mealType] || "🍴 Eetmoment";
         const isFav = Boolean(store.favoriteRecipes[r.id]);
+        const isOnWeekList = Boolean(store.weeklyGroceryRecipes && store.weeklyGroceryRecipes[r.id]);
         return `
       <article class="recipe-box" data-recipe-card-id="${r.id}">
         <div class="item-card-top">
@@ -1056,8 +1151,11 @@
           <button type="button" class="btn-primary btn-small" data-wa-recipe="${r.id}">
             💬 WhatsApp lijstje
           </button>
+          <button type="button" class="btn-secondary btn-small recipe-weeklist-btn ${isOnWeekList ? "active" : ""}" data-weeklist-recipe="${r.id}" title="Voeg toe aan je gecombineerde week-boodschappenlijst">
+            ${isOnWeekList ? "✓ Op weeklijst" : "➕ Weeklijst"}
+          </button>
           <button type="button" class="btn-secondary btn-small" data-copy-recipe="${r.id}">
-            📋 Kopieer lijstje
+            📋 Kopieer
           </button>
         </div>
       </article>
@@ -1082,6 +1180,17 @@
         if (!r) return;
         const text = formatGroceryText(r);
         openWhatsAppShare(text, "auto");
+      });
+    });
+
+    grid.querySelectorAll("[data-weeklist-recipe]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const rId = btn.dataset.weeklistRecipe;
+        if (!store.weeklyGroceryRecipes) store.weeklyGroceryRecipes = {};
+        if (store.weeklyGroceryRecipes[rId]) delete store.weeklyGroceryRecipes[rId];
+        else store.weeklyGroceryRecipes[rId] = true;
+        saveState();
+        renderStageRecipes(stage);
       });
     });
 
@@ -1155,14 +1264,28 @@
       return "fd-cucumber";
     }
     if (n.includes("appel") || n.includes("peer")) return "fd-apple";
+    if (n.includes("mango") || n.includes("kiwi") || n.includes("meloen")) return "fd-mango-kiwi";
+    if (n.includes("rozijn")) return "fd-raisins";
+    if (n.includes("leverworst") || n.includes("paté")) return "fd-liver-raw";
+    if (n.includes("knakworst") || n.includes("popcorn")) return "fd-sausage-popcorn";
     if (n.includes("druiven")) return "fd-grapes";
     return null;
+  }
+
+  function renderOnboardingWelcomeCard() {
+    const cardEl = document.getElementById("onboardingWelcomeCard");
+    if (!cardEl) return;
+    const hasChild =
+      (Array.isArray(state.children) && state.children.length > 0) ||
+      Boolean(state.profile && (state.profile.name || state.profile.dob));
+    cardEl.classList.toggle("hidden", hasChild || Boolean(state.onboardingDismissed));
   }
 
   // =========================================================================
   // 6. HOOFDSCHERM RENDEREN
   // =========================================================================
   function renderAll(scrollToTimeline = false) {
+    renderOnboardingWelcomeCard();
     const week = state.currentWeek;
     const stage = getStageForWeek(week);
     const exactAge = formatExactAgeFromWeek(week);
@@ -2215,17 +2338,17 @@
       if (week <= 52) {
         return {
           shape: "spoon",
-          shapeLabel: "🥄 Lepelhapje volle yoghurt",
+          shapeLabel: "🥄 Lepelhapje ongezoete yoghurt",
           ageLabel: "Enkele theelepeltjes",
-          rule: "Geef volle ongezoete yoghurt/kwark met een klein lepeltje (wacht met gewone koemelk als drank tot 1 jaar)",
+          rule: "Geef ongezoete halfvolle of volle yoghurt met een klein lepeltje (wacht met gewone koemelk als hoofdvoeding tot 1 jaar)",
           svg: CUT_SVGS.spoon
         };
       }
       return {
         shape: "cup",
-        shapeLabel: "🥛 Beker melk & lepel yoghurt",
+        shapeLabel: "🥛 Beker halfvolle melk & yoghurt",
         ageLabel: "Mee-eten (vanaf 1 jaar)",
-        rule: "Ongeveer 300 ml zuivel per dag (bijv. 2 bekertjes melk en een schaaltje volle yoghurt)",
+        rule: "Ongeveer 300 ml zuivel per dag (bijv. 2 bekertjes halfvolle melk en een schaaltje ongezoete halfvolle yoghurt)",
         svg: CUT_SVGS.cup
       };
     }
@@ -2631,6 +2754,113 @@
       };
     }
 
+    // 19. Mango, Kiwi & Meloen
+    if (fid === "fd-mango-kiwi" || nameLow.includes("mango") || nameLow.includes("kiwi") || nameLow.includes("meloen")) {
+      if (week <= 23) {
+        return {
+          shape: "puree",
+          shapeLabel: "🥄 Gladde Fruitpuree",
+          ageLabel: "Rijp & gepureerd",
+          rule: "Prak of pureer een stukje goed rijpe mango, meloen of zoete kiwi helemaal glad",
+          svg: CUT_SVGS.puree
+        };
+      }
+      if (week <= 36) {
+        return {
+          shape: "handle",
+          shapeLabel: "🥭 Reep met schilhandvat / grip",
+          ageLabel: "Anti-wegglijden",
+          rule: "Laat onderaan een strookje schil zitten als handvat óf rol gladde stukken door fijne havermout/kokos",
+          svg: CUT_SVGS.handle
+        };
+      }
+      return {
+        shape: "dices",
+        shapeLabel: "🎲 Zachte blokjes 1×1 cm",
+        ageLabel: "Pincetgreep",
+        rule: "Snijd rijpe mango, kiwi of ontpitte meloen in hapklare blokjes",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    // 20. Rozijntjes & Gedroogd Fruit
+    if (fid === "fd-raisins" || nameLow.includes("rozijn") || nameLow.includes("gedroogd")) {
+      if (week <= 36) {
+        return {
+          shape: "prohibited",
+          shapeLabel: "⏳ Pas vanaf 9 maanden",
+          ageLabel: "Plakt & taai",
+          rule: "Wacht met losse rozijntjes tot ca. 9 maanden (wanneer de pincetgreep en kauwbeweging starten)",
+          svg: CUT_SVGS.prohibited
+        };
+      }
+      if (week <= 52) {
+        return {
+          shape: "squash",
+          shapeLabel: "🍇 Geweld & gehalveerd",
+          ageLabel: "Pincetgreep (9–12m)",
+          rule: "Wel rozijntjes 5 minuten in warm water zodat ze zacht zijn en halveer grote rozijnen",
+          svg: CUT_SVGS.squash
+        };
+      }
+      return {
+        shape: "dices",
+        shapeLabel: "🍇 Max. 1 doosje op 1 eetmoment",
+        ageLabel: "Tandvriendelijk",
+        rule: "Geef op 1 vast moment (niet de hele middag door i.v.m. gaatjes) met een beker water",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    // 21. Worstjes (Knakworst) & Popcorn
+    if (fid === "fd-sausage-popcorn" || nameLow.includes("knakworst") || nameLow.includes("popcorn")) {
+      if (week <= 52) {
+        return {
+          shape: "prohibited",
+          shapeLabel: "🚫 Verboden onder 1 jaar",
+          ageLabel: "Zout & verstikking",
+          rule: "Geef géén knakworst/rookworst (te veel zout) en géén popcorn (verstikkingsgevaar) onder 1 jaar!",
+          svg: CUT_SVGS.prohibited
+        };
+      }
+      if (week <= 208) {
+        return {
+          shape: "quarters",
+          shapeLabel: "🔪 Worst in lengte in 4en • Geen popcorn",
+          ageLabel: "Anti-verstikking",
+          rule: "Snijd knakworst ALTIJD in de lengte in vieren (nooit ronde schijfjes!). Geef géén popcorn onder 4 jaar",
+          svg: CUT_SVGS.quarters
+        };
+      }
+      return {
+        shape: "dices",
+        shapeLabel: "🌭 Rustig zittend aan tafel",
+        ageLabel: "Vanaf 4–5 jaar",
+        rule: "Knakworst en popcorn vanaf 4–5 jaar uitsluitend rustig zittend eten (nooit tijdens het rennen)",
+        svg: CUT_SVGS.dices
+      };
+    }
+
+    // 22. Smeerleverworst, Paté & Rauw Vlees/Vis
+    if (fid === "fd-liver-raw" || nameLow.includes("leverworst") || nameLow.includes("paté") || nameLow.includes("rauw")) {
+      if (week <= 208) {
+        return {
+          shape: "spread",
+          shapeLabel: "🥪 Max. 1× p/w • Géén rauw vlees/vis",
+          ageLabel: "Vitamine A & Hygiëne",
+          rule: "Voedingscentrum: max. 1 boterham smeerleverworst/paté per week. Rauw vlees (filet americain/tartaar) en gerookte zalm pas vanaf 4 jaar!",
+          svg: CUT_SVGS.spread
+        };
+      }
+      return {
+        shape: "spread",
+        shapeLabel: "🥪 Met mate op volkorenbrood",
+        ageLabel: "Wissel beleg af",
+        rule: "Smeerleverworst niet dagelijks geven; let bij vlees en vis altijd op koeling en versheid",
+        svg: CUT_SVGS.spread
+      };
+    }
+
     // Algemene fallback op basis van leeftijd
     if (week <= 23) {
       return {
@@ -2845,9 +3075,9 @@
 
     if (subtitleEl) {
       if (week <= 23) {
-        subtitleEl.textContent = `🥄 ${suitableAllInStage.length} veilige oefenhapjes voor 4–5 maanden — kies een productgroep en vink je proeflijst bij (de ${waitAllInStage.length} producten vanaf 6 of 12 mnd staan onderaan).`;
+        subtitleEl.textContent = `🥄 ${suitableAllInStage.length} veilige oefenhapjes voor 4–5 maanden — kies een productgroep en vink je proeflijst bij (de ${waitAllInStage.length} producten vanaf 6, 9 of 12 mnd staan onderaan).`;
       } else if (week <= 52) {
-        subtitleEl.textContent = `🥑 ${suitableAllInStage.length} geschikte producten voor ${stage.shortLabel} — bekijk de veilige snijvorm en vink je proeflijst bij (honing vanaf 12 mnd staat onderaan).`;
+        subtitleEl.textContent = `🥑 ${suitableAllInStage.length} geschikte producten voor ${stage.shortLabel} — bekijk de veilige snijvorm en vink je proeflijst bij (producten voor later staan onderaan).`;
       } else {
         subtitleEl.textContent = `🍽️ Alle ${suitableAllInStage.length} producten zijn geschikt voor ${stage.shortLabel} — bekijk de veilige snijvorm en vink je proeflijst bij.`;
       }
@@ -2894,7 +3124,7 @@
       });
     }
 
-    // Uitklapbare sectie onderaan voor producten die pas in een latere fase (6+ of 12+ mnd) mogen
+    // Uitklapbare sectie onderaan voor producten die pas in een latere fase (6+, 9+ of 12+ mnd) mogen
     const waitListForCat = waitAllInStage.filter((f) => matchFoodCategory(f, cat));
     if (waitDetailsEl && waitGridEl) {
       if (waitAllInStage.length === 0) {
@@ -2905,8 +3135,10 @@
         if (waitSummaryTitleEl) {
           waitSummaryTitleEl.textContent =
             week <= 23
-              ? "⏳ Nog niet geschikt bij 4–5 maanden (bekijk producten vanaf 6 of 12 maanden)"
-              : "🚫 Nog niet geschikt onder 1 jaar (Honing — pas vanaf 12 maanden)";
+              ? "⏳ Nog niet geschikt bij 4–5 maanden (bekijk producten vanaf 6, 9 of 12 maanden)"
+              : week <= 36
+                ? "🚫 Nog niet geschikt bij 6–8 maanden (Rozijntjes vanaf 9m • Honing & Worstjes vanaf 12m)"
+                : "🚫 Nog niet geschikt onder 1 jaar (Honing & Worstjes/Popcorn — pas vanaf 12 maanden)";
         }
         if (waitCountPillEl) {
           waitCountPillEl.textContent = `${itemsToRenderInWait.length} ${itemsToRenderInWait.length === 1 ? "product" : "producten"}`;
@@ -2914,10 +3146,141 @@
         if (waitIntroHintEl) {
           waitIntroHintEl.textContent =
             week <= 23
-              ? "Onderstaande producten geef je bij 4–5 maanden nog niet als maaltijd of los hapje. Ze komen aan bod vanaf 6 maanden (zoals brood, pasta, vlees/vis, yoghurt, bessen en druiven) of 12 maanden (honing)."
-              : "Geef onder de 1 jaar (12 maanden) nog geen honing vanwege het risico op infantiel botulisme.";
+              ? "Onderstaande producten geef je bij 4–5 maanden nog niet als maaltijd of los hapje. Ze komen aan bod vanaf 6 maanden (zoals brood, pasta, vlees/vis, yoghurt, bessen en druiven), 9 maanden (rozijntjes) of 12 maanden (honing)."
+              : "Geef onder de 1 jaar (12 maanden) nog geen honing (botulisme-gevaar) en geen zoute worstjes of popcorn.";
         }
         waitGridEl.innerHTML = itemsToRenderInWait.map((f) => buildFoodCardHtml(f, week, stage, store)).join("");
+      }
+    }
+
+    // Slimme Kruiszoekresultaten (#lookupCrossResults) over Recepten, Allergenen, Spelletjes & SOS
+    const crossBoxEl = document.getElementById("lookupCrossResults");
+    if (crossBoxEl) {
+      if (q.length >= 2) {
+        const crossHits = [];
+        // 1. Allergenen
+        (DATA.allergens || []).forEach((alg) => {
+          const hay = `${alg.name} ${alg.whyEarly || ""} ${alg.safePrep6to12m || ""}`.toLowerCase();
+          if (hay.includes(q)) {
+            crossHits.push({
+              type: "allergen",
+              id: alg.id,
+              icon: alg.icon || "🥜",
+              title: alg.name,
+              sub: "Top 9 Allergenen Afvinklijst",
+              badge: "Naar Allergenen ↓"
+            });
+          }
+        });
+        // 2. 5-Minuten Recepten in huidige fase (of alle fasen)
+        const stageRecs = ((stage.nutrition && stage.nutrition.recipes) || stage.recipes || []).map((r, idx) => ({
+          ...r,
+          id: `rec-${stage.id}-${idx}`
+        }));
+        stageRecs.forEach((r) => {
+          const hay = `${r.title} ${(r.ingredients || []).join(" ")} ${r.steps || ""}`.toLowerCase();
+          if (hay.includes(q)) {
+            crossHits.push({
+              type: "recipe",
+              id: r.id,
+              icon: "🍳",
+              title: r.title,
+              sub: `5-Minuten Recept (${stage.shortLabel} • ${r.prepTime})`,
+              badge: "Open bij Voeding →"
+            });
+          }
+        });
+        // 3. Leerspelletjes in huidige fase
+        (stage.games || []).forEach((g) => {
+          const hay = `${g.title} ${g.howToPlay || ""} ${g.whyItMatters || ""}`.toLowerCase();
+          if (hay.includes(q)) {
+            crossHits.push({
+              type: "game",
+              id: g.id,
+              icon: "🎲",
+              title: g.title,
+              sub: `Leerspelletje (${stage.shortLabel})`,
+              badge: "Open bij Spel →"
+            });
+          }
+        });
+        // 4. SOS-kaarten
+        (DATA.sosCards || []).forEach((sc) => {
+          const hay = `${sc.title} ${sc.adviceBabyUnder3m || ""} ${sc.adviceBaby3mTo1y || ""} ${sc.adviceToddlerAndUp || ""}`.toLowerCase();
+          if (hay.includes(q)) {
+            crossHits.push({
+              type: "sos",
+              id: sc.id,
+              icon: sc.icon || "🆘",
+              title: sc.title,
+              sub: "SOS Eerste Hulp bij Lastige Momenten",
+              badge: "Open bij SOS →"
+            });
+          }
+        });
+
+        if (crossHits.length > 0) {
+          crossBoxEl.classList.remove("hidden");
+          crossBoxEl.innerHTML = `
+            <h4 class="cross-results-title">💡 Ook gevonden in Recepten, Allergenen, Spel &amp; SOS (${crossHits.length}):</h4>
+            <div class="cross-results-grid">
+              ${crossHits
+                .slice(0, 6)
+                .map(
+                  (h, idx) => `
+                <button type="button" class="cross-result-btn" data-cross-idx="${idx}">
+                  <div class="cross-result-left">
+                    <span class="cross-result-icon" aria-hidden="true">${h.icon}</span>
+                    <div class="cross-result-text">
+                      <strong>${escapeHtml(h.title)}</strong>
+                      <span>${escapeHtml(h.sub)}</span>
+                    </div>
+                  </div>
+                  <span class="cross-result-badge">${escapeHtml(h.badge)}</span>
+                </button>
+              `
+                )
+                .join("")}
+            </div>
+          `;
+          crossBoxEl.querySelectorAll("[data-cross-idx]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const hit = crossHits[Number(btn.dataset.crossIdx)];
+              if (!hit) return;
+              if (hit.type === "allergen") {
+                const algDet = document.getElementById("allergensDetails");
+                if (algDet) {
+                  algDet.open = true;
+                  algDet.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              } else if (hit.type === "recipe") {
+                state.recipeMealFilter = "all";
+                state.recipesExpanded = true;
+                setView("food", false);
+                renderStageRecipes(stage);
+                setTimeout(() => {
+                  const recCard = document.getElementById("stageRecipesCard");
+                  if (recCard) recCard.scrollIntoView({ behavior: "smooth", block: "start" });
+                }, 60);
+              } else if (hit.type === "game") {
+                state.gameCategoryFilter = "all";
+                state.gamesExpanded = true;
+                setView("games", true);
+                renderGames(stage);
+              } else if (hit.type === "sos") {
+                state.activeSosCardId = hit.id;
+                setView("sos", true);
+                renderSosAndCb(stage, week);
+              }
+            });
+          });
+        } else {
+          crossBoxEl.classList.add("hidden");
+          crossBoxEl.innerHTML = "";
+        }
+      } else {
+        crossBoxEl.classList.add("hidden");
+        crossBoxEl.innerHTML = "";
       }
     }
 
@@ -2946,6 +3309,8 @@
       if (searchable.includes("tomaten") || searchable.includes("tomaatjes")) searchable += " tomaat";
       if (searchable.includes("noten")) searchable += " noot";
       if (searchable.includes("eieren")) searchable += " ei";
+      if (searchable.includes("rozijntjes")) searchable += " rozijn rozijnen krenten";
+      if (searchable.includes("knakworst")) searchable += " worst worstje rookworst";
 
       if (q) {
         if (!searchable.includes(q)) return false;
@@ -2963,7 +3328,7 @@
 
       if (week <= 23 && cat === "Zuivel" && !q) {
         emptyHint =
-          "⏳ In fase 4–5 maanden zijn granen en zuivel (zoals brood, pasta, rijstwafel, kaas, yoghurt en honing) nog niet geschikt als maaltijd; je start hiermee vanaf 6 maanden. Ze staan hier direct onder uitgeklapt! (Tip: 1 theelepeltje fijne baby-granenpap door melk of fruit mag wel om aan gluten te wennen.)";
+          "⏳ In fase 4–5 maanden zijn granen en zuivel (zoals brood, pasta, maisvinger, volkoren cracker, kaas, yoghurt en honing) nog niet geschikt als maaltijd; je start hiermee vanaf 6 maanden. Ze staan hier direct onder uitgeklapt! (Tip: 1 theelepeltje fijne baby-granenpap door melk of fruit mag wel om aan gluten te wennen.)";
         if (waitDetailsEl) waitDetailsEl.open = true;
       } else if (statusFilter === "retry") {
         emptyHint = "Geen voedingsmiddelen gemarkeerd als '🤨 Nog oefenen' binnen deze selectie.";
@@ -3123,12 +3488,17 @@
       }
     }
 
+    const currentIsoWeekKey = getCurrentIsoWeekKey();
+
     grid.innerHTML = visibleAllergens
       .map((alg) => {
         const rawArr = store.allergenExposures[alg.id] || [false, false, false];
         const count = Math.min(3, rawArr.filter(Boolean).length);
         const isSuitableNow = isAllergenSuitableForWeek(alg, week);
         const minM = alg.minAgeMonths || 4;
+        const isGivenThisWeek = Boolean(
+          store.allergenWeeklyGiven && store.allergenWeeklyGiven[alg.id] === currentIsoWeekKey
+        );
 
         let prep = alg.safePrep6to12m;
         let ageLabel = "6–12 mnd";
@@ -3160,6 +3530,17 @@
           "Stap 2: Portie opbouwen (½–1 tl op een volgende dag)",
           "Stap 3: 3e keer zonder klachten (1 tl) — gewend! Houd 1× per week op het menu"
         ];
+
+        const weeklyMaintenanceHtml =
+          isSuitableNow && count === 3
+            ? `
+          <div class="allergen-weekly-row">
+            <span class="allergen-weekly-label">🔄 Wekelijks onderhoud (1× p/w voor tolerantie):</span>
+            <button type="button" class="allergen-weekly-btn ${isGivenThisWeek ? "is-given" : ""}" data-alg-weekly="${alg.id}" title="Vink wekelijks aan of dit allergeen deze week op het menu stond">
+              ${isGivenThisWeek ? "✓ Deze week gegeven" : "○ Deze week geven"}
+            </button>
+          </div>`
+            : "";
 
         return `
         <article class="item-card ${isSuitableNow ? "" : "item-card-wait"}">
@@ -3198,7 +3579,8 @@
             `;
               })
               .join("")}
-          </div>`
+          </div>
+          ${weeklyMaintenanceHtml}`
               : `
           <div class="locked-stage-bar">
             🔒 Nog niet geven bij ${escapeHtml(stage.shortLabel)} — veilig starten vanaf ${minM} maanden
@@ -3230,6 +3612,20 @@
         saveState();
         renderAllergens(state.currentWeek);
         updateCounterBadges();
+      });
+    });
+
+    grid.querySelectorAll("[data-alg-weekly]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const aid = btn.dataset.algWeekly;
+        if (!store.allergenWeeklyGiven) store.allergenWeeklyGiven = {};
+        if (store.allergenWeeklyGiven[aid] === currentIsoWeekKey) {
+          delete store.allergenWeeklyGiven[aid];
+        } else {
+          store.allergenWeeklyGiven[aid] = currentIsoWeekKey;
+        }
+        saveState();
+        renderAllergens(state.currentWeek);
       });
     });
 
@@ -3392,14 +3788,18 @@
           </div>
         `;
       } else if (doctorNote) {
-        const isMedical = doctorNote.startsWith("📞");
+        const isEmergency112 = doctorNote.startsWith("🚨");
+        const isMedical = isEmergency112 || doctorNote.startsWith("📞");
         const isMomTip = doctorNote.startsWith("💛");
-        const blockLabel = isMedical
-          ? "🚨 Wanneer contact opnemen met de huisarts?"
-          : isMomTip
-            ? "💛 Steuntje in de rug voor jezelf"
-            : "💡 Gouden regel & aandachtspunt";
+        const blockLabel = isEmergency112
+          ? "🚨 BEL DIRECT 112 BIJ ECHT STIKKEN"
+          : isMedical
+            ? "🚨 Wanneer contact opnemen met de huisarts?"
+            : isMomTip
+              ? "💛 Steuntje in de rug voor jezelf"
+              : "💡 Gouden regel & aandachtspunt";
         const cleanedNote = doctorNote
+          .replace(/^🚨\s*(BEL DIRECT 112 BIJ ECHT STIKKEN:)\s*/i, "")
           .replace(/^📞\s*(Bel (direct )?de huisarts bij:|Neem contact op met de huisarts\s*)/i, "")
           .replace(/^💡\s*(Gouden regel:|Let op:)\s*/i, "")
           .replace(/^💛\s*(Voor mama:)\s*/i, "")
@@ -3746,14 +4146,14 @@
 
     if (!dob) {
       if (adjRow) adjRow.classList.add("hidden");
-      box.textContent = "Kies een geboortedatum om de huidige week te berekenen.";
+      box.textContent = "Kies een geboortedatum (of uitgerekende datum) om de huidige week te berekenen.";
       return;
     }
 
     const calc = calculateAgeForProfile({ name, dob, dueDate: due, useAdjusted: useAdj });
     if (!calc) {
       if (adjRow) adjRow.classList.add("hidden");
-      box.textContent = "Kies een datum in het verleden.";
+      box.textContent = "Kies een geldige datum.";
       return;
     }
 
@@ -3762,7 +4162,9 @@
     }
 
     const stg = getStageForWeek(calc.activeTargetWeek);
-    if (calc.isPreemie && calc.chronoWeek <= 104) {
+    if (calc.isExpecting) {
+      box.innerHTML = `<strong>🤰 ${escapeHtml(name)} wordt verwacht over ${calc.daysUntilDue} ${calc.daysUntilDue === 1 ? "dag" : "dagen"}!</strong><br/>De app staat voor jullie klaar op <strong>Week 1 (${escapeHtml(stg.title)})</strong>.`;
+    } else if (calc.isPreemie && calc.chronoWeek <= 104) {
       const modeLabel = useAdj
         ? `Week ${calc.adjustedWeek} (gecorrigeerd • kalenderweek ${calc.chronoWeek})`
         : `Week ${calc.chronoWeek} (kalenderleeftijd • gecorrigeerd week ${calc.adjustedWeek})`;
@@ -4539,8 +4941,6 @@
 
         const emailVal = emailInput ? emailInput.value.trim() : "";
         const sectionVal = sectionSelect ? sectionSelect.value : "algemeen";
-        const child = typeof getActiveChild === "function" ? getActiveChild() : null;
-        const childName = child && child.name ? child.name : "";
         const curStage = typeof getStageForWeek === "function" ? getStageForWeek(state.currentWeek) : null;
         const stageName = curStage ? curStage.title : `Week ${state.currentWeek}`;
 
@@ -4559,11 +4959,10 @@
           email: emailVal,
           timestamp: new Date().toISOString(),
           week: state.currentWeek,
-          stage: stageName,
-          childName: childName
+          stage: stageName
         };
 
-        // Altijd ook lokaal opslaan als veilige offline back-up
+        // Altijd ook lokaal opslaan als veilige offline back-up (zonder kindnaam voor AVG-privacy)
         try {
           const existingRaw = localStorage.getItem("samen_groeien_feedback_v1");
           const existingList = existingRaw ? JSON.parse(existingRaw) : [];
@@ -4583,9 +4982,9 @@
           feedbackStatusMsg.style.color = "var(--text-muted)";
         }
 
-        // FormSubmit AJAX naar brendan@bbold.app (Optie A)
+        // FormSubmit AJAX naar brendan@bbold.app (AVG-veilig: geen kindnaam meegestuurd)
         const payload = {
-          naam: childName ? `Ouder van ${childName}` : "Ouder (Samen Groeien)",
+          naam: "Ouder (Samen Groeien)",
           email: emailVal || "anoniem@bbold.app",
           _replyto: emailVal || "brendan@bbold.app",
           _subject: `Samen Groeien Feedback [${typeLabel}] - ${sectionVal}`,
@@ -4630,6 +5029,116 @@
             if (textInput) textInput.value = "";
             if (emailInput) emailInput.value = "";
           }, 1600);
+        }
+      });
+    }
+
+    // 1. Onboarding Welkomstkaart acties
+    const onboardingSetupBtn = document.getElementById("onboardingSetupChildBtn");
+    const onboardingDismissBtn = document.getElementById("onboardingDismissBtn");
+    if (onboardingSetupBtn && profDialog) {
+      onboardingSetupBtn.addEventListener("click", () => {
+        populateProfileFormForChild("");
+        profDialog.showModal();
+        const nameInput = document.getElementById("childNameInput");
+        if (nameInput) nameInput.focus();
+      });
+    }
+    if (onboardingDismissBtn) {
+      onboardingDismissBtn.addEventListener("click", () => {
+        state.onboardingDismissed = true;
+        saveState();
+        renderOnboardingWelcomeCard();
+      });
+    }
+
+    // 2. Gecombineerde Week-Boodschappenlijst acties
+    const shareWeeklyWaBtn = document.getElementById("shareWeeklyGroceryWhatsappBtn");
+    const copyWeeklyBtn = document.getElementById("copyWeeklyGroceryBtn");
+    const clearWeeklyBtn = document.getElementById("clearWeeklyGroceryBtn");
+
+    if (shareWeeklyWaBtn) {
+      shareWeeklyWaBtn.addEventListener("click", () => {
+        const store = getActiveStore();
+        const allCatalog = getAllRecipesCatalog();
+        const selected = allCatalog.filter((r) => Boolean(store.weeklyGroceryRecipes && store.weeklyGroceryRecipes[r.id]));
+        if (selected.length === 0) return;
+        openWhatsAppShare(buildWeeklyGroceryText(selected), "auto");
+      });
+    }
+    if (copyWeeklyBtn) {
+      copyWeeklyBtn.addEventListener("click", () => {
+        const store = getActiveStore();
+        const allCatalog = getAllRecipesCatalog();
+        const selected = allCatalog.filter((r) => Boolean(store.weeklyGroceryRecipes && store.weeklyGroceryRecipes[r.id]));
+        if (selected.length === 0) return;
+        const text = buildWeeklyGroceryText(selected);
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(text);
+        }
+        const orig = copyWeeklyBtn.textContent;
+        copyWeeklyBtn.textContent = "✓ Gekopieerd!";
+        setTimeout(() => {
+          copyWeeklyBtn.textContent = orig;
+        }, 1800);
+      });
+    }
+    if (clearWeeklyBtn) {
+      clearWeeklyBtn.addEventListener("click", () => {
+        const store = getActiveStore();
+        store.weeklyGroceryRecipes = {};
+        saveState();
+        renderStageRecipes(getStageForWeek(state.currentWeek));
+      });
+    }
+
+    // 3. Medische Disclaimer, Bronnen & Privacy (AVG / Play Store Data Deletion) Dialoog
+    const legalDialog = document.getElementById("legalDialog");
+    const openLegalBtn = document.getElementById("openLegalDialogBtn");
+    const closeLegalBtn = document.getElementById("closeLegalDialogBtn");
+    const confirmLegalBtn = document.getElementById("confirmLegalDialogBtn");
+    const deleteAllDataBtn = document.getElementById("deleteAllLocalDataBtn");
+    const legalDeleteStatusEl = document.getElementById("legalDeleteStatusMsg");
+
+    if (openLegalBtn && legalDialog) {
+      openLegalBtn.addEventListener("click", () => {
+        if (legalDeleteStatusEl) legalDeleteStatusEl.textContent = "";
+        legalDialog.showModal();
+      });
+    }
+    if (closeLegalBtn && legalDialog) {
+      closeLegalBtn.addEventListener("click", () => legalDialog.close());
+    }
+    if (confirmLegalBtn && legalDialog) {
+      confirmLegalBtn.addEventListener("click", () => legalDialog.close());
+    }
+    if (deleteAllDataBtn) {
+      deleteAllDataBtn.addEventListener("click", () => {
+        const confirmed = window.confirm(
+          "Weet je zeker dat je al je lokaal opgeslagen kindprofielen, afgevinkte hapjes, allergenen en mijlpalen van dit toestel wilt wissen?"
+        );
+        if (!confirmed) return;
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem("samen_groeien_feedback_v1");
+        } catch (_) {}
+        state.children = [];
+        state.activeChildId = null;
+        state.profile = { name: "", dob: "", dueDate: "", useAdjusted: true, customOppasNote: "" };
+        state.onboardingDismissed = false;
+        state.triedFoods = {};
+        state.favoriteGames = {};
+        state.favoriteRecipes = {};
+        state.weeklyGroceryRecipes = {};
+        state.checkedMilestones = {};
+        state.checkedHabits = {};
+        state.allergenExposures = {};
+        state.allergenWeeklyGiven = {};
+        state.foodPracticeCounts = {};
+        saveState();
+        renderAll(false);
+        if (legalDeleteStatusEl) {
+          legalDeleteStatusEl.textContent = "✓ Al je lokale gegevens zijn volledig van dit toestel gewist.";
         }
       });
     }

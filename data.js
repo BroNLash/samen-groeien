@@ -2953,6 +2953,28 @@ window.GROWING_DATA = {
       adviceSchoolAge: "Boze uitbarsting om 15:00 uur uit school (ontlading na schooltijd door zelfregulatie-moeheid) of pre-puber emoties? Je kind heeft zich de hele schooldag ingehouden en ontlaadt in zijn veilige haven. Stel eerst 30 minuten géén vragen, geef een bijtank-snack en bespreek grenzen pas als het brein weer rustig is.",
       whenToCallDoctor: "💛 Voor mama: Wordt het huilen je even te veel? Leg je baby of peuter veilig in bed, loop 5 minuten naar een andere kamer om rustig adem te halen of bel iemand die even overneemt.",
       whenToCallDoctorSchoolAge: "💛 Voor mama: Loop bij hoog oplopende emoties zelf ook gerust 2 minuten naar de keuken voor een glas water ('Ik koel even af, zo praten we rustig verder')—daarmee geef je direct het beste voorbeeld in emotieregulatie!"
+    },
+    {
+      id: "sos-choking",
+      icon: "🫁",
+      title: "Kokhalzen vs. Verslikken aan tafel (Eerste Hulp)",
+      adviceBabyUnder3m: "Spuugt of proest je baby tijdens de melkvoeding? Haal je baby rustig van de borst of fles, houd hem rechtop tegen je schouder en klop zachtjes op de rug. Voed in een iets rechtere houding (paced bottle feeding).",
+      adviceBaby3mTo1y: "Kokhalzen (geluid maken, hoesten, rood aanlopen, tong naar voren) is bij de start van vaste voeding een VEILIGE beschermingsreflex die voorin op de tong ligt. Blijf kalm, praat rustig en ga NOOIT met je vinger in de mond (dan duw je een stukje juist dieper!).",
+      adviceToddlerAndUp: "Laat je dreumes of peuter altijd rustig rechtop zittend eten (nooit lopend of in de auto). Snijd druiven, cherrytomaatjes en knakworstjes ALTIJD in de lengte in vieren en geef geen hele noten of popcorn onder 4 jaar.",
+      adviceSchoolAge: "Ook bij schoolkinderen (4–12 jr) blijft de regel: rustig zittend eten bij snoeptomaatjes, druiven, noten, popcorn of harde snoepjes (niet tijdens het rennen of stoeien).",
+      whenToCallDoctor: "🚨 BEL DIRECT 112 BIJ ECHT STIKKEN: Als je kind plotseling STIL is, geen geluid of hoest meer kan maken en blauw/bleek aanloopt. Geef direct 5 krachtige slagen met de hiel van je hand tussen de schouderbladen (baby voorover op je onderarm met hoofdje lager dan de billen).",
+      whenToCallDoctorSchoolAge: "🚨 BEL DIRECT 112 BIJ ECHT STIKKEN: Als je kind niet kan hoesten of praten en naar de keel grijpt. Laat vooroverbuigen en geef 5 krachtige slagen tussen de schouderbladen, gevolgd door 5 buikstoten (Heimlich) indien nodig."
+    },
+    {
+      id: "sos-teeth-cold",
+      icon: "🦷",
+      title: "Doorkomende Tandjes, Verkoudheid & Oorpijn",
+      adviceBabyUnder3m: "Een pasgeboren baby ademt bijna volledig door de neus. Gebruik bij een verstopte neus vóór elke melkvoeding en het slapen 1 druppeltje/spraytje fysiologisch zout (0,9% NaCl) per neusgat. Gebruik géén losse kussens in het babybedje.",
+      adviceBaby3mTo1y: "Kwijlen, rode wangen en op alles bijten? Geef een gekoelde bijtring uit de koelkast (nooit uit de vriezer!) of masseer het tandvlees met een schone vinger. Bij neusverkoudheid helpt fysiologisch zout neusspray zodat je baby vrij kan drinken.",
+      adviceToddlerAndUp: "Doorkomende kiezen en oorpijn geven vaak extra pijn zodra je kind plat in bed ligt (door druk op het middenoor). Gebruik fysiologisch zout neusspray, bied koud/zacht eten aan (zoals gekoelde yoghurt of fruitpuree) en poets 2x per dag met peutertandpasta.",
+      adviceSchoolAge: "Bij wisselende melktanden, kiespijn of verkoudheid met oorpijn: laat goed neussnuiten (één neusgat tegelijk), spoel of spray met fysiologisch zout en poets 2x per dag 2 minuten met junior/volwassen fluoridetandpasta.",
+      whenToCallDoctor: "📞 Bel de huisarts bij: oorpijn bij een baby <6 maanden, een loopoor (vocht/pus uit het oor), een afstaand oor, of oorpijn met koorts die na 3 dagen niet verbetert.",
+      whenToCallDoctorSchoolAge: "📞 Bel de huisarts bij: oorpijn die na 3 dagen niet afneemt, een loopoor dat langer dan 1 week duurt, of oorpijn met hoge koorts en sufheid."
     }
   ],
 
@@ -3307,6 +3329,58 @@ window.GROWING_DATA = {
       prep9to12m: "Schaaltje ongezoete yoghurt als toetje; melkvoeding blijft borst- of opvolgmelk.",
       prep1to3y: "✅ Vanaf 1 jaar: 300 ml gewone halfvolle melk/yoghurt per dag uit een beker (max 450 ml per dag zodat de ijzeropname goed blijft).",
       prep4to12y: "300–500 ml halfvolle melk/yoghurt en een plakje 30+ kaas per dag."
+    },
+    {
+      id: "fd-mango-kiwi",
+      name: "Mango, Kiwi & Meloen",
+      icon: "🥭",
+      category: "Fruit & Vetten",
+      minAgeMonths: 4,
+      nutrients: "Vitamine C (extra hoog in kiwi!), vezels, vocht",
+      prep4to5m: "Oefenhapje (4–5 mnd): Prak of pureer een stukje zachte rijpe mango, meloen of zoete (gele) kiwi helemaal glad.",
+      prep6to8m: "Puree: Geprakt. Rapley: Snijd een grote vingerlange reep met een strookje schil aan de onderkant als handvat, óf rol gladde stukken door fijne havermout of geraspte kokos voor grip.",
+      prep9to12m: "Kleine zachte blokjes (1x1 cm) van rijpe mango, kiwi of watermeloen (zonder pitjes).",
+      prep1to3y: "In blokjes, partjes of een gehalveerde kiwi om zelf met een lepeltje uit te lepelen.",
+      prep4to12y: "In de fruitbak voor school, door de yoghurt of als frisse zomersnack."
+    },
+    {
+      id: "fd-raisins",
+      name: "Rozijntjes & Gedroogd Fruit",
+      icon: "🍇",
+      category: "Fruit & Vetten",
+      minAgeMonths: 9,
+      nutrients: "Vezels, ijzer, snelle energie (let op: plakt aan tanden)",
+      prep4to5m: "Nog niet geschikt voor 4–5 maanden (te taai en plakt in het mondje).",
+      prep6to8m: "Wacht met losse rozijntjes tot circa 9 maanden; je kunt wel een rozijntje meekoken met appel en volledig gladpureren.",
+      prep9to12m: "Wel rozijntjes eerst 5 minuten in warm water zodat ze zacht zijn en halveer grote rozijnen — ideaal om de pincetgreep te oefenen!",
+      prep1to3y: "Max. 1 klein doosje rozijntjes en altijd op 1 vast eetmoment (Ivoren Kruis: geef ze niet verspreid over de middag i.v.m. gaatjes en geef er een beker water bij).",
+      prep4to12y: "Met mate als tussendoortje op 1 vast eetmoment (bij voorkeur vers fruit kiezen voor het gebit)."
+    },
+    {
+      id: "fd-sausage-popcorn",
+      name: "Worstjes (Knakworst) & Popcorn",
+      icon: "🌭",
+      category: "Eiwit & IJzer",
+      minAgeMonths: 12,
+      nutrients: "Let op: hoog verstikkings- en zoutgevaar bij jonge kinderen!",
+      prep4to5m: "🚫 NIET GEVEN! Veel te zout voor de nieren en hoog verstikkingsgevaar.",
+      prep6to8m: "🚫 NIET GEVEN ONDER 1 JAAR! Knakworst en rookworst bevatten te veel zout en verzadigd vet voor een baby; popcorn geeft acuut verstikkingsgevaar.",
+      prep9to12m: "🚫 NIET GEVEN ONDER 1 JAAR! Kies liever een zelfgemaakt runder- of kipgehaktballetje zonder zout.",
+      prep1to3y: "⚠️ Knakworst/rookworst (af en toe): snijd ALTIJD eerst in de lengte in vieren en daarna in stukjes (NOOIT ronde munt-schijfjes!). 🚫 Popcorn: nog NIET geven onder 4 jaar vanwege scherp vliesje en verslikkingsgevaar.",
+      prep4to12y: "Knakworst rustig zittend eten. Popcorn mag vanaf 4–5 jaar uitsluitend rustig zittend (nooit tijdens het rennen of spelen)."
+    },
+    {
+      id: "fd-liver-raw",
+      name: "Smeerleverworst, Paté & Rauw Vlees/Vis",
+      icon: "🥪",
+      category: "Eiwit & IJzer",
+      minAgeMonths: 6,
+      nutrients: "IJzer, vitamine B12 (let op vitamine A & bacteriën)",
+      prep4to5m: "Wacht met broodbeleg tot minstens 6–7 maanden.",
+      prep6to8m: "Kies liever 100% pindakaas, geprakt ei of zoutarme hummus op brood. Geef maximaal 1 boterham met smeerleverworst per week (vanwege te veel vitamine A). 🚫 Géén rauw vlees of rauwe vis.",
+      prep9to12m: "Voedingscentrum-advies: maximaal 1 boterham met smeerleverworst of paté per week. 🚫 Geef géén filet americain, ossenworst, tartaar of voorverpakte gerookte zalm.",
+      prep1to3y: "Smeerleverworst/paté: max. 1 boterham per week (vitamine A-limiet). 🚫 Rauw vlees (filet americain, ossenworst, carpaccio), rauwe vis en voorverpakte gerookte vis pas vanaf 4 jaar geven!",
+      prep4to12y: "Smeerleverworst met mate (niet dagelijks). Let bij rauw vlees of gerookte vis altijd op koeling en versheid."
     }
   ]
 };

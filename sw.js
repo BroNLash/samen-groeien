@@ -1,13 +1,15 @@
-const CACHE_NAME = "samen-groeien-pwa-v35";
+const CACHE_NAME = "samen-groeien-pwa-v36";
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=35",
-  "./data.js?v=35",
-  "./app.js?v=35",
+  "./styles.css?v=36",
+  "./data.js?v=36",
+  "./app.js?v=36",
   "./manifest.json",
   "./icon-192.png",
-  "./icon-512.png"
+  "./icon-512.png",
+  "./icon-maskable-192.png",
+  "./icon-maskable-512.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -28,9 +30,30 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Netwerk-eerst met directe offline cache-terugval (zodat updates direct zichtbaar zijn)
+// Netwerk-eerst voor app-bestanden + cache-first voor Google Fonts voor 100% offline werking
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const url = new URL(event.request.url);
+
+  // Cache-first strategie voor Google Fonts zodat typografie ook offline werkt
+  if (url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com") {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        const fetchPromise = fetch(event.request)
+          .then((networkResponse) => {
+            if (networkResponse && (networkResponse.status === 200 || networkResponse.type === "opaque")) {
+              const copy = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+            }
+            return networkResponse;
+          })
+          .catch(() => cached);
+        return cached || fetchPromise;
+      })
+    );
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
@@ -40,6 +63,8 @@ self.addEventListener("fetch", (event) => {
         }
         return networkResponse;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() =>
+        caches.match(event.request).then((res) => res || caches.match("./index.html"))
+      )
   );
 });

@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=35" />
+  <link rel="stylesheet" href="styles.css?v=36" />
 </head>
 <body>
   <a href="#mainContent" class="skip-link">Direct naar inhoud</a>
@@ -174,6 +174,21 @@
   <!-- HOOFDINHOUD                                                           -->
   <!-- ===================================================================== -->
   <main id="mainContent" class="main-container">
+
+    <!-- WELKOMSTKAART BIJ EERSTE BEZOEK (ZOLANG ER NOG GEEN KINDPROFIEL IS) -->
+    <section class="onboarding-welcome-card hidden" id="onboardingWelcomeCard" aria-label="Welkom bij Samen Groeien">
+      <div class="onboarding-welcome-left">
+        <span class="onboarding-welcome-icon" aria-hidden="true">👋</span>
+        <div class="onboarding-welcome-text">
+          <strong class="onboarding-welcome-title">Welkom bij Samen Groeien!</strong>
+          <p class="onboarding-welcome-desc">Stel in 10 seconden de naam en geboortedatum (of uitgerekende datum) van je kind in. Dan springt de app altijd direct naar jullie exacte week, voedingsschema en mijlpalen.</p>
+        </div>
+      </div>
+      <div class="onboarding-welcome-actions">
+        <button type="button" class="btn-primary btn-small" id="onboardingSetupChildBtn">+ Kindprofiel instellen</button>
+        <button type="button" class="onboarding-dismiss-btn" id="onboardingDismissBtn" aria-label="Melding verbergen" title="Later instellen">✕</button>
+      </div>
+    </section>
 
     <!-- 1. OVERZICHTSKAART VAN DE HUIDIGE WEEK / FASE -->
     <section class="hero-card" id="stageHero">
@@ -353,6 +368,22 @@
           <button type="button" class="chip" data-meal-filter="tussendoor">🍎 Tussendoor</button>
         </div>
 
+        <!-- Gecombineerde Week-Boodschappenlijst Balk (verschijnt zodra ≥1 recept is geselecteerd) -->
+        <div class="weekly-grocery-bar hidden" id="weeklyGroceryBar" role="region" aria-label="Jouw gecombineerde week-boodschappenlijst">
+          <div class="weekly-grocery-info">
+            <span class="weekly-grocery-icon" aria-hidden="true">🛒</span>
+            <div>
+              <strong id="weeklyGroceryTitle">Week-Boodschappenlijst (0 gerechten)</strong>
+              <span class="weekly-grocery-sub" id="weeklyGrocerySub">Stuur alle ingrediënten in één keer naar WhatsApp of klembord.</span>
+            </div>
+          </div>
+          <div class="weekly-grocery-actions">
+            <button type="button" class="btn-primary btn-small" id="shareWeeklyGroceryWhatsappBtn">💬 Deel via WhatsApp</button>
+            <button type="button" class="btn-secondary btn-small" id="copyWeeklyGroceryBtn">📋 Kopieer lijst</button>
+            <button type="button" class="btn-text btn-small" id="clearWeeklyGroceryBtn" title="Maak weeklijst leeg">✕ Leegmaken</button>
+          </div>
+        </div>
+
         <div class="cards-grid recipes-grid" id="stageRecipesGrid"></div>
 
         <div class="recipes-toggle-wrap hidden" id="recipesToggleWrap">
@@ -507,6 +538,9 @@
         </button>
       </div>
 
+      <!-- Slimme kruiszoekresultaten uit Recepten, Allergenen, Spelletjes & SOS bij zoeken -->
+      <div class="minimal-card lookup-cross-results hidden" id="lookupCrossResults" aria-live="polite"></div>
+
       <!-- Uitklapbare sectie voor producten die pas in een latere fase geschikt zijn -->
       <details class="minimal-details details-wait hidden" id="waitFoodsDetails">
         <summary>
@@ -591,6 +625,17 @@
         </div>
         <div class="sos-cards-list" id="sosCardsContainer"></div>
       </article>
+
+      <!-- Medische & Veiligheidsdisclaimer (Play Store & Gezondheidsrichtlijn) -->
+      <aside class="minimal-card sos-medical-disclaimer" id="sosMedicalDisclaimer" aria-label="Medische disclaimer en bronvermelding">
+        <div class="sos-disclaimer-inner">
+          <span class="sos-disclaimer-icon" aria-hidden="true">🩺</span>
+          <div class="sos-disclaimer-text">
+            <strong>Medische disclaimer &amp; wetenschappelijke richtlijnen</strong>
+            <p>De informatie in Samen Groeien is zorgvuldig samengesteld op basis van de richtlijnen van het <strong>Voedingscentrum</strong>, <strong>RIVM</strong>, <strong>NCJ (JGZ)</strong>, <strong>NHG-Standaarden</strong>, <strong>NVK</strong> en het <strong>Ivoren Kruis</strong>. Deze app is uitsluitend informatief en vervangt nooit persoonlijk medisch advies van je huisarts, verloskundige of het consultatiebureau. Twijfel je of maakt je kind een zieke indruk? Neem altijd contact op met de huisarts of bel bij spoed direct <strong>112</strong>.</p>
+          </div>
+        </div>
+      </aside>
     </section>
 
     <!-- =================================================================== -->
@@ -623,9 +668,14 @@
           <span>💬 Deel je ervaring</span>
         </button>
       </div>
-      <p class="footer-subtext">
-        Samen Groeien • Liefdevolle voeding, spel &amp; mijlpalen van 0 t/m 12 jaar
-      </p>
+      <div class="footer-meta-row">
+        <p class="footer-subtext">
+          Samen Groeien • Liefdevolle voeding, spel &amp; mijlpalen van 0 t/m 12 jaar
+        </p>
+        <button type="button" class="footer-legal-link" id="openLegalDialogBtn">
+          🛡️ Medische Disclaimer, Bronnen &amp; Privacy (AVG)
+        </button>
+      </div>
     </footer>
   </main>
 
@@ -658,11 +708,11 @@
 
       <div class="form-row">
         <div class="form-field">
-          <label for="childDobInput">Geboortedatum</label>
+          <label for="childDobInput">Geboortedatum <small>(of verwachte datum)</small></label>
           <input type="date" id="childDobInput" />
         </div>
         <div class="form-field">
-          <label for="childDueDateInput">Uitgerekende datum <small>(optioneel)</small></label>
+          <label for="childDueDateInput">Uitgerekende datum <small>(bij vroeggeboorte)</small></label>
           <input type="date" id="childDueDateInput" />
         </div>
       </div>
@@ -835,10 +885,10 @@
         <label for="feedbackTextInput">Jouw toelichting <small>(wat vind je prettig of waar loop je tegenaan?)</small></label>
         <textarea
           id="feedbackTextInput"
+          class="form-textarea"
           rows="4"
           placeholder="Typ hier je ervaring, opmerking of tip..."
           required
-          style="width: 100%; border-radius: var(--radius); border: 1px solid var(--border); padding: 10px; font-family: inherit; font-size: var(--fs-sm); box-sizing: border-box; resize: vertical; min-height: 85px; background: var(--surface);"
         ></textarea>
       </div>
 
@@ -856,7 +906,70 @@
     </form>
   </dialog>
 
-  <script src="data.js?v=35"></script>
-  <script src="app.js?v=35"></script>
+  <!-- ===================================================================== -->
+  <!-- DIALOOG 6: MEDISCHE DISCLAIMER, WETENSCHAPPELIJKE BRONNEN & PRIVACY   -->
+  <!-- ===================================================================== -->
+  <dialog class="app-dialog" id="legalDialog" closedby="any" aria-labelledby="legalDialogTitle">
+    <div class="dialog-card legal-dialog-card">
+      <div class="dialog-header">
+        <h2 id="legalDialogTitle">🛡️ Disclaimer, Bronnen &amp; Privacy</h2>
+        <button type="button" class="close-btn" id="closeLegalDialogBtn" aria-label="Sluiten">✕</button>
+      </div>
+
+      <div class="legal-sections-wrap">
+        <section class="legal-section">
+          <h3>🩺 1. Medische Disclaimer</h3>
+          <p>
+            De inhoud van <strong>Samen Groeien</strong> is met grote zorg samengesteld als praktische en educatieve informatiebron voor ouders en verzorgers van kinderen van 0 tot 12 jaar. De informatie in deze app is <strong>geen medisch advies, diagnose of behandeling</strong> en vervangt nooit het persoonlijk oordeel van een huisarts, kinderarts, verloskundige of jeugdarts van het consultatiebureau (JGZ).
+          </p>
+          <p>
+            Neem bij twijfel over de gezondheid, groei, voeding of medicatie van je kind altijd contact op met je huisarts of het consultatiebureau. Bel bij een levensbedreigende situatie (zoals acuut stikken, bewusteloosheid of ernstige benauwdheid) direct <strong>112</strong>.
+          </p>
+        </section>
+
+        <section class="legal-section">
+          <h3>📚 2. Wetenschappelijke Richtlijnen &amp; Bronnen</h3>
+          <p>Alle leeftijdsadviezen in Samen Groeien zijn gebaseerd op actuele Nederlandse en internationale richtlijnen:</p>
+          <ul class="clean-bullets legal-sources-list">
+            <li><strong>Voedingscentrum &amp; Gezondheidsraad:</strong> Richtlijnen Goede Voeding voor zuigelingen, dreumesen, peuters en basisschoolkinderen (Eerste 1000 dagen &amp; Schijf van Vijf).</li>
+            <li><strong>NVK &amp; DAVO (Diëtisten Alliantie Voedselovergevoeligheid):</strong> Standpunt vroege introductie van hoog-allergene bijvoeding (pinda en kippenei vanaf 4–8 maanden) ter preventie van voedselallergie (o.a. LEAP- en PETIT-studies).</li>
+            <li><strong>RIVM &amp; Rijksvaccinatieprogramma (RVP):</strong> Actueel vaccinatieschema (incl. maternale en passieve RS-virusimmunisatie en verschuiving 2e BMR-prik naar 3 jaar).</li>
+            <li><strong>Nederlands Centrum Jeugdgezondheid (NCJ):</strong> JGZ-richtlijnen Voeding en Eetgedrag, Gezonde Slaap, Taalontwikkeling en het Van Wiechenonderzoek.</li>
+            <li><strong>NHG-Standaarden:</strong> Huisartsenrichtlijnen <em>Kinderen met koorts (M29)</em>, <em>Constitutioneel eczeem (M37)</em> en <em>Otitis media acuta (M09)</em>.</li>
+            <li><strong>Ivoren Kruis:</strong> Advies Cariëspreventie (2× daags poetsen met leeftijdsgeschikte fluoridetandpasta vanaf de eerste doorgebroken tand en napoetsen tot 10 jaar).</li>
+          </ul>
+        </section>
+
+        <section class="legal-section">
+          <h3>🔒 3. Privacyverklaring &amp; Lokale Opslag (AVG / Play Store Data Safety)</h3>
+          <p>
+            <strong>Jouw gezinsgegevens zijn 100% privé:</strong> Namen, geboortedatums, afgevinkte hapjes, allergenen, mijlpalen en bewaarde recepten worden <strong>uitsluitend lokaal op jouw eigen toestel</strong> opgeslagen (via <code>localStorage</code> van je browser/telefoon).
+          </p>
+          <ul class="clean-bullets legal-sources-list">
+            <li>Er worden <strong>geen kindprofielen of gezondheidsgegevens</strong> naar externe servers verstuurd.</li>
+            <li>Samen Groeien bevat <strong>geen advertenties, geen verborgen trackers en geen verkoop van data</strong> aan derden.</li>
+            <li>Alleen wanneer je zelf vrijwillig het feedbackformulier verstuurt, wordt jouw ingetypte bericht (zonder kindnaam of geboortedatum) verzonden.</li>
+          </ul>
+          <div class="legal-data-delete-box">
+            <div>
+              <strong>Gegevensbeheer op dit toestel</strong>
+              <span>Je kunt op elk moment een JSON-back-up maken of al je lokaal opgeslagen profielen en vinkjes in één keer wissen.</span>
+            </div>
+            <button type="button" class="btn-secondary btn-small legal-delete-btn" id="deleteAllLocalDataBtn">
+              🗑️ Wis al mijn lokale gegevens
+            </button>
+          </div>
+          <p class="status-text" id="legalDeleteStatusMsg" role="status" aria-live="polite"></p>
+        </section>
+      </div>
+
+      <div class="dialog-actions" style="margin-top: 12px; justify-content: flex-end;">
+        <button type="button" class="btn-primary" id="confirmLegalDialogBtn">Sluiten</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="data.js?v=36"></script>
+  <script src="app.js?v=36"></script>
 </body>
 </html>
